@@ -1,18 +1,21 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import signupImg from "../assets/Auth/s.jpg"
+import signupImg from "../assets/Auth/create.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {Link} from "react-router-dom"
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowConrfirmPassword = () => setShowConfirmPassword((show) => !show);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
+
   return (
     <Box display={'flex'} height={'100vh'}>
 
@@ -21,21 +24,31 @@ const SignUp = () => {
 
       <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}>
         
-        <Box  width={'55%'} bgcolor={'white'} padding={'3rem 2rem'} borderRadius={'10px'}>
+        <Box  width={'55%'} bgcolor={'white'} padding={'3rem 2rem'} borderRadius={'10px'} >
 
         <Box mb={'1rem'}>
-          <Typography sx={{fontSize:'1.8rem',fontWeight:'500'}}>Welcome Back !</Typography>
-          <Typography sx={{fontSize:'.9rem',color:'gray'}}>Continue your journey with us with lots of love</Typography>
+          <Typography sx={{fontSize:'1.8rem',fontWeight:'500'}}>Sign up</Typography>
+          <Typography sx={{fontSize:'.9rem',color:'gray'}}>Start your journey with us</Typography>
         </Box>
 
-        <Box display={'flex'} flexDirection={'column'} alignItems={'center'}>
+        <Box display={'flex'} flexDirection={'column'} alignItems={'center'} >
           
           <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
-            <InputLabel htmlFor="outlined-adornment-password">Email</InputLabel>
+            <InputLabel htmlFor="outlined-adornment-fullName">Full Name</InputLabel>
             <OutlinedInput
-            sx={{width:"100%"}}
-              id="outlined-adornment-password"
-              type={showPassword ? 'text' : 'password'}   
+              sx={{width:"100%"}}
+              id="outlined-adornment-fullname"
+              type={'text'}   
+              label="full-name"
+            />
+          </FormControl>
+          
+          <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
+            <InputLabel htmlFor="outlined-adornment-email">Email</InputLabel>
+            <OutlinedInput
+              sx={{width:"100%"}}
+              id="outlined-adornment-email"
+              type={'text'}  
               label="email"
             />
           </FormControl>
@@ -60,12 +73,33 @@ const SignUp = () => {
               label="Password"
             />
           </FormControl>
+            
+          <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
+            <InputLabel htmlFor="outlined-adornment-password">Confirm Password</InputLabel>
+            <OutlinedInput
+              id="outlined-adornment-password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowConrfirmPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Password"
+            />
+          </FormControl>
 
-          <Button variant="contained" fullWidth sx={{ m: 1,textTransform:'capitalize',p:'.7rem 0' }}>Sign Up</Button>
+          <Button variant="contained" fullWidth sx={{ m: 2,textTransform:'capitalize',p:'.7rem 0' }}>Sign Up</Button>
 
         </Box>
 
-        <Box mt={'1rem'}>
+        <Box mt={'.2rem'}>
           <Typography textAlign={'center'}>Already have an account ? <Typography component={'span'}>
             <Link to={"/login"} style={{ textDecoration: 'none' }}>
             Log In
@@ -80,7 +114,7 @@ const SignUp = () => {
       </Box>
 
            
-      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'} bgcolor={'#F9EEE3'}>
+      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'} bgcolor={'#FFB001'}>
 
         <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
           <Box>
@@ -95,9 +129,9 @@ const SignUp = () => {
         
         <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
           <Box  textAlign={'center'}>
-            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem'}}>Create New Account</Typography>
-            <Typography sx={{fontWeight:'400',color:"gray"}}>Start your shopping with our website and get assured returns</Typography>
-            <Typography sx={{fontWeight:'400',color:"gray"}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
+            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem',color:'#231F20'}}>Create New Account</Typography>
+            <Typography sx={{fontWeight:'400',color:"white"}}>Start your shopping with our website and get assured returns</Typography>
+            <Typography sx={{fontWeight:'400',color:"white"}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
           </Box>
         </Box>
       

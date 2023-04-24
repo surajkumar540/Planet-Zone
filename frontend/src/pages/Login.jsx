@@ -23,7 +23,7 @@ const Login = () => {
           <Box>
             <CardMedia
             component="img"
-            height="400"
+            height="370"
             image={loginImg}
             alt="Paella dish"
           />
@@ -32,7 +32,7 @@ const Login = () => {
         
         <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
           <Box  textAlign={'center'}>
-            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem'}}>Login into your account</Typography>
+            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem',color:'#273961'}}>Login into your account</Typography>
             <Typography sx={{fontWeight:'400',color:"gray"}}>Start your shopping with our website and get assured returns</Typography>
             <Typography sx={{fontWeight:'400',color:"gray"}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
           </Box>
@@ -43,10 +43,10 @@ const Login = () => {
 
       <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}>
         
-        <Box  width={'55%'} bgcolor={'white'} padding={'3rem 2rem'} borderRadius={'10px'}>
+        <Box  width={'55%'}  bgcolor={'#bad5ef1f'} padding={'3rem 2rem'} borderRadius={'10px'}>
 
         <Box mb={'1rem'}>
-          <Typography sx={{fontSize:'1.8rem',fontWeight:'500'}}>Welcome Back !</Typography>
+          <Typography sx={{fontSize:'1.8rem',fontWeight:'500'}}>Welcome Back </Typography>
           <Typography sx={{fontSize:'.9rem',color:'gray'}}>Continue your journey with us with lots of love</Typography>
         </Box>
 
@@ -83,18 +83,18 @@ const Login = () => {
             />
           </FormControl>
 
-          <Button variant="contained" fullWidth sx={{ m: 1,textTransform:'capitalize',p:'.7rem 0' }}>Login</Button>
+          <Button variant="contained" fullWidth sx={{ m: 2.5,textTransform:'capitalize',p:'.7rem 0' }}>Login</Button>
 
         </Box>
 
-        <Box mt={'1rem'}>
+        <Box>
           <Typography textAlign={'center'}>Dont't you have an account ? <Typography component={'span'}>
             <Link to={"/signup"} style={{ textDecoration: 'none' }}>
             Sign Up
             </Link>
             </Typography></Typography>
 
-            <Typography mt={'.5rem'} textAlign={'center'} color={'red'}>Forgot Password ?</Typography>
+            <Typography mt={'.3rem'} textAlign={'center'} color={'red'}>Forgot Password ?</Typography>
         </Box>
         
         </Box>

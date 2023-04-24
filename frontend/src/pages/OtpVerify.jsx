@@ -15,7 +15,7 @@ const OtpVerify = () => {
     <Box display={'flex'} height={'100vh'}>
 
 
-    <Box flex={0.5}  bgcolor={'#D55F5E'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+    <Box flex={0.5}  bgcolor={'#f86247fc'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
         
         <Box  width={'55%'}  bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'}>
 
@@ -39,14 +39,14 @@ const OtpVerify = () => {
             />
           </FormControl>
 
-          <Button variant="contained" fullWidth sx={{ m: 2.5,textTransform:'capitalize',p:'.7rem 0' }}>Verify</Button>
+          <Button variant="contained" fullWidth sx={{ m: 2,textTransform:'capitalize',p:'.7rem 0' }}>Verify</Button>
 
         </Box>
 
         
 
         <Box>
-        <Typography textAlign={'center'} sx={{fontSize:'.9rem',mb:'.5rem'}}>Otp resend in 20 sec</Typography>
+        <Typography textAlign={'center'} sx={{fontSize:'.8rem',mb:'.2rem',fontWeight:'300'}}>Otp resend in 20 sec</Typography>
         <Typography textAlign={'center'}>Already have an account ? <Typography component={'span'}>
             <Link to={"/login"} style={{ textDecoration: 'none' }}>
             Log In
@@ -68,7 +68,7 @@ const OtpVerify = () => {
           <Box>
             <CardMedia
             component="img"
-            height="370"
+            height="380"
             image={otpImg}
             alt="Paella dish"
           />
@@ -77,7 +77,7 @@ const OtpVerify = () => {
         
         <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
           <Box  textAlign={'center'}>
-            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem',color:'#151D30'}}>Verify your otp</Typography>
+            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'.4rem',color:'#151D30'}}>Verify your otp</Typography>
             <Typography sx={{fontWeight:'400',color:"gray"}}>Start your shopping with our website and get assured returns</Typography>
             <Typography sx={{fontWeight:'400',color:"gray"}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
           </Box>

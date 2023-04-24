@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import loginImg from "../assets/Auth/d.jpg"
+import loginImg from "../assets/Auth/login.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {Link} from "react-router-dom";

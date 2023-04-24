@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
+import { Link } from 'react-router-dom';
 
 const style = {
     position: 'absolute',
@@ -24,7 +25,7 @@ export default function ForgetModal() {
 
     return (
         <Box>
-            <Button onClick={handleOpen}>Open modal</Button>
+            <Typography mt={'.3rem'} textAlign={'center'} color={'red'} sx={{cursor:'pointer'}} onClick={handleOpen}>Forgot Password ?</Typography>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -37,11 +38,13 @@ export default function ForgetModal() {
                     </Typography>
 
                     <Box marginY={2} >
-                        <TextField type='email'  label="Enter your email" variant="outlined" fullWidth />
+                        <TextField type='email'  label="your@example.com" variant="outlined" fullWidth />
                     </Box>
 
                     <Box textAlign='center'>
+                        <Link to="/otp">
                         <Button variant='contained' >Send Otp</Button>
+                        </Link>
                     </Box>
 
                 </Box>

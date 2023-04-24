@@ -39,6 +39,10 @@ const OtpVerify = () => {
             />
           </FormControl>
 
+          <Box width={'100%'}>
+          <Typography sx={{fontSize:'.8rem',pl:'.5rem',mb:'.2rem',fontWeight:'300'}}>Otp resend in 20 sec</Typography>
+          </Box>
+
           <Button variant="contained" fullWidth sx={{ m: 2,textTransform:'capitalize',p:'.7rem 0' }}>Verify</Button>
 
         </Box>
@@ -46,7 +50,7 @@ const OtpVerify = () => {
         
 
         <Box>
-        <Typography textAlign={'center'} sx={{fontSize:'.8rem',mb:'.2rem',fontWeight:'300'}}>Otp resend in 20 sec</Typography>
+        
         <Typography textAlign={'center'}>Already have an account ? <Typography component={'span'}>
             <Link to={"/login"} style={{ textDecoration: 'none' }}>
             Log In

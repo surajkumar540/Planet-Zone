@@ -1,9 +1,10 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import loginImg from "../assets/Auth/log.jpg"
+import loginImg from "../assets/Auth/d.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import {Link} from "react-router-dom"
+import {Link} from "react-router-dom";
+import ForgetModal from '../components/Modals/Auth/ForgetModal';
 
 const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -23,7 +24,7 @@ const Login = () => {
           <Box>
             <CardMedia
             component="img"
-            height="370"
+            height="400"
             image={loginImg}
             alt="Paella dish"
           />
@@ -32,7 +33,7 @@ const Login = () => {
         
         <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
           <Box  textAlign={'center'}>
-            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem',color:'#273961'}}>Login into your account</Typography>
+            <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem',color:'#151D30'}}>Login into your account</Typography>
             <Typography sx={{fontWeight:'400',color:"gray"}}>Start your shopping with our website and get assured returns</Typography>
             <Typography sx={{fontWeight:'400',color:"gray"}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
           </Box>
@@ -41,7 +42,7 @@ const Login = () => {
       </Box>
 
 
-      <Box flex={0.5}  bgcolor={'#B8D0FF'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+      <Box flex={0.5}  bgcolor={'#82C0EF'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
         
         <Box  width={'55%'}  bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'}>
 
@@ -53,11 +54,11 @@ const Login = () => {
         <Box display={'flex'} flexDirection={'column'} alignItems={'center'}>
           
           <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
-            <InputLabel htmlFor="outlined-adornment-password">Email</InputLabel>
+            <InputLabel htmlFor="outlined-adornment-email">Email</InputLabel>
             <OutlinedInput
             sx={{width:"100%"}}
-              id="outlined-adornment-password"
-              type={showPassword ? 'text' : 'password'}   
+              id="outlined-adornment-email"
+              type='text'
               label="email"
             />
           </FormControl>
@@ -88,13 +89,13 @@ const Login = () => {
         </Box>
 
         <Box>
-          <Typography textAlign={'center'}>Dont't you have an account ? <Typography component={'span'}>
+          <Typography textAlign={'center'}>Don't have an account yet ? <Typography component={'span'}>
             <Link to={"/signup"} style={{ textDecoration: 'none' }}>
             Sign Up
             </Link>
             </Typography></Typography>
 
-            
+            <ForgetModal/>
         </Box>
         
         </Box>

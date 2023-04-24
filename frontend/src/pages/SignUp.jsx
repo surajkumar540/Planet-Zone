@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import signupImg from "../assets/Auth/a.jpg"
+import signupImg from "../assets/Auth/signup.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {Link} from "react-router-dom"
@@ -120,7 +120,7 @@ const SignUp = () => {
           <Box>
             <CardMedia
             component="img"
-            height="450"
+            height="400"
             image={signupImg}
             alt="Paella dish"
           />

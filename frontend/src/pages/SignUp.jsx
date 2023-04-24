@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import signupImg from "../assets/Auth/signup.jpg"
+import signupImg from "../assets/Auth/a.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {Link} from "react-router-dom"
@@ -22,7 +22,7 @@ const SignUp = () => {
  
 
 
-      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}  bgcolor={'#FFE3CB'}>
+      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}  bgcolor={'#3C8F7D'}>
         
         <Box  width={'55%'} bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'} >
 

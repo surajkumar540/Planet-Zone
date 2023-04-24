@@ -94,7 +94,7 @@ const Login = () => {
             </Link>
             </Typography></Typography>
 
-            <Typography mt={'.3rem'} textAlign={'center'} color={'red'}>Forgot Password ?</Typography>
+            
         </Box>
         
         </Box>

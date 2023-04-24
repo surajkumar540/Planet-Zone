@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import signupImg from "../assets/Auth/create.jpg"
+import signupImg from "../assets/Auth/signup.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {Link} from "react-router-dom"
@@ -22,9 +22,9 @@ const SignUp = () => {
  
 
 
-      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}  bgcolor={'#FFE3CB'}>
         
-        <Box  width={'55%'} bgcolor={'white'} padding={'3rem 2rem'} borderRadius={'10px'} >
+        <Box  width={'55%'} bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'} >
 
         <Box mb={'1rem'}>
           <Typography sx={{fontSize:'1.8rem',fontWeight:'500'}}>Sign up</Typography>
@@ -34,10 +34,10 @@ const SignUp = () => {
         <Box display={'flex'} flexDirection={'column'} alignItems={'center'} >
           
           <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
-            <InputLabel htmlFor="outlined-adornment-fullName">Full Name</InputLabel>
+            <InputLabel htmlFor="outlined-adornment-full-name">Full Name</InputLabel>
             <OutlinedInput
               sx={{width:"100%"}}
-              id="outlined-adornment-fullname"
+              id="outlined-adornment-full-name"
               type={'text'}   
               label="full-name"
             />
@@ -75,14 +75,14 @@ const SignUp = () => {
           </FormControl>
             
           <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
-            <InputLabel htmlFor="outlined-adornment-password">Confirm Password</InputLabel>
+            <InputLabel htmlFor="outlined-adornment-confirm-password">Confirm Password</InputLabel>
             <OutlinedInput
-              id="outlined-adornment-password"
+              id="outlined-adornment-confirm-password"
               type={showConfirmPassword ? 'text' : 'password'}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
-                    aria-label="toggle password visibility"
+                    aria-label="toggle confirm-password visibility"
                     onClick={handleClickShowConrfirmPassword}
                     onMouseDown={handleMouseDownPassword}
                     edge="end"
@@ -91,7 +91,7 @@ const SignUp = () => {
                   </IconButton>
                 </InputAdornment>
               }
-              label="Password"
+              label="confirm-password"
             />
           </FormControl>
 
@@ -114,13 +114,13 @@ const SignUp = () => {
       </Box>
 
            
-      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'} bgcolor={'#FFB001'}>
+      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
 
         <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
           <Box>
             <CardMedia
             component="img"
-            height="400"
+            height="450"
             image={signupImg}
             alt="Paella dish"
           />
@@ -130,8 +130,8 @@ const SignUp = () => {
         <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
           <Box  textAlign={'center'}>
             <Typography sx={{fontSize:"2rem",fontWeight:"500",marginBottom:'1rem',color:'#231F20'}}>Create New Account</Typography>
-            <Typography sx={{fontWeight:'400',color:"white"}}>Start your shopping with our website and get assured returns</Typography>
-            <Typography sx={{fontWeight:'400',color:"white"}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
+            <Typography sx={{fontWeight:'400'}}>Start your shopping with our website and get assured returns</Typography>
+            <Typography sx={{fontWeight:'400'}}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
           </Box>
         </Box>
       

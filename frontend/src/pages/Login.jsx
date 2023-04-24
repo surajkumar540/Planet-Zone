@@ -17,7 +17,7 @@ const Login = () => {
     <Box display={'flex'} height={'100vh'}>
 
       
-      <Box flex={0.5} bgcolor={'#B8D0FF'} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
+      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
 
         <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
           <Box>
@@ -41,9 +41,9 @@ const Login = () => {
       </Box>
 
 
-      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+      <Box flex={0.5}  bgcolor={'#B8D0FF'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
         
-        <Box  width={'55%'}  bgcolor={'#bad5ef1f'} padding={'3rem 2rem'} borderRadius={'10px'}>
+        <Box  width={'55%'}  bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'}>
 
         <Box mb={'1rem'}>
           <Typography sx={{fontSize:'1.8rem',fontWeight:'500'}}>Welcome Back </Typography>

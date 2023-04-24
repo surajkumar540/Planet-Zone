@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography,Box,CardMedia,FormControl,IconButton,InputAdornment,InputLabel,OutlinedInput,Button} from '@mui/material';
-import loginImg from "../assets/Auth/login.jpg"
+import loginImg from "../assets/Auth/log.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {Link} from "react-router-dom"
@@ -17,13 +17,13 @@ const Login = () => {
     <Box display={'flex'} height={'100vh'}>
 
       
-      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
+      <Box flex={0.5} bgcolor={'#B8D0FF'} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
 
         <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
           <Box>
             <CardMedia
             component="img"
-            height="300"
+            height="400"
             image={loginImg}
             alt="Paella dish"
           />
@@ -41,7 +41,7 @@ const Login = () => {
       </Box>
 
 
-      <Box bgcolor={'beige'} flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'}>
         
         <Box  width={'55%'} bgcolor={'white'} padding={'3rem 2rem'} borderRadius={'10px'}>
 

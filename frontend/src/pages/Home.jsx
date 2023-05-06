@@ -1,11 +1,12 @@
 import React from 'react';
-import Header from '../components/SiteModules/Header';
+import Header from "../components/Header/Header";
+import Poster1 from '../components/Poster/Poster1';
 
 const Temp = () => {
   return (
     <>
       <Header/>
-      <h1>klajsdf</h1>
+      <Poster1/>
     </>
   )
 }

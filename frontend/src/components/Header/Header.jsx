@@ -49,7 +49,12 @@ function Header(props) {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar component="nav" sx={{bgcolor:"#E4E6F4"}}>
+      <AppBar component="nav" sx={{
+        // bgcolor:"#E4E6F4"
+        // bgcolor:"#1DB954"
+        bgcolor:"#009688"
+        // bgcolor:"#1e8fd5"
+        }}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -63,13 +68,19 @@ function Header(props) {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block',color:"#010106" } }}
+            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block'
+            // ,color:"#010106" 
+            ,color:"white" 
+          } }}
           >
             Shop
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map((item) => (
-              <Button key={item} sx={{ color: '#555765' }}>
+              <Button key={item} sx={{ 
+                color: 'white' 
+                // color: '#555765' 
+                }}>
                 {item}
               </Button>
             ))}

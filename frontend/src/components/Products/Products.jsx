@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import Product from './Product';
 
 const Products = () => {
+  
   return (
     <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
         <Box textAlign={'center'} my={4}>

@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const UserApiVersion = "api/signup";
-const OtpApiVersion = "api/verify";
 
 const headerData =
 {
@@ -15,7 +14,7 @@ const headerData =
 //////-------------------------------///////////
 
 export const getAllProducts = async () => {
-    const response = await axios.get(`/products`, headerData);
+    const response = await axios.get(`/api/products`, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }

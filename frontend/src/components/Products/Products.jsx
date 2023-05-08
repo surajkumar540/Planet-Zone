@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import Product from './Product';
 
-const Products = () => {
+const Products = ({products}) => {
   
   return (
     <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
@@ -11,12 +11,12 @@ const Products = () => {
             <Typography>Summer brakes products at your point</Typography>
         </Box>
         <Box display={'flex'}  p={2} gap={12} flexWrap={'wrap'} width={'85%'}>
-        <Product/>
-        <Product/>
-        <Product/>
-        <Product/>
-        <Product/>
-        <Product/>
+          {
+            products?.map((item)=>{
+              return <Product data={item}/>
+            })
+          }
+        
         </Box>
     </Box>
   )

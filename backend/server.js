@@ -12,7 +12,10 @@ app.get("/",(req,res)=>{
 })
 
 app.get("/products",(req,res)=>{
-    res.json(products)
+    res.json({
+        data:products,
+        status:true
+    })
 })
 
 const PORT=4000;

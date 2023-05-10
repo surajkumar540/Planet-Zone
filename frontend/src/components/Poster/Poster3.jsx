@@ -1,19 +1,20 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Typography,CardMedia } from '@mui/material'
 import Button from '@mui/material/Button';
 import React from 'react'
 import b from "../../assets/Auth/b.jpg"
 const Poster3 = () => {
-    const styles = {
-        background: `url(${b}) no-repeat center center fixed`,
-        backgroundSize: "cover",
-        height: "100vh",
-        width: "100%",
-    };
+
     return (
         <>
-            <Box sx={styles}>
+            <Box >
                 <Box display='flex'>
-                    <Box height='100vh' flex='0.5' > </Box>
+                    <Box height='100vh' flex='0.5' >
+                    <CardMedia
+                        sx={{ height: '100%',borderRadius:'10px' }}
+                        image={b}
+                        title="green iguana"
+                        />
+                    </Box>
                     <Box bgcolor='#B22222' height='100vh' flex='0.5' display='flex'>
                         <Box display='flex' flexDirection='column' alignItems='center' justifyContent='center' >
 

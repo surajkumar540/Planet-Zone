@@ -6,7 +6,7 @@ const Poster3 = () => {
 
     return (
         <>
-            <Box mt='5rem'>
+            <Box>
                 <Box display='flex'>
                     <Box height='90vh' flex='0.5' >
                     <CardMedia

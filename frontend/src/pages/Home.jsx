@@ -5,6 +5,7 @@ import Products from "../components/Products/Products"
 import { getAllProducts } from '../api/devApi';
 import Poster2 from '../components/Poster/Poster2';
 import Poster3 from '../components/Poster/Poster3';
+import Footer from '../components/Footer/Footer';
 
 const Home = () => {
   const [products,setProducts]=useState([])
@@ -26,10 +27,11 @@ const Home = () => {
   return (
     <>
       <Header/>
-      <Poster1/>
-      <Products products={products}/>
-      <Poster3/>
+      {/* <Poster1/> */}
+      {/* <Products products={products}/> */}
+      {/* <Poster3/> */}
       {/* <Poster2/> */}
+      <Footer/>
     </>
   )
 }

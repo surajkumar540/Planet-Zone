@@ -29,7 +29,7 @@ const Home = () => {
       <Poster1/>
       <Products products={products}/>
       <Poster3/>
-      <Poster2/>
+      {/* <Poster2/> */}
     </>
   )
 }

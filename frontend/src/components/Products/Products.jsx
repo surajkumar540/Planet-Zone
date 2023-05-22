@@ -5,7 +5,7 @@ import Product from './Product';
 const Products = ({products}) => {
   
   return (
-    <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
+    <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'} mb='5rem'>
         <Box textAlign={'center'} my={4}>
             <Typography fontSize={'3rem'}>Featured Products</Typography>
             <Typography>Summer brakes products at your point</Typography>

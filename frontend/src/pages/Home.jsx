@@ -27,8 +27,8 @@ const Home = () => {
   return (
     <>
       <Header/>
-      {/* <Poster1/> */}
-      {/* <Products products={products}/> */}
+      <Poster1/>
+      <Products products={products}/>
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

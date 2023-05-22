@@ -3,6 +3,7 @@ import Header from '../Header/Header';
 import ShowProduct from './ShowProduct';
 import { getAllProducts } from '../../api/devApi';
 import Products from '../Products/Products';
+import Footer from '../Footer/Footer';
 
 const ShowProducts = () => {
   const [products,setProducts]=useState([])
@@ -25,6 +26,7 @@ const ShowProducts = () => {
     <Header/>
     <ShowProduct/>
     <Products products={products}/>
+    <Footer/>
     </>
   )
 }

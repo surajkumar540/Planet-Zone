@@ -40,7 +40,7 @@ const Product = ({data}) => {
                             <StarOutlineIcon sx={{color:'#ffc107'}} fontSize='small'/>
                         </Box>
                         <Box>
-                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>{data?.price||'$78'}</Typography>
+                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>$ {data?.price||'78'}</Typography>
                         </Box>
                     </Box>
 

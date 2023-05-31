@@ -5,7 +5,7 @@ import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import OtpVerify from './pages/OtpVerify'
 import ChangePassword from './pages/ChangePassword'
-import axios from 'axios'
+import ShowProducts from './components/ShowProduct/ShowProducts'
 
 function App() {
 
@@ -13,6 +13,7 @@ function App() {
     <>
        <Routes>
         <Route path="/" element={ <Home/> } /> 
+        <Route path="/product/:pid" element={ <ShowProducts/> } /> 
         <Route path="/login" element={ <Login/> } />
         <Route path="/signup" element={ <SignUp/> } />
         <Route path="/otp" element={ <OtpVerify/> } />

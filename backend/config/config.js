@@ -1,5 +1,6 @@
 const mongoose=require("mongoose")
 
+// To connect backend with database fun
 const connectDb=async()=>{
     try{
         const conn=await mongoose.connect(process.env.MONGO_URI)

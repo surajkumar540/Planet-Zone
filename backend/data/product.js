@@ -50,7 +50,8 @@ const products= [
         "category": "smartphones",
         "thumbnail": "...",
         "images": ["...", "...", "..."]
-      },
+      }
+      ,
       {
         "id": 5,
         "title": "Sony X",
@@ -63,7 +64,46 @@ const products= [
         "category": "smartphones",
         "thumbnail": "...",
         "images": ["...", "...", "..."]
+      },
+      {
+        "id": 6,
+        "title": "Sumsum",
+        "description": "An apple mobile which is nothing like apple",
+        "price": 99,
+        "discountPercentage": 12.96,
+        "rating": 4.69,
+        "stock": 94,
+        "brand": "Sony",
+        "category": "smartphones",
+        "thumbnail": "...",
+        "images": ["...", "...", "..."]
+      },
+      {
+        "id": 7,
+        "title": "Haier X",
+        "description": "An apple mobile which is nothing like apple",
+        "price": 99,
+        "discountPercentage": 12.96,
+        "rating": 4.69,
+        "stock": 94,
+        "brand": "Sony",
+        "category": "smartphones",
+        "thumbnail": "...",
+        "images": ["...", "...", "..."]
+      },
+      {
+        "id": 8,
+        "title": "Sony Z",
+        "description": "An apple mobile which is nothing like apple",
+        "price": 99,
+        "discountPercentage": 12.96,
+        "rating": 4.69,
+        "stock": 94,
+        "brand": "Sony",
+        "category": "smartphones",
+        "thumbnail": "...",
+        "images": ["...", "...", "..."]
       }
   ]
 
-  module.exports=products;
+module.exports=products;

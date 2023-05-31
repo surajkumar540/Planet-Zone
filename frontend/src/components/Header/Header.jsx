@@ -1,5 +1,4 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -14,13 +13,19 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop', 'Blog','About',"Contact"];
+const navPathObj={
+  "Home":'/',
+  "Shop":'/shop',
+  "Blog":'/',
+}
 
 function Header(props) {
   const { window } = props;
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -51,8 +56,7 @@ function Header(props) {
       <CssBaseline />
       <AppBar component="nav" sx={{
         // bgcolor:"#E4E6F4"
-        // bgcolor:"#1DB954"
-        bgcolor:"#009688"
+        bgcolor:"#009688",
         // bgcolor:"#1e8fd5"
         }}>
         <Toolbar>
@@ -67,20 +71,18 @@ function Header(props) {
           </IconButton>
           <Typography
             variant="h6"
-            component="div"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block'
             // ,color:"#010106" 
-            ,color:"white" 
+            ,color:"white",
+            textDecoration:'none'
           } }}
+          component={Link} to={'/'}
           >
             Shop
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map((item) => (
-              <Button key={item} sx={{ 
-                color: 'white' 
-                // color: '#555765' 
-                }}>
+              <Button key={item} sx={{ color: 'white' }} component={Link} to={navPathObj[item]}>
                 {item}
               </Button>
             ))}

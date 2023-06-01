@@ -1,6 +1,6 @@
 const mongoose=require("mongoose");
 
-const reviewSchema=new mongoose.Schema({
+const reviewSchema=mongoose.Schema({
     name:{
         type:String,
         required:true
@@ -15,8 +15,8 @@ const reviewSchema=new mongoose.Schema({
     }
 },{timestamps:true})
 
-const productSchema=new mongoose.Schema({
-    User:{
+const productSchema=mongoose.Schema({
+    user:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:true
@@ -46,7 +46,7 @@ const productSchema=new mongoose.Schema({
         required:true
     },
     reviews:[reviewSchema],
-    typeReview:{
+    numReviews:{
         type:Number,
         required:true
     },

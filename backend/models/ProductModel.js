@@ -16,7 +16,7 @@ const reviewSchema=mongoose.Schema({
 },{timestamps:true})
 
 const productSchema=mongoose.Schema({
-    user:{
+    User:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:true

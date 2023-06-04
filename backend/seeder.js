@@ -17,9 +17,9 @@ const importData=async()=>{
         await User.deleteMany()
 
         const createUser=await User.insertMany(users)
-        const adminUser=createUser[0]._id;
+        const adminUserId=createUser[0]._id;
         const sampleProductData=products.map((item)=>{
-            return {...item,user:adminUser}
+            return {...item,User:adminUserId}
         })
         await Product.insertMany(sampleProductData)
         console.log('Data Imported successfully')
@@ -49,3 +49,5 @@ if(process.argv[2]==='-d')
 }else{
     importData()
 }
+
+

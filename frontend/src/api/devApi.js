@@ -14,7 +14,7 @@ const headerData =
 //////-------------------------------///////////
 
 export const getAllProducts = async () => {
-    const response = await axios.get(`/api//products`, headerData);
+    const response = await axios.get(`/api/products`, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }

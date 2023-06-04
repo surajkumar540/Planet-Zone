@@ -5,7 +5,7 @@ const dotenv=require("dotenv");
 dotenv.config();
 const PORT=4000;
 
-// connectDb()//Connecting to mongo db database
+connectDb()//Connecting to mongo db database
 const app=express(); // To make server from express use only one time at server file
 
 app.get("/",(req,res)=>{
@@ -24,6 +24,7 @@ app.get("/products/:price",(req,res)=>{
     {
         return item.price===Number(req.params.price)
     });
+    
     res.status(200).json({
         data:product,
         status:true

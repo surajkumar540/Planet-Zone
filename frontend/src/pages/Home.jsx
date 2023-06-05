@@ -34,8 +34,8 @@ const Home = () => {
       <Header/>
       <Poster1/>
       <Products products={products}/>
-      <AboutUs/>
-      {/* <ContactUs/> */}
+      {/* <AboutUs/>
+      <ContactUs/> */}
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

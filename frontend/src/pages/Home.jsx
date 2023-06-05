@@ -8,6 +8,8 @@ import Poster3 from '../components/Poster/Poster3';
 import Footer from '../components/Footer/Footer';
 import { fetchAllProducts } from '../redux/reducers/productSlice';
 import { useDispatch } from 'react-redux';
+import AboutUs from '../components/AboutUs/AboutUs';
+import ContactUs from '../components/ContactUs/ContactUs';
 
 const Home = () => {
   const dispatch=useDispatch()
@@ -32,6 +34,8 @@ const Home = () => {
       <Header/>
       <Poster1/>
       <Products products={products}/>
+      <AboutUs/>
+      {/* <ContactUs/> */}
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

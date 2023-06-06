@@ -32,6 +32,7 @@ export default productSlice.reducer;
 
 export const fetchAllProducts=()=>{
     return async function fetchAllProductsThunk(dispatch,getState){
+        console.log("asycn redux call")
         try{
             dispatch(setStatus(STATUSES.LOADING))
             const response=await getAllProducts();

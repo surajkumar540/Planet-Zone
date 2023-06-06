@@ -7,10 +7,11 @@ import StarIcon from '@mui/icons-material/Star';
 import { useNavigate } from 'react-router-dom';
 
 const Product = ({data}) => {
-    const {id}=data;
+    const {_id}=data;
     const navigate=useNavigate();
+
   return (
-    <Box onClick={()=>navigate(`/product/${id}`)} 
+    <Box onClick={()=>navigate(`/product/${_id}`)} 
     sx={{height:'20rem',width:'15rem',bgcolor:'white',borderRadius:'10px',display:'flex',flexDirection:'column',boxShadow:'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',cursor:'pointer','&:hover': {transform: 'scale(1.01)',transition:'0.5s ease-in-out'}
     }} >
 

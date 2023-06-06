@@ -7,7 +7,7 @@ const allProductsController=require('../controller/products/allProductsControlle
 router.get("/products",asyncHandler(allProductsController))
 
 
-router.get("/products/:price",(req,res)=>{
+router.get("/products/:pid",(req,res)=>{
     const product=products.find((item)=>
     {
         return item.price===Number(req.params.price)

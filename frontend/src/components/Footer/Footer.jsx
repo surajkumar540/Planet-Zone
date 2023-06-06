@@ -8,48 +8,53 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const Footer = () => {
-  return (
-    <Box bgcolor={'#25303F'} >
-      <Box display={'flex'} boxSizing={'border-box'} py='3rem' px='1rem' justifyContent={'space-evenly'}>
 
-      <Box flex='0.25' color='#7D8EA7' display={'flex'} alignItems={'center'} flexDirection={'column'}>
+  const footerText={
+    lineHeight:'2rem',
+    fontSize:{xs:'.8rem',sm:'1rem'}
+  }
+
+  return (
+    <Box bgcolor={'#25303F'} position={'relative'}>
+      <Box display={'flex'} boxSizing={'border-box'} py='3rem' px='1rem' justifyContent={'space-evenly'} flexDirection={{xs:'column',sm:'row'}}>
+
+      <Box flex='0.25' color='#7D8EA7' display={'flex'} alignItems={'center'} flexDirection={'column'} textAlign={{xs:'center',sm:'left'}}>
         <Box>
-        <Typography variant='h5' sx={{fontWeight:600,my:'1rem',color:'white'}}>About</Typography>
-        <Typography lineHeight={'2rem'}>About us</Typography>
-        <Typography  lineHeight={'2rem'}>Delivery Information</Typography>
-        <Typography  lineHeight={'2rem'}>Privacy Policy</Typography>
-        <Typography  lineHeight={'2rem'}>Terms & Conditions</Typography>
-        <Typography  lineHeight={'2rem'}>Contact Us</Typography>
+        <Typography sx={{fontWeight:600,my:'1rem',color:'white',fontSize:{xs:'2rem',sm:'1.5rem'}}}>About</Typography>
+        <Typography sx={footerText}>About us</Typography>
+        <Typography  sx={footerText}>Delivery Information</Typography>
+        <Typography  sx={footerText}>Privacy Policy</Typography>
+        <Typography  sx={footerText}>Terms & Conditions</Typography>
+        <Typography  sx={footerText}>Contact Us</Typography>
         </Box>
       </Box>
 
-      <Box flex='0.25' color='#7D8EA7' display={'flex'} flexDirection={'column'} alignItems={'center'}>
+      <Box flex='0.25' color='#7D8EA7' display={'flex'} flexDirection={'column'} alignItems={'center'} textAlign={{xs:'center',sm:'left'}}>
         <Box>
-        <Typography variant='h5' sx={{fontWeight:600,my:'1rem',color:'white'}}>My Account</Typography>
-        <Typography lineHeight={'2rem'}>Sign In</Typography>
-        <Typography  lineHeight={'2rem'}>View Cart</Typography>
-        <Typography  lineHeight={'2rem'}>My Wishlist</Typography>
-        <Typography  lineHeight={'2rem'}>Track My Order</Typography>
-        <Typography  lineHeight={'2rem'}>Help</Typography>
+        <Typography variant='h5' sx={{fontWeight:600,my:'1rem',color:'white',fontSize:{xs:'1.6rem',sm:'1.5rem'}}}>My Account</Typography>
+        <Typography sx={footerText}>Sign In</Typography>
+        <Typography  sx={footerText}>View Cart</Typography>
+        <Typography  sx={footerText}>My Wishlist</Typography>
+        <Typography  sx={footerText}>Track My Order</Typography>
+        <Typography  sx={footerText}>Help</Typography>
         </Box>
       </Box>
       
 
-      <Box flex='0.4' color='#7D8EA7' display={'flex'} flexDirection={'column'} alignItems={'center'}>
+      <Box flex='0.4' color='#7D8EA7' display={'flex'} flexDirection={'column'} alignItems={'center'}  textAlign={{xs:'center',sm:'left'}}>
         <Box>
-
-        <Typography variant='h5' sx={{fontWeight:600,my:'1rem',color:'white'}}>Shop</Typography>
+        <Typography textAlign={{xs:'center',sm:'left'}} variant='h5' sx={{fontWeight:600,my:'1rem',color:'white',fontSize:{xs:'1.6rem',sm:'1.5rem'}}}>Shop</Typography>
         <Box>
-          <Typography lineHeight={'2rem'} fontSize={'.9rem'}><Typography component={'span'} fontWeight={600}>Address : </Typography>5143 Delhi Tilak Market 110042</Typography>
+          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Address : </Typography>5143 Delhi Tilak Market 110042</Typography>
         </Box>
         <Box>
-          <Typography lineHeight={'2rem'} fontSize={'.9rem'}><Typography component={'span'} fontWeight={600}>Phone : </Typography>(+91) 145454548, (+91) 154545865</Typography>
+          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Phone : </Typography>(+91) 1454548, (+91) 154545865</Typography>
         </Box>
         <Box>
-          <Typography lineHeight={'2rem'} fontSize={'.9rem'}><Typography component={'span'} fontWeight={600}>Hours : </Typography>10:00 - 15:00 Mon - Sat</Typography>
+          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Hours : </Typography>10:00 - 15:00 Mon - Sat</Typography>
         </Box>
         
-        <Box mt='2rem'>
+        <Box mt='2rem'  textAlign={{xs:'center',sm:'left'}}>
           <IconButton sx={{color:'white'}}>
             <FacebookIcon/>
           </IconButton>

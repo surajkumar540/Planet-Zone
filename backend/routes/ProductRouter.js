@@ -1,27 +1,13 @@
 const express=require('express');
-const products=require('../data/product') // Static product json data
 const router=express.Router();
+const asyncHandler = require('express-async-handler')
+const allProductsController=require('../controller/products/allProductsController')
+const singleProductController=require('../controller/products/singleProductController')
+// const products=require('../data/product') // Static product json data
 
-router.get("/products",(req,res)=>{
-    
-    res.status(200).json({
-        data:products,
-        status:true
-    })
-})
+router.get("/products",asyncHandler(allProductsController))
 
-
-router.get("/products/:price",(req,res)=>{
-    const product=products.find((item)=>
-    {
-        return item.price===Number(req.params.price)
-    });
-    
-    res.status(200).json({
-        data:product,
-        status:true
-    })
-})
+router.get("/product/:productId",asyncHandler(singleProductController))
 
 
 module.exports=router;

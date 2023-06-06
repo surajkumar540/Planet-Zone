@@ -1,4 +1,5 @@
 import './App.css'
+import { useEffect } from 'react'
 import { Routes, Route } from "react-router-dom"
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -6,9 +7,17 @@ import SignUp from './pages/SignUp'
 import OtpVerify from './pages/OtpVerify'
 import ChangePassword from './pages/ChangePassword'
 import ShowProducts from './components/ShowProduct/ShowProducts'
+import { useDispatch } from 'react-redux'
+import { fetchAllProducts } from './redux/reducers/productSlice'
 
 function App() {
+  const dispatch=useDispatch()
 
+  useEffect(()=>{
+    console.log("yaahah")
+    dispatch(fetchAllProducts())
+  },[])
+  
   return (
     <>
        <Routes>

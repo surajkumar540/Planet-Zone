@@ -12,8 +12,8 @@ const Products = ({products}) => {
         </Box>
         <Box display={'flex'}  p={2} gap={12} flexWrap={'wrap'} width={'85%'}>
           {
-            products?.map((item)=>{
-              return <Product data={item}/>
+            products?.map((item,index)=>{
+              return <Product key={index} data={item}/>
             })
           }
         

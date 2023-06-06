@@ -18,7 +18,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 59,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 3,
         "numReviews":12
       },
       {
@@ -29,7 +29,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 54,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 5,
         "numReviews":12
       },
       {
@@ -40,7 +40,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 35,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 2,
         "numReviews":12
       }
       ,
@@ -52,7 +52,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 4,
         "numReviews":12
       },
       {
@@ -63,7 +63,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 7,
         "numReviews":12
       },
       {
@@ -74,7 +74,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 5,
         "numReviews":12
       },
       {
@@ -85,7 +85,7 @@ const products= [
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 1,
         "numReviews":12
       }
   ]

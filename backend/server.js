@@ -6,7 +6,7 @@ const userRouter=require('./routes/UserRouter')
 const PORT=4000;
 dotenv.config();
 
-// connectDb()//Connecting to mongo db database
+connectDb()//Connecting to mongo db database
 const app=express(); // To make server from express use only one time at server file
 app.use(userRouter);
 app.use(productRouter);

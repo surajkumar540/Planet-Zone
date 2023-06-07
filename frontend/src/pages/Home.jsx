@@ -8,7 +8,9 @@ import Footer from '../components/Footer/Footer';
 import { fetchAllProducts } from '../redux/reducers/productSlice';
 import { useDispatch,useSelector } from 'react-redux';
 import { Typography } from '@mui/material';
-
+import AboutUs from '../pages/AboutUs'
+import ContactUs from '../pages/ContactUs'
+// import Features from './Features';
 const Home = () => {
   const dispatch=useDispatch()
   const {data:products,status,message}=useSelector((state)=>state.products)
@@ -27,8 +29,9 @@ const Home = () => {
       <Header/>
       <Poster1/>
       <Products products={products}/>
-      {/* <AboutUs/>
-      <ContactUs/> */}
+      <AboutUs/>
+      <ContactUs/>
+      {/* <Features/> */}
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

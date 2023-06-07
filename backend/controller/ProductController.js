@@ -2,7 +2,7 @@ const Product=require('../models/ProductModel')
 const asyncHandler = require('express-async-handler')
 
 const allProductsController= asyncHandler(async(req,res)=>{
-
+    
     const allProducts= await Product.find()
     res.status(200).json({
         data:allProducts,

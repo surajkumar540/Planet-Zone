@@ -4,6 +4,6 @@ const userController=require('../controller/UserController')
 
 router.route('/login').get(userController.loginController)
 
-router.route('/signup').get(userController.registerController)
+router.route('/signup').post(userController.registerController)
 
 module.exports=router;

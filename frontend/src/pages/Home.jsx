@@ -10,7 +10,7 @@ import { useDispatch,useSelector } from 'react-redux';
 import { Typography } from '@mui/material';
 import AboutUs from '../pages/AboutUs'
 import ContactUs from '../pages/ContactUs'
-// import Features from './Features';
+import Features from './Features';
 const Home = () => {
   const dispatch=useDispatch()
   const {data:products,status,message}=useSelector((state)=>state.products)
@@ -31,7 +31,7 @@ const Home = () => {
       <Products products={products}/>
       <AboutUs/>
       <ContactUs/>
-      {/* <Features/> */}
+      <Features/>
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

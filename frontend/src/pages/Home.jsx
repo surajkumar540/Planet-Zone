@@ -11,6 +11,7 @@ import { Typography } from '@mui/material';
 import AboutUs from '../pages/AboutUs'
 import ContactUs from '../pages/ContactUs'
 import Features from './Features';
+import Location from "./Loaction";
 const Home = () => {
   const dispatch=useDispatch()
   const {data:products,status,message}=useSelector((state)=>state.products)
@@ -32,6 +33,7 @@ const Home = () => {
       <AboutUs/>
       <ContactUs/>
       <Features/>
+      <Location/>
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

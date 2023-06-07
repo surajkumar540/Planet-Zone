@@ -7,7 +7,10 @@ import Products from "../components/Products/Products"
 import Footer from '../components/Footer/Footer';
 import { useSelector } from 'react-redux';
 import { Typography } from '@mui/material';
-
+import AboutUs from '../pages/AboutUs'
+import ContactUs from '../pages/ContactUs'
+import Features from './Features';
+import Location from "./Loaction";
 const Home = () => {
   const {data:products,status,message}=useSelector((state)=>state?.products)
 
@@ -21,8 +24,10 @@ const Home = () => {
       <Header/>
       <Poster1/>
       <Products products={products}/>
-      {/* <AboutUs/>
-      <ContactUs/> */}
+      <AboutUs/>
+      <ContactUs/>
+      <Features/>
+      <Location/>
       {/* <Poster3/> */}
       {/* <Poster2/> */}
       <Footer/>

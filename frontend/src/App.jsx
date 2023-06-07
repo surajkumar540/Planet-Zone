@@ -7,6 +7,7 @@ import SignUp from './pages/SignUp'
 import OtpVerify from './pages/OtpVerify'
 import ChangePassword from './pages/ChangePassword'
 import ShowProducts from './components/ShowProduct/ShowProducts'
+import Cart from './pages/Cart'
 import { useDispatch } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
 
@@ -23,6 +24,7 @@ function App() {
        <Routes>
         <Route path="/" element={ <Home/> } /> 
         <Route path="/product/:pid" element={ <ShowProducts/> } /> 
+        <Route path="/cart" element={ <Cart/> } /> 
         <Route path="/login" element={ <Login/> } />
         <Route path="/signup" element={ <SignUp/> } />
         <Route path="/otp" element={ <OtpVerify/> } />

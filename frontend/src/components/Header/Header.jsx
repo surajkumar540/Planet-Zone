@@ -16,11 +16,13 @@ import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
-const navItems = ['Home', 'Shop', 'Blog','About',"Contact"];
+const navItems = ['Home', 'Shop', 'Blog','About',"Cart"];
 const navPathObj={
   "Home":'/',
-  "Shop":'/shop',
+  "Shop":'/',
   "Blog":'/',
+  "About":"/",
+  "Cart":'/cart'
 }
 
 function Header(props) {

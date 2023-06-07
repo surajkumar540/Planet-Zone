@@ -1,3 +1,11 @@
+const loginController=(req,res)=>{
+    res.json({
+        status:true,
+        message:"You are login successfully"
+    })
+}
+
+
 const registerController=(req,res)=>{
     //Validate
     //Email verification
@@ -9,4 +17,7 @@ const registerController=(req,res)=>{
     })
 }
 
-module.exports=registerController;
+module.exports={
+    loginController,
+    registerController
+}

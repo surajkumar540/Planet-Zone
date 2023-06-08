@@ -8,7 +8,7 @@ const loginController=(req,res)=>{
 
 const registerController=(req,res)=>{
     const {name,email,password,confirm_password}=req.body;
-    console.log(name,email,password,confirm_password)
+    
     //Validate
     //Email verification
     //Already exist

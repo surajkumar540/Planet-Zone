@@ -12,15 +12,15 @@ const CartProducts = ({products}) => {
         </Box>
 
         <Box display={'flex'}> 
-            <Box display={'flex'} bgcolor={'dodgerblue'} justifyContent={'center'} flexWrap={'wrap'} flex={0.7} p='1rem'>
+            <Box display={'flex'} justifyContent={'center'} flexWrap={'wrap'} flex={0.7} p='1rem'>
             {
                 products?.map((item,index)=>{
                 return <SingleCartProduct key={index} data={item}/>
                 })
             }
             </Box>
-            <Box flex={0.3}>
-                daf
+            <Box flex={0.3} bgcolor={'dodgerblue'} height={'20rem'} position={'sticky'} top={'6rem'}>
+                
             </Box>
         </Box>
 

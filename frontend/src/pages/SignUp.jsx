@@ -16,6 +16,10 @@ const SignUp = () => {
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConrfirmPassword = () => setShowConfirmPassword((show) => !show);
 
+//   const clearFormValues=()=>{
+//     setFormValues({ firstName: '', lastName:'', email: '', password: '', confirmPassword: '' });
+//     setFormErrors({})
+// }
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -46,6 +50,7 @@ const SignUp = () => {
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
       return;
+      // clearFormValues();
     }
 
     setIsSubmit(false)

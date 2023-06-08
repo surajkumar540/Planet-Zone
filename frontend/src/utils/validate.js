@@ -93,3 +93,44 @@ export const validateOtp = (values) => {
 
   return errors;
 }
+
+export const validateChangePassword=(values)=>{
+  const errors = {};
+  const passwordRegex=new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z].*[a-z]).{8,20}$");
+
+  if (!values.email) {
+    errors.email = "Email is required";
+}
+else if(!emailRegex.test(values.email))
+{
+    errors.email="Enter valid email"
+}
+
+  if(!passwordRegex.test(values.password))
+  {
+      errors.password="It must contain 1 capital,1 small letter,1 special sign,1 number "
+  }    
+  if (values.password.length === 0) {
+      errors.password = "Password is required";
+  }
+  if(values.password.length < 8&& values.password.length>0){
+      errors.password = 'Password is too short'
+  }
+  if(values.password.length>20)
+  {
+      errors.password="Password should be 8-20 characters"
+  }
+  
+  if(values.confirmPassword.length === 0 )
+  {
+      errors.confirmPassword="Fill Confirm password "
+  }
+
+  if(values.password!==values.confirmPassword)
+  {
+      errors.confirmPassword="Confirm password did not matched"
+  }
+
+  
+  return errors;
+}

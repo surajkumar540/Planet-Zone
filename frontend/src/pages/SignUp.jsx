@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, Box, CardMedia, FormControl, IconButton, InputAdornment, OutlinedInput, Button, TextField } from '@mui/material';
+import { Typography, Box, CardMedia, FormControl, IconButton, TextField, InputAdornment, OutlinedInput, Button, InputLabel } from '@mui/material';
 import signupImg from "../assets/Auth/signup.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -22,27 +22,33 @@ const SignUp = () => {
 
 
   const handleChange = (e) => {
-    const { name , value} = e.target;
-    const newObject = {...formValues,[name]:value}
+    const { name, value } = e.target;
+    console.log(name, value)
+    const newObject={...formValues,[name]:value};
     setFormValues({...newObject});
 
-    if(isSubmit){
-      setFormErrors(errorObj)
+    if(isSubmit)
+    {    
+        const errorObj = validateSignUpPage(newObject);
+        setFormErrors(errorObj);
     }
 
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     setIsSubmit(true);
 
+
     const errorObj = validateSignUpPage(formValues);
-    console.log(errorObj);
-    if(Object.keys(errorObj).length > 0){
+    // console.log(errorObj);
+    if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
-      return ;
+      return;
     }
-    
+
+    setIsSubmit(false)
+
   }
 
 
@@ -106,7 +112,7 @@ const SignUp = () => {
             <Box display={'flex'} flexDirection={'column'} alignItems={'center'} >
 
               <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
-               
+
                 <TextField
 
                   sx={{ width: "100%" }}
@@ -122,7 +128,7 @@ const SignUp = () => {
               </FormControl>
 
               <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
-                
+
                 <TextField
                   sx={{ width: "100%" }}
                   id="outlined-adornment-email"
@@ -137,55 +143,58 @@ const SignUp = () => {
               </FormControl>
 
               <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
-                
+                {/* <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel> */}
                 <TextField
                   id="outlined-adornment-password"
                   type={showPassword ? 'text' : 'password'}
                   onChange={handleChange}
-                  name='Password'
+                  name='password'
                   error={formErrors.password ? true : false}
                   helperText={formErrors.password}
                   value={formValues.password}
+
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
                   label="Password"
-                  
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  }
                 />
               </FormControl>
 
               <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
-               
                 <TextField
                   id="outlined-adornment-confirm-password"
                   type={showConfirmPassword ? 'text' : 'password'}
                   onChange={handleChange}
                   error={formErrors.confirmPassword ? true : false}
                   helperText={formErrors.confirmPassword}
-                  name="Confirm Password"
-                  label="Confirm Password"
+                  name="confirmPassword"
                   value={formValues.confirmPassword}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle confirm-password visibility"
-                        onClick={handleClickShowConrfirmPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  }
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm-password visibility"
+                          onClick={handleClickShowConrfirmPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                  label="Confirm Password"
                 />
               </FormControl>
 

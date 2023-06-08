@@ -1,10 +1,9 @@
 const express=require('express');
 const router=express.Router();
-const loginController=require("../controller/auth/loginController");
-const registerController=require("../controller/auth/registerController")
+const userController=require('../controller/UserController')
 
-router.get("/login",loginController)
-router.get('/signup',registerController)
+router.route('/login').get(userController.loginController)
 
+router.route('/signup').post(userController.registerController)
 
 module.exports=router;

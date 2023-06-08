@@ -4,7 +4,8 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import CallIcon from '@mui/icons-material/Call';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-const AboutUs = () => {
+
+const Location = () => {
     const [location, setLocation] = useState("Shalimar Bagh")
     const [mapLink, setMapLink] = useState("https://maps.google.com/?q=28.6129,77.2295;&output=embed");
 
@@ -35,8 +36,8 @@ const AboutUs = () => {
 
 
         <>
-            <Box display='flex' justifyContent='center' >
-                <Box display='flex' justifyContent='center' paddingLeft='4rem' flexDirection="column" flex='0.4'  >
+            <Box display='flex' justifyContent='center' height={'70vh'}>
+                <Box display='flex' justifyContent='center' paddingLeft='4rem' flexDirection="column" flex='0.5'  >
                     <Box>
                         <Typography color='gray' sx={{ fontSize: "15px" }} >GET In Touch</Typography>
                         <Typography fontWeight="bold" fontSize="30px" >Visit one of our agency locations of contact us today</Typography>
@@ -65,20 +66,9 @@ const AboutUs = () => {
                         </Box>
                     </Box>
                 </Box>
-                <Box display='flex' flex='0.5'>
-                    <Box display="flex" justifyContent={'center'}  width="90%" height="400px" flexDirection='column' >
+                <Box display='flex' flex='0.5' justifyContent={'center'} alignItems={'center'}>
+                    <Box height={'90%'} display="flex" justifyContent={'center'}  width="90%" >
 
-                        <Box display="flex" flex={0.15} bg='whitesmoke'  justifyContent={'center'} alignItems='center'>
-                            <Box display="flex" flex={0.9} bg='white'>
-                                <Input
-                                    _focusVisible={false} bgcolor='white'
-                                    type={'search'} name='search' value={location} onChange={handleChangeLocation}
-                                />
-                            </Box>
-                            <Box display="flex" flex={0.1} justifyContent='center' alignItems='center'>
-                                {/* <Icon as={BiSearch} bgcolor='#1B72E8' color={'white'} padding='2' borderRadius={'10px'} onClick={handleSearchLocation} /> */}
-                            </Box>
-                        </Box>
                         <Box display="flex" flex={0.85}>
                             <iframe src={mapLink} width="100%" height="100%" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                         </Box>
@@ -90,4 +80,4 @@ const AboutUs = () => {
     )
 }
 
-export default AboutUs
+export default Location

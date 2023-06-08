@@ -79,3 +79,17 @@ export const validateSignUpPage = (values) => {
 
     return errors;
 }
+
+
+export const validateOtp = (values) => {
+  const errors = {};
+
+  if (!values.number) {
+      errors.number = "OTP is required";
+  }else if(values.number.length<6)
+  {
+      errors.number="Enter valid otp"
+  }
+
+  return errors;
+}

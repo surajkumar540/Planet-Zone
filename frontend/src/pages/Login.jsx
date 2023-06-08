@@ -91,7 +91,7 @@ const Login = () => {
                   sx={{ width: "100%" }}
                   id="outlined-adornment-email"
                   type='text'
-                  label="email"
+                  label="Email"
                   name="email"
                   error={formErrors.email}
                   helperText={formErrors.email}

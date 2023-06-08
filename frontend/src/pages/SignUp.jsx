@@ -42,7 +42,7 @@ const SignUp = () => {
 
 
     const errorObj = validateSignUpPage(formValues);
-    // console.log(errorObj);
+    console.log(errorObj);
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
       return;

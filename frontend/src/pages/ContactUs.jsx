@@ -1,9 +1,15 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import React from "react";
 import Avatar from '@mui/material/Avatar';
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
+import Location from "../components/Contact/Location";
+
 const ContactUs = () => {
     return (
         <>
+            <Header/>
+            <Location/>
             <Box display='flex' margin={3} padding={4} border="1px solid #D9D9D9" borderRadius='6px'>
                 <Box display='flex' flexDirection='column' flex='0.5' gap={2}>
                     <Typography >Leave a Message</Typography>
@@ -62,6 +68,7 @@ const ContactUs = () => {
                 </Box>
 
             </Box>
+            <Footer/>
         </>
     )
 }

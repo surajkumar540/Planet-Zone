@@ -4,7 +4,8 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import CallIcon from '@mui/icons-material/Call';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-const AboutUs = () => {
+
+const Location = () => {
     const [location, setLocation] = useState("Shalimar Bagh")
     const [mapLink, setMapLink] = useState("https://maps.google.com/?q=28.6129,77.2295;&output=embed");
 
@@ -90,4 +91,4 @@ const AboutUs = () => {
     )
 }
 
-export default AboutUs
+export default Location

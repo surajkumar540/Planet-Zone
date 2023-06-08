@@ -6,7 +6,7 @@ import Products from "../components/Products/Products"
 // import Poster3 from '../components/Poster/Poster3';
 import Footer from '../components/Footer/Footer';
 import { useSelector } from 'react-redux';
-import { Typography } from '@mui/material';
+import { Typography } from '@mui/material'; 
 const Home = () => {
   const {data:products,status,message}=useSelector((state)=>state?.products)
 

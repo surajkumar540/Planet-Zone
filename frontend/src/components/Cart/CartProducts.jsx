@@ -19,8 +19,13 @@ const CartProducts = ({products}) => {
                 })
             }
             </Box>
-            <Box flex={0.3} bgcolor={'dodgerblue'} height={'20rem'} position={'sticky'} top={'6rem'}>
-                
+            <Box flex={0.3} pr='1rem' bgcolor={'whitesmoke'} height={'20rem'} position={'sticky'} top={'6rem'}>
+                <Box bgcolor={'dodgerblue'} height={'100%'} display={'flex'} flexDirection={'column'}>
+                  <Box bgcolor={'lightseagreen'} flex='0.15'>Price Details</Box>
+                  <Box bgcolor={'lightslategrey'} flex='0.5'>Price (2 Items)</Box>
+                  <Box bgcolor={'lightsalmon'} flex='0.2'>adf</Box>
+                  <Box bgcolor={'lightblue'} flex='0.15'>adf</Box>
+                </Box>
             </Box>
         </Box>
 

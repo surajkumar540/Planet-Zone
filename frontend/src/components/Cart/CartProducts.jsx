@@ -6,7 +6,7 @@ const CartProducts = ({products}) => {
 
   return (
     <Box bgcolor={'#F1F3F6'}>
-        <Box textAlign={'center'} my={4}>
+        <Box textAlign={'center'} mb={4}>
             <Typography fontSize={'3rem'}>Cart Products</Typography>
             <Typography>Summer brakes products at your point</Typography>
         </Box>
@@ -45,7 +45,7 @@ const CartProducts = ({products}) => {
 
                   <Box flex='0.2' display={'flex'} justifyContent={'space-between'} alignItems={'center'} >
                       <Typography fontSize='1.15rem' fontWeight={'600'}>Total Amount</Typography>
-                      <Typography fontSize='1.15rem' fontWeight={'600'}>₹5,499</Typography>
+                      <Typography fontSize='1.15rem' color='#388e3c' fontWeight={'600'}>₹5,499</Typography>
                   </Box>
                   <Divider/>
 

@@ -1,9 +1,7 @@
 import React from 'react';
 import Header from "../components/Header/Header";
-// import Footer from '../components/Footer/Footer';
-import { useSelector } from 'react-redux';
-import { Typography } from '@mui/material';
-import CartProducts from '../components/Cart/CartProducts';
+import Footer from '../components/Footer/Footer';
+import CartProducts from '../components/Cart/CartPage';
 import products from "../components/Dummy/products"
 
 const Cart = () => {
@@ -19,7 +17,7 @@ const Cart = () => {
     <>
       <Header/>
       <CartProducts products={products}/>
-      {/* <Footer/> */}
+      <Footer/>
     </>
   )
 }

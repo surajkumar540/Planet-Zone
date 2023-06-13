@@ -17,10 +17,10 @@ const ChangePassword = () => {
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConrfirmPassword = () => setShowConfirmPassword((show) => !show);
 
-//   const clearFormValues=()=>{
-//     setFormValues({ email: '', password: '', confirmPassword: '' });
-//     setFormErrors({})
-// }
+  const clearFormValues=()=>{
+    setFormValues({ email: '', password: '', confirmPassword: '' });
+    setFormErrors({})
+}
   
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -48,9 +48,9 @@ const ChangePassword = () => {
       setFormErrors(errorObj)
       return;
     }
-    
+
+    clearFormValues()
     setIsSubmit(false)
-    // clearFormValues()
 
   }
 
@@ -98,12 +98,12 @@ const ChangePassword = () => {
                 <TextField
                   sx={{ width: "100%" }}
                   id="outlined-adornment-email"
-                  type={'text'}
+                  type='email'
                   label="Email"
-                  helperText={formErrors.email}
                   name="email"
-                  value={formValues.email}
                   error={formErrors.email}
+                  helperText={formErrors.email}
+                  value={formValues.email}
                   onChange={handleChange}
                 />
               </FormControl>

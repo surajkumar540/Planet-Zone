@@ -19,6 +19,12 @@ const Login = () => {
     event.preventDefault();
   };
 
+  const clearFormValues=()=>{
+    setFormValues({ email: '', password: '' });
+    setFormErrors({})
+}
+  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const newObject = { ...formValues, [name]: value };
@@ -39,10 +45,12 @@ const Login = () => {
     const errorObj = validateSignInPage(formValues);
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
+      console.log(errorObj,"erro")
       return;
     }
-
     setIsSubmit(false)
+    clearFormValues();
+    console.log(clearFormValues, "clear");
 
   }
 
@@ -90,7 +98,7 @@ const Login = () => {
                 <TextField
                   sx={{ width: "100%" }}
                   id="outlined-adornment-email"
-                  type='text'
+                  type='email'
                   label="Email"
                   name="email"
                   error={formErrors.email}

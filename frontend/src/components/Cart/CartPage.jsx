@@ -1,12 +1,13 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import SingleCartProduct from './SingleCartProduct';
+import CartTable from './CartTable';
 
 const CartProducts = ({products}) => {
 
   return (
-    <Box>
-        <Box textAlign={'center'} my={4}>
+    <Box bgcolor={'#F1F3F6'}>
+        <Box textAlign={'center'} mb={4}>
             <Typography fontSize={'3rem'}>Cart Products</Typography>
             <Typography>Summer brakes products at your point</Typography>
         </Box>
@@ -19,9 +20,9 @@ const CartProducts = ({products}) => {
                 })
             }
             </Box>
-            <Box flex={0.3} bgcolor={'dodgerblue'} height={'20rem'} position={'sticky'} top={'6rem'}>
-                
-            </Box>
+            
+            <CartTable/>
+
         </Box>
 
 

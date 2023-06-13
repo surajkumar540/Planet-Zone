@@ -6,8 +6,8 @@ import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarIcon from '@mui/icons-material/Star';
 import { useNavigate } from 'react-router-dom';
 
-const Product = ({data}) => {
-    const {_id}=data;
+const Product = ({obj}) => {
+    const {_id}=obj;
     const navigate=useNavigate();
 
   return (
@@ -25,10 +25,10 @@ const Product = ({data}) => {
         <Box flex={0.32} p={'.5rem'}>
             <Box>
                 <Box>
-                    <Typography fontSize={'.8rem'} color={'grey'}>{data?.brand||'Default'}</Typography>
+                    <Typography fontSize={'.8rem'} color={'grey'}>{obj?.brand||'Default'}</Typography>
                 </Box>
                 <Box>
-                    <Typography>{data?.title||"Cloth Bags"}</Typography>
+                    <Typography>{obj?.name||"Cloth Bags"}</Typography>
                 </Box>
 
                 <Box display={'flex'}>
@@ -42,7 +42,7 @@ const Product = ({data}) => {
                             <StarOutlineIcon sx={{color:'#ffc107'}} fontSize='small'/>
                         </Box>
                         <Box>
-                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>$ {data?.price||'78'}</Typography>
+                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>$ {obj?.price||'78'}</Typography>
                         </Box>
                     </Box>
 

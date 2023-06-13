@@ -1,4 +1,4 @@
-import React,{useEffect} from 'react';
+import React,{useEffect, useState} from 'react';
 import Header from '../Header/Header';
 import ShowProduct from './ShowProduct';
 import Products from '../Products/Products';
@@ -9,12 +9,17 @@ import { useParams } from 'react-router-dom';
 
 const ShowProducts = () => {
   const {pid}=useParams()
-  const {data:products}=useSelector((state)=>state?.products)
+  const {data:products}=useSelector((state)=>state?.products);
+  const [singleProduct,setSingleProduct]=useState({})
 
   const fetchSingleProduct=async()=>{
     try{
       const response=await fetchSingleProductApi(pid);
-      console.log(response,"single ka response")
+      if(response.status)
+      {
+        setSingleProduct(response.data);
+        console.log(response.data)
+      }
     }catch(err)
     {
       console.log(err)
@@ -23,13 +28,13 @@ const ShowProducts = () => {
 
   useEffect(()=>{
     fetchSingleProduct()
-  },[])
+  },[pid])
 
   return (
     <>
     <Header/>
     {/* send single products state/props in show product comp */}
-    <ShowProduct/> 
+    <ShowProduct obj={singleProduct}/> 
     <Products products={products}/>
     <Footer/>
     </>

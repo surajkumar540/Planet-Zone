@@ -1,7 +1,14 @@
 import React from 'react';
 import { Box,CardMedia,Typography, Button } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../../redux/reducers/cartSlice';
 
-const ShowProduct = () => {
+const ShowProduct = ({obj}) => {
+
+    const handleCart=()=>{
+        // useDispatch(addToCart(obj._id))
+    }
+
   return (
     <>
         <Box display={'flex'} height={'80vh'}>
@@ -15,9 +22,9 @@ const ShowProduct = () => {
             <Box flex={0.6} display={'flex'} flexDirection={'column'} boxSizing={'border-box'} p='2rem'  justifyContent={'space-around'}>
 
                 <Box flex='0.6' display={'flex'} flexDirection={'column'} justifyContent={'space-evenly'}>                
-                    <Typography fontSize={'1rem'}>Adidas</Typography>
-                    <Typography fontSize={'1.5rem'}>Men's T Shirt</Typography>
-                    <Typography fontSize={'28px'}>₹ 239</Typography>
+                    <Typography fontSize={'1rem'}>{obj?.brand}</Typography>
+                    <Typography fontSize={'1.5rem'}>{obj?.name}</Typography>
+                    <Typography fontSize={'28px'}>₹ {obj?.price}</Typography>
                     <Box py='1rem' display={'flex'} alignItems={'center'}>
                         <Box>
                             <Typography>Sizes</Typography>
@@ -29,7 +36,7 @@ const ShowProduct = () => {
                         </Box>
                     </Box>
                     <Box fontSize={'1.5rem'}>
-                        <Button variant='contained' sx={{bgcolor:"#009688",marginRight:'1rem'}}>Add to Cart</Button>
+                        <Button variant='contained' sx={{bgcolor:"#009688",marginRight:'1rem'}} onClick={handleCart}>Add to Cart</Button>
                         <Button variant='contained' sx={{bgcolor:"darkorange"}}>Buy Now</Button>
                     </Box>
                     
@@ -37,7 +44,7 @@ const ShowProduct = () => {
 
                 <Box flex='0.38'>
                     <Typography variant='h5'>Products Details</Typography>
-                    <Typography py='1rem'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo voluptates rerum, recusandae mollitia quo blanditiis porro unde. Ab a labore, at facilis libero animi dolorem? Vitae mollitia natus minima obcaecati. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi nesciunt odit id harum magni quis labore velit expedita fuga quo earum molestiae eos porro quibusdam, voluptate at cum eaque. Vitae! Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aliqui ro minus necessitatibus error reiciendis dolore minima expedita, laboriosam accusantium saepe eos recusandae debitis a! Nostrum doloribus eum commodi asperiores voluptate.</Typography>
+                    <Typography py='1rem'>{obj?.description}</Typography>
                 </Box>
             </Box>
         </Box>

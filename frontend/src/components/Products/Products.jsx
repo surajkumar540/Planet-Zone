@@ -13,7 +13,7 @@ const Products = ({products}) => {
         <Box display={'flex'}  p={2} gap={12} flexWrap={'wrap'} width={'85%'}>
           {
             products?.map((item,index)=>{
-              return <Product key={index} data={item}/>
+              return <Product key={index} obj={item}/>
             })
           }
         

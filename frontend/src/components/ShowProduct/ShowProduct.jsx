@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box,CardMedia,Typography, Button,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/reducers/cartSlice';
 
 const ShowProduct = ({obj}) => {
-    const [qty,setQty]=useState(1);
-
+    const [qty,setQty]=useState(0);
+    console.log(qty)
     const handleCart=()=>{
         // useDispatch(addToCart(obj._id))
     }
+
+    useEffect(()=>{
+        setQty(1)
+    },[obj])
 
   return (
     <>

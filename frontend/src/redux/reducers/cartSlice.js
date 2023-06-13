@@ -9,8 +9,13 @@ const cartSlice=createSlice({
         status:''
     },
     reducers:{
-        addToCart:(state,action)=>{
+        addToCart:(state,action)=>{ 
+            //Check if id is present in cart already
+
+            // const {id,qty}=action.payload;
             state.data.push(action.payload)
+            localStorage.setItem("cart",JSON.stringify(state.data))
+          
         },
         removeFromCart:(state,action)=>{
             state.data.pop()

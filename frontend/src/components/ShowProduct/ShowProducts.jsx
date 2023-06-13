@@ -18,7 +18,7 @@ const ShowProducts = () => {
       if(response.status)
       {
         setSingleProduct(response.data);
-        console.log(response.data)
+        // console.log(response.data)
       }
     }catch(err)
     {

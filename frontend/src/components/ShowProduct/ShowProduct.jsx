@@ -4,10 +4,16 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/reducers/cartSlice';
 
 const ShowProduct = ({obj}) => {
+    const dispatch=useDispatch()
     const [qty,setQty]=useState(0);
-    console.log(qty)
+
     const handleCart=()=>{
-        // useDispatch(addToCart(obj._id))
+        console.log("call")
+        const dummy={
+            id:obj?._id,
+            qty:qty
+        }
+        dispatch(addToCart(dummy))
     }
 
     useEffect(()=>{
@@ -46,9 +52,10 @@ const ShowProduct = ({obj}) => {
                         >
                             {
                                 [...Array(obj?.countInStock).keys()].map((item)=>{
-                                    return <MenuItem value={item+1}>{item+1}</MenuItem>
+                                    return <MenuItem key={item} value={item+1}>{item+1}</MenuItem>
                                 })
                             }
+                           
                         </Select>
                         </FormControl>
                         </Box>

@@ -16,6 +16,10 @@ const SignUp = () => {
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConrfirmPassword = () => setShowConfirmPassword((show) => !show);
 
+  const clearFormValues=()=>{
+    setFormValues({ name: '', email: '', password: '', confirmPassword: '' });
+    setFormErrors({})
+}
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -24,7 +28,6 @@ const SignUp = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(name, value)
     const newObject={...formValues,[name]:value};
     setFormValues({...newObject});
 
@@ -42,12 +45,13 @@ const SignUp = () => {
 
 
     const errorObj = validateSignUpPage(formValues);
-    // console.log(errorObj);
+    console.log(errorObj);
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
       return;
     }
-
+    
+    clearFormValues();
     setIsSubmit(false)
 
   }

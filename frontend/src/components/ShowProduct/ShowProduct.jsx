@@ -1,9 +1,10 @@
-import React from 'react';
-import { Box,CardMedia,Typography, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box,CardMedia,Typography, Button,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/reducers/cartSlice';
 
 const ShowProduct = ({obj}) => {
+    const [qty,setQty]=useState(1);
 
     const handleCart=()=>{
         // useDispatch(addToCart(obj._id))
@@ -26,13 +27,26 @@ const ShowProduct = ({obj}) => {
                     <Typography fontSize={'1.5rem'}>{obj?.name}</Typography>
                     <Typography fontSize={'28px'}>₹ {obj?.price}</Typography>
                     <Box py='1rem' display={'flex'} alignItems={'center'}>
+                        {/* <Box>
+                            <Typography>Quantity</Typography>
+                        </Box> */}
                         <Box>
-                            <Typography>Sizes</Typography>
-                        </Box>
-                        <Box display={'flex'} width={'30%'} justifyContent={'space-evenly'} >
-                        <Button variant='outlined' sx={{color:"black",fontWeight:'500',fontSize:'1rem',borderColor:'grey'}}>S</Button>
-                        <Button variant='outlined' sx={{color:"black",fontWeight:'500',fontSize:'1rem',borderColor:'grey'}}>M</Button>
-                        <Button variant='outlined' sx={{color:"black",fontWeight:'500',fontSize:'1rem',borderColor:'grey'}}>L</Button>
+                        <FormControl fullWidth  size="small" sx={{ m: 1, minWidth: 60 }}>
+                        <InputLabel id="demo-simple-select-label">Qty</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={qty}
+                            label="Age"
+                            onChange={(e)=>setQty(e.target.value)}
+                        >
+                            {
+                                [...Array(obj?.countInStock).keys()].map((item)=>{
+                                    return <MenuItem value={item+1}>{item+1}</MenuItem>
+                                })
+                            }
+                        </Select>
+                        </FormControl>
                         </Box>
                     </Box>
                     <Box fontSize={'1.5rem'}>

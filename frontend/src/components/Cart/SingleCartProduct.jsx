@@ -2,7 +2,7 @@ import React,{useState,useEffect} from "react";
 import {Box,CardMedia,Typography,IconButton,TextField,Button} from "@mui/material";
 import Bag from "../../assets/Home/bag.jpg";
 import { useDispatch } from 'react-redux';
-import { addToCartAsync } from '../../redux/reducers/cartSlice';
+import { addToCartAsync,removeFromCart } from '../../redux/reducers/cartSlice';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import RemoveCircleOutlinedIcon from '@mui/icons-material/RemoveCircleOutlined';
 
@@ -16,6 +16,10 @@ const SingleCartProduct = ({ obj }) => {
             qty:quantity
         }
         dispatch(addToCartAsync(dummy))
+    }
+
+    const removeFromCartFun=(id)=>{
+      dispatch(removeFromCart(id))
     }
     
     const handlePlus=()=>{
@@ -84,7 +88,7 @@ const SingleCartProduct = ({ obj }) => {
                 disabled
                 sx={{width:'3rem'}}
                 size="small"
-                setQty={(e)=>setQty(e.target.value)}
+                onChange={(e)=>setQty(e.target.value)}
                 />
 
                 <IconButton aria-label="Example" color='primary' onClick={handlePlus}>
@@ -93,7 +97,7 @@ const SingleCartProduct = ({ obj }) => {
             </Box>
             
             <Box ml='1rem'>
-                <Button variant="outlined" sx={{background:'white',color:'black',textTransform:'capitalize'}}>
+                <Button variant="outlined" sx={{background:'white',color:'black',textTransform:'capitalize'}} onClick={()=>removeFromCartFun(obj._id)}>
                 Remove
                 </Button>
             </Box>

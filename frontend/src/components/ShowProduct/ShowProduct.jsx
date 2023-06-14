@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box,CardMedia,Typography, Button,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/reducers/cartSlice';
 import { addToCartAsync } from '../../redux/reducers/cartSlice';
+import { useNavigate } from 'react-router-dom';
 
 const ShowProduct = ({obj}) => {
     const dispatch=useDispatch()
+    const navigate=useNavigate()
     const [qty,setQty]=useState(0);
 
     const handleCart=()=>{
@@ -15,6 +16,7 @@ const ShowProduct = ({obj}) => {
             qty:qty
         }
         dispatch(addToCartAsync(dummy))
+        navigate("/cart")
     }
 
     useEffect(()=>{

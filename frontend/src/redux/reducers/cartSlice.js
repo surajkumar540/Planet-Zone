@@ -34,7 +34,20 @@ const cartSlice = createSlice({
     },
     
     removeFromCart: (state, action) => {
-      state.data.pop();
+      const objId=action.payload;
+      
+      //Find index of parameter object id in redux state
+      let index;
+      state.data.forEach((item,idx) =>{
+        index=idx;
+        return item.id === objId;
+      });
+
+      //if index is not -1 then move to that index and remove 1 item from state
+      if (index !== -1) {
+        state.data.splice(index, 1);
+      }
+      localStorage.setItem("cart", JSON.stringify(state.data));
     },
     setStatus:(state,action)=>{
         state.status=action.payload

@@ -1,22 +1,23 @@
 import React from 'react';
 import Header from "../components/Header/Header";
 import Footer from '../components/Footer/Footer';
-import CartProducts from '../components/Cart/CartPage';
+import CartPage from '../components/Cart/CartPage';
 import products from "../components/Dummy/products"
+import {useSelector} from "react-redux"
 
 const Cart = () => {
 
-  // const {data:products,status,message}=useSelector((state)=>state?.products)
+  const {data:products,status}=useSelector((state)=>state?.cart)
 
-  // if(status==='loading')
-  // {
-  //   return <Typography>Loading</Typography>
-  // }
+  if(status==='loading')
+  {
+    return <Typography>Loading</Typography>
+  }
 
   return (
     <>
       <Header/>
-      <CartProducts products={products}/>
+      <CartPage products={products}/>
       <Footer/>
     </>
   )

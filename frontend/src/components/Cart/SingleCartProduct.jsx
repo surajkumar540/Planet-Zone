@@ -2,8 +2,8 @@ import React from 'react';
 import { Box,CardMedia, Typography,Button, InputBase} from '@mui/material';
 import Bag from "../../assets/Home/bag.jpg"
 
-const SingleCartProduct = ({data}) => {
-
+const SingleCartProduct = ({obj}) => {
+    console.log(obj)
   return (
     <Box sx={{display:'flex',height:'11rem',mb:'3rem',width:'88%',bgcolor:'white',borderRadius:'10px',boxShadow:'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px'}} >
 
@@ -17,17 +17,17 @@ const SingleCartProduct = ({data}) => {
 
         <Box flex={0.58} boxSizing={'border-box'} display={'flex'} flexDirection={'column'} p='.5rem'>
             <Box flex={0.25} display={'flex'} alignItems={'center'}>
-                <Typography fontSize="1.2rem">Lenovo D-Series 19.5 Inch Full HD TN Panel</Typography>
+                <Typography fontSize="1.2rem">{obj.name}</Typography>
             </Box>
             <Box flex={0.3} display={'flex'} flexDirection={'column'} justifyContent={'space-evenly'}>
                 <Typography fontSize={'.8rem'}>Response Time: 5 ms, 60 Hz Refresh Rate</Typography>
-                <Typography fontSize={'.9rem'}>Adidas</Typography>
+                <Typography fontSize={'.9rem'}>{obj.brand}</Typography>
             </Box>
             <Box flex={0.2} display={'flex'} alignItems={'center'}>
                 <Typography fontSize={'.8rem'} color='#388e3c'>Free Delivery worth ₹40</Typography>
             </Box>
             <Box flex={0.25}>
-                <Typography fontWeight={600} fontSize={'1.1rem'}>₹5,499</Typography>
+                <Typography fontWeight={600} fontSize={'1.1rem'}>₹{obj.price}</Typography>
             </Box>
         </Box>
 

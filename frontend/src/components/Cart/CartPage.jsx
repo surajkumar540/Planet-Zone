@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import SingleCartProduct from './SingleCartProduct';
-import CartTable from './CartTable';
+import CartTable from "./CartTable"
 
 const CartProducts = ({products}) => {
 
@@ -16,12 +16,14 @@ const CartProducts = ({products}) => {
             <Box display={'flex'} justifyContent={'center'} flexWrap={'wrap'} flex={0.7} p='1rem'>
             {
                 products?.map((item,index)=>{
-                return <SingleCartProduct key={index} data={item}/>
+                return <SingleCartProduct key={index} obj={item}/>
                 })
             }
             </Box>
+            {
+              products.length>0&&<CartTable/>
+            }
             
-            <CartTable/>
 
         </Box>
 

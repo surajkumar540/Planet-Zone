@@ -8,7 +8,7 @@ import RemoveCircleOutlinedIcon from '@mui/icons-material/RemoveCircleOutlined';
 
 const SingleCartProduct = ({ obj }) => {
     const dispatch=useDispatch();
-    const [qty,setQty]=useState(1)
+    const [qty,setQty]=useState(obj.qty)
     
     const handleCart=(quantity)=>{
         const dummy={
@@ -18,26 +18,28 @@ const SingleCartProduct = ({ obj }) => {
         dispatch(addToCartAsync(dummy))
     }
     
-    useEffect(()=>{
-        setQty(obj.qty)
-    },[])
+    const handlePlus=()=>{
+        if(qty<obj.countInStock)
+        {
+            const value=qty+1;
+            setQty(value)
+            handleCart(value)
+        }
+    }
+   
+    const handleMinus=()=>{
+        if(qty>1)
+        {
+            const value=qty-1;
+            setQty(value)
+            handleCart(value)
+        }
+    }
 
-    useEffect(()=>{
-        
-    })
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        height: "12rem",
-        mb: "3rem",
-        width: "88%",
-        bgcolor: "white",
-        borderRadius: "10px",
-        boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
-      }}
-    >
+    <Box sx={{ display: "flex", height: "12rem", mb: "3rem", width: "88%", bgcolor: "white", borderRadius: "10px", boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px", }} >
+
       <Box flex={0.2} boxSizing={"border-box"} p="0.5rem">
         <CardMedia
           sx={{ height: "100%", width: "100%", borderRadius: "10px" }}
@@ -46,13 +48,8 @@ const SingleCartProduct = ({ obj }) => {
         />
       </Box>
 
-      <Box
-        flex={0.58}
-        boxSizing={"border-box"}
-        display={"flex"}
-        flexDirection={"column"}
-        p=".5rem"
-      >
+      <Box flex={0.58} boxSizing={"border-box"} display={"flex"} flexDirection={"column"} p=".5rem">
+
         <Box flex={0.2} display={"flex"} alignItems={"center"}>
           <Typography fontSize="1.2rem">{obj.name}</Typography>
         </Box>
@@ -75,9 +72,10 @@ const SingleCartProduct = ({ obj }) => {
           </Typography>
         </Box>
         
+
         <Box flex={0.25} display='flex' alignItems='center'>
             <Box>
-                <IconButton aria-label="Example" color='primary'>
+                <IconButton aria-label="Example" color='primary' onClick={handleMinus}>
                     <RemoveCircleOutlinedIcon />
                 </IconButton>
                 
@@ -86,9 +84,10 @@ const SingleCartProduct = ({ obj }) => {
                 disabled
                 sx={{width:'3rem'}}
                 size="small"
+                setQty={(e)=>setQty(e.target.value)}
                 />
 
-                <IconButton aria-label="Example" color='primary'>
+                <IconButton aria-label="Example" color='primary' onClick={handlePlus}>
                     <AddCircleOutlinedIcon/>
                 </IconButton>
             </Box>

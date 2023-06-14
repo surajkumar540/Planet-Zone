@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { fetchSingleProductApi } from "../../api/devApi";
 
 const cartItems=localStorage.getItem('cart')?localStorage.getItem('cart'):[]
 
@@ -26,3 +27,23 @@ const cartSlice=createSlice({
 
 export const {addToCart,removeFromCart}=cartSlice.actions;
 export default cartSlice.reducer;
+
+export const addToCartAsync=(obj)=>{
+    return async function addToCartThunk(dispatch,getState){
+        console.log("cart async call");
+        try{
+            const {_id,qty}=obj;
+            const response=await fetchSingleProductApi(_id);
+            if(response.status)
+            {
+                const product=response.data;
+                product.qty=qty;
+                console.log(product)
+                
+            }
+        }catch(err)
+        {
+            console.log(err)
+        }
+    }
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box,CardMedia,Typography, Button,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/reducers/cartSlice';
+import { addToCartAsync } from '../../redux/reducers/cartSlice';
 
 const ShowProduct = ({obj}) => {
     const dispatch=useDispatch()
@@ -13,7 +14,7 @@ const ShowProduct = ({obj}) => {
             id:obj?._id,
             qty:qty
         }
-        dispatch(addToCart(dummy))
+        dispatch(addToCartAsync(dummy))
     }
 
     useEffect(()=>{

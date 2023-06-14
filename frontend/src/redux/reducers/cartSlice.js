@@ -10,7 +10,7 @@ const cartSlice = createSlice({
   name: "cart",
   initialState: {
     data: cartItems,
-    status: "",
+    status: STATUSES.IDLE,
   },
   reducers: {
     addToCart: (state, action) => {

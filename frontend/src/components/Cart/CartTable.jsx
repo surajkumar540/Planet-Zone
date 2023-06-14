@@ -19,7 +19,7 @@ const CartTable = () => {
     },[])
 
   return (
-    <Box flex={0.3} pr='1rem' height={'20rem'} position={'sticky'} top={'5.4rem'} boxSizing={'border-box'}>
+    <Box flex={0.3} pr='1rem' height={'20rem'} position={'sticky'} top={'5rem'} boxSizing={'border-box'} mb='2rem'>
         <Box bgcolor={'white'} px={'1rem'} height={'100%'} display={'flex'} flexDirection={'column'}>
             
             <Box display='flex' justifyContent='center' alignItems={'center'} flex='0.15'>

@@ -38,9 +38,6 @@ const ShowProduct = ({obj}) => {
                     <Typography fontSize={'1.5rem'}>{obj?.name}</Typography>
                     <Typography fontSize={'28px'}>₹ {obj?.price}</Typography>
                     <Box py='1rem' display={'flex'} alignItems={'center'}>
-                        {/* <Box>
-                            <Typography>Quantity</Typography>
-                        </Box> */}
                         <Box>
                         <FormControl fullWidth  size="small" sx={{ m: 1, minWidth: 60 }}>
                         <InputLabel id="demo-simple-select-label">Qty</InputLabel>

@@ -1,3 +1,6 @@
+const User=require("../models/UserModel");
+const asyncHandler=require("express-async-handler")
+
 const loginController=(req,res)=>{
     res.json({
         status:true,
@@ -6,20 +9,30 @@ const loginController=(req,res)=>{
 }
 
 
-const registerController=(req,res)=>{
+const signupController=asyncHandler(async(req,res)=>{
     const {name,email,password,confirm_password}=req.body;
-    
+
     //Validate
-    //Email verification
+    //Email validation & verification
     //Already exist
-    //Password Cap,small,Number,Special
-    res.json({
-        status:true,
-        message:"Sign up successfully"
-    })
-}
+    //Password Cap,small,Number,Speal
+    
+    //Check if already exist in db
+    const existingUser=await User.findOne({email:"jaibhandari804@gmail.com"})
+    if(existingUser)
+    {
+        res.status(409).json({
+            message:"User already exist",
+            status:false
+        })
+        return;
+    }
+
+    
+    res.send("yeah")
+})
 
 module.exports={
     loginController,
-    registerController
+    signupController
 }

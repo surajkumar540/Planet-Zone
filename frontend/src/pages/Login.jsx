@@ -6,7 +6,8 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Link } from "react-router-dom";
 import ForgetModal from '../components/Modals/Auth/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
-
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer"
 
 const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -55,6 +56,8 @@ const Login = () => {
   }
 
   return (
+    <>
+    {/* <Header/> */}
     <Box display={'flex'} height={'100vh'}>
 
 
@@ -156,6 +159,8 @@ const Login = () => {
       </Box>
 
     </Box>
+    {/* <Footer/> */}
+    </>
   )
 }
 

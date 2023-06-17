@@ -3,8 +3,8 @@ import React from "react";
 import Avatar from '@mui/material/Avatar';
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
-import Location from "../components/Contact/Location";
 import Banner from "../components/Tools/Banner";
+import Location from "../components/Tools/Location";
 
 const ContactUs = () => {
     return (

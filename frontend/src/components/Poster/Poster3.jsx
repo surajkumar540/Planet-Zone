@@ -8,14 +8,14 @@ const Poster3 = () => {
         <>
             <Box>
                 <Box display='flex'>
-                    <Box height='90vh' flex='0.5' >
+                    <Box height='60vh' flex='0.5' >
                     <CardMedia
                         sx={{ height: '100%',borderRadius:'10px' }}
                         image={b}
                         title="green iguana"
                         />
                     </Box>
-                    <Box bgcolor='#B22222' height='90vh' flex='0.5' display='flex'>
+                    <Box bgcolor='dodgerblue' height='60vh' flex='0.5' display='flex'>
                         <Box display='flex' flexDirection='column' alignItems='center' justifyContent='center' >
 
                             <Typography display='flex' justifyContent='start' width="77%" fontFamily='sans-serif' fontWeight='700' fontSize="40px" color='white' paddingBottom="10px">All About Organic</Typography>

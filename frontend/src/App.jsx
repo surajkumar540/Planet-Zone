@@ -10,6 +10,7 @@ import ShowProducts from './components/ShowProduct/ShowProducts'
 import Cart from './pages/Cart'
 import ContactUs from './pages/ContactUs'
 import AboutUs from './pages/AboutUs'
+import PaymentMethod from './pages/PaymentMethod'
 import { useDispatch } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/" element={ <Home/> } /> 
         <Route path="/product/:pid" element={ <ShowProducts/> } /> 
         <Route path="/cart" element={ <Cart/> } /> 
+        <Route path="/payment" element={ <PaymentMethod/> } /> 
         <Route path="/about" element={ <AboutUs/> } /> 
         <Route path="/contact" element={ <ContactUs/> } /> 
         <Route path="/login" element={ <Login/> } />

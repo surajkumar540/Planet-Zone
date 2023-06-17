@@ -61,7 +61,7 @@ const Features = () => {
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
                         <Box bgcolor='#B799FF' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
-                            Permotion
+                            Promotion
                         </Box>
                     </Box>
                 </Box>
@@ -76,7 +76,7 @@ const Features = () => {
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
                         <Box bgcolor='#99A98F' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
-                            Happy Sell
+                            Happy Sale
                         </Box>
                     </Box>
                 </Box>
@@ -90,7 +90,7 @@ const Features = () => {
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
                         <Box bgcolor='#FFD966' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
-                            F24/7 Support
+                            24/7 Support
                         </Box>
                     </Box>
                 </Box>

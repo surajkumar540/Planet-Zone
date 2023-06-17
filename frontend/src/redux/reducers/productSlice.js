@@ -1,11 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getAllProducts } from "../../api/devApi";
-
-export const STATUSES=Object.freeze({
-    LOADING:"loading",
-    IDLE:"idle",
-    ERROR:"error"
-})
+import STATUSES from "../constants/status";
 
 const productSlice=createSlice({
     name:"products",
@@ -32,7 +27,6 @@ export default productSlice.reducer;
 
 export const fetchAllProducts=()=>{
     return async function fetchAllProductsThunk(dispatch,getState){
-        console.log("asycn redux call")
         try{
             dispatch(setStatus(STATUSES.LOADING))
             const response=await getAllProducts();
@@ -43,7 +37,6 @@ export const fetchAllProducts=()=>{
         {
             dispatch(setStatus(STATUSES.ERROR))
             dispatch(setMessage("Something is wrong"))
-            console.log(error)
         }
     }
 }

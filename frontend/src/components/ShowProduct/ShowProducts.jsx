@@ -18,7 +18,6 @@ const ShowProducts = () => {
       if(response.status)
       {
         setSingleProduct(response.data);
-        // console.log(response.data)
       }
     }catch(err)
     {
@@ -28,6 +27,10 @@ const ShowProducts = () => {
 
   useEffect(()=>{
     fetchSingleProduct()
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // Optional: Add smooth scrolling animation
+    });
   },[pid])
 
   return (

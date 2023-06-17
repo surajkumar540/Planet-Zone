@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box,CardMedia,Typography, Button,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/reducers/cartSlice';
+import { addToCartAsync } from '../../redux/reducers/cartSlice';
+import { useNavigate } from 'react-router-dom';
 
 const ShowProduct = ({obj}) => {
     const dispatch=useDispatch()
+    const navigate=useNavigate()
     const [qty,setQty]=useState(0);
 
     const handleCart=()=>{
@@ -13,7 +15,8 @@ const ShowProduct = ({obj}) => {
             id:obj?._id,
             qty:qty
         }
-        dispatch(addToCart(dummy))
+        dispatch(addToCartAsync(dummy))
+        navigate("/cart")
     }
 
     useEffect(()=>{
@@ -37,9 +40,6 @@ const ShowProduct = ({obj}) => {
                     <Typography fontSize={'1.5rem'}>{obj?.name}</Typography>
                     <Typography fontSize={'28px'}>₹ {obj?.price}</Typography>
                     <Box py='1rem' display={'flex'} alignItems={'center'}>
-                        {/* <Box>
-                            <Typography>Quantity</Typography>
-                        </Box> */}
                         <Box>
                         <FormControl fullWidth  size="small" sx={{ m: 1, minWidth: 60 }}>
                         <InputLabel id="demo-simple-select-label">Qty</InputLabel>

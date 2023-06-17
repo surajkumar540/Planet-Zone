@@ -27,7 +27,6 @@ export default productSlice.reducer;
 
 export const fetchAllProducts=()=>{
     return async function fetchAllProductsThunk(dispatch,getState){
-        console.log("asycn all products redux call")
         try{
             dispatch(setStatus(STATUSES.LOADING))
             const response=await getAllProducts();
@@ -38,7 +37,6 @@ export const fetchAllProducts=()=>{
         {
             dispatch(setStatus(STATUSES.ERROR))
             dispatch(setMessage("Something is wrong"))
-            console.log(error)
         }
     }
 }

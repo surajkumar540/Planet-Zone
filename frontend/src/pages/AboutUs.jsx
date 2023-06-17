@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material'
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import Features from "../components/About/Features";
+import Banner from '../components/Tools/Banner';
 
 const AboutUs = () => {
     const styles = {
@@ -14,6 +15,7 @@ const AboutUs = () => {
     return (
         <>
             <Header/>
+            <Banner title='#About Us' text='Know us better and connect with us'/>
             <Box display='flex' height='80vh'  justifyContent='center'>
 
                 <Box flex={0.5} display='flex' justifyContent="center" alignItems='center' 

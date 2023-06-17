@@ -4,11 +4,13 @@ import Avatar from '@mui/material/Avatar';
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import Location from "../components/Contact/Location";
+import Banner from "../components/Tools/Banner";
 
 const ContactUs = () => {
     return (
         <>
             <Header/>
+            <Banner title='#Contact Us' text='Connect with us to be part of our family'/>
             <Location/>
 
             <Box display='flex' margin={3} border="1px solid #D9D9D9" borderRadius='6px'>

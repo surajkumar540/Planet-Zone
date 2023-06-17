@@ -16,7 +16,7 @@ const CartTable = () => {
 
     useEffect(()=>{
         totalPriceFun()
-    },[])
+    },[products])
 
   return (
     <Box flex={0.3} pr='3rem' height={'19rem'} position={'sticky'} top={'5rem'} boxSizing={'border-box'} mb='2rem'>

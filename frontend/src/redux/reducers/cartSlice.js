@@ -15,20 +15,20 @@ const cartSlice = createSlice({
   reducers: {
     addToCart: (state, action) => {
       //Check if id is present in cart already
-      const newItem=action.payload;
+      const cart=action.payload;
       let existIndex;
 
       const existAlready=state.data.find((item,index)=>{
         existIndex=index;
-        return item._id===newItem._id;
+        return item._id===cart._id;
       })
       if(existAlready)
       {
         //Agar exist karta hai to uss position ko mutate karke new value rakh denge
-        state.data[existIndex]=newItem
+        state.data[existIndex]=cart
       }else{
         //Nahi exist karta to new item ki tarah last me push kar denge
-        state.data.push(newItem)
+        state.data.push(cart)
       }
       localStorage.setItem("cart", JSON.stringify(state.data));
     },
@@ -72,6 +72,7 @@ export const addToCartAsync = (getObj) => {
                 countInStock: product.countInStock,
                 image: product.image,
                 name: product.name,
+                rating:product.rating,
                 price: product.price,
                 qty: getObj.qty,
                 };

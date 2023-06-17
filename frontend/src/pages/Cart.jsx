@@ -5,6 +5,7 @@ import CartPage from '../components/Cart/CartPage';
 import { Typography } from '@mui/material';
 // import products from "../components/Dummy/products"
 import {useSelector} from "react-redux"
+import Loader from "../components/Tools/Loader"
 
 const Cart = () => {
 
@@ -12,7 +13,7 @@ const Cart = () => {
 
   if(status==='loading')
   {
-    return <Typography>Loading</Typography>
+    <Loader/>
   }
 
   return (

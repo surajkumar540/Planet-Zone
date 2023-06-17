@@ -7,7 +7,7 @@ import Products from "../components/Products/Products"
 import Footer from '../components/Footer/Footer';
 import { useSelector } from 'react-redux';
 import { Typography } from '@mui/material'; 
-import Loader from './Loader';
+import Loader from '../components/Tools/Loader';
 
 const Home = () => {
   const {data:products,status,message}=useSelector((state)=>state?.products)

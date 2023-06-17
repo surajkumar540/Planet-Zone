@@ -12,6 +12,7 @@ import ContactUs from './pages/ContactUs'
 import AboutUs from './pages/AboutUs'
 import { useDispatch } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
+import CartHere from './pages/CartHere'
 
 function App() {
   const dispatch=useDispatch()
@@ -33,6 +34,7 @@ function App() {
         <Route path="/signup" element={ <SignUp/> } />
         <Route path="/otp" element={ <OtpVerify/> } />
         <Route path="/change-password" element={ <ChangePassword/> } />
+        <Route path="/carthere" element={ <CartHere/> } />
       </Routes>
     </>
   )

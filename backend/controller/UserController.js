@@ -84,15 +84,3 @@ module.exports={
     loginController,
     signupController
 }
-
-
-
-// const small = new Tank({ size: 'small' });
-// await small.save();
-
-// or
-
-// await Tank.create({ size: 'small' });
-
-// or, for inserting large batches of documents
-// await Tank.insertMany([{ size: 'small' }]);

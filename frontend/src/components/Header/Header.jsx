@@ -36,7 +36,7 @@ function Header(props) {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        MUI
+      Planet
       </Typography>
       <Divider />
       <List>
@@ -57,9 +57,7 @@ function Header(props) {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar component="nav" sx={{
-        // bgcolor:"#E4E6F4"
-        bgcolor:"#009688",
-        // bgcolor:"#1e8fd5"
+        bgcolor:"whitesmoke",
         }}>
         <Toolbar>
           <IconButton
@@ -74,17 +72,16 @@ function Header(props) {
           <Typography
             variant="h6"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block'
-            // ,color:"#010106" 
-            ,color:"white",
+            ,color:"#3CB815",
             textDecoration:'none'
           } }}
           component={Link} to={'/'}
           >
-            Shop
+            Planet
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map((item) => (
-              <Button key={item} sx={{ color: 'white' }} component={Link} to={navPathObj[item]}>
+              <Button key={item} sx={{ color: '#3CB815',textTransform:'capitalize' }} component={Link} to={navPathObj[item]}>
                 {item}
               </Button>
             ))}

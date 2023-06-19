@@ -6,10 +6,10 @@ import CartTable from "./CartTable"
 const CartProducts = ({products}) => {
 
   return (
-    <Box bgcolor={'#F8F8F8'}>
-        <Box textAlign={'center'} mb={4}>
+    <Box bgcolor={'#F8F8F8'} pt='3rem'>
+        <Box textAlign={'center'} mb={3}>
             <Typography fontSize={'3rem'}>Cart Products</Typography>
-            <Typography>Summer brakes products at your point</Typography>
+            {/* <Typography>Summer brakes products at your point</Typography> */}
         </Box>
 
         <Box display={'flex'}> 

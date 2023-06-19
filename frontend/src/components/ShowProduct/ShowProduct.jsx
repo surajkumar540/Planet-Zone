@@ -61,8 +61,8 @@ const ShowProduct = ({obj}) => {
                         </Box>
                     </Box>
                     <Box fontSize={'1.5rem'}>
-                        <Button variant='contained' sx={{bgcolor:"#009688",marginRight:'1rem'}} onClick={handleCart}>Add to Cart</Button>
-                        <Button variant='contained' sx={{bgcolor:"darkorange"}}>Buy Now</Button>
+                        <Button variant='contained' sx={{bgcolor:"#EB2D44",marginRight:'1rem'}} onClick={handleCart}>Add to Cart</Button>
+                        <Button variant='contained' sx={{bgcolor:"#3CB815"}}>Buy Now</Button>
                     </Box>
                     
                 </Box>

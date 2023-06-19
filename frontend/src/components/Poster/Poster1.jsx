@@ -20,7 +20,7 @@ const Poster1 = () => {
                         <Typography pl='.6rem' fontSize={'1.3rem'} color='#694f4f'>Pocket friendly products everywhere</Typography>
                     </Box>
                     <Box ml='.5rem'>
-                        <Button variant='contained' sx={{borderRadius:'50px',bgcolor:'#009688'}}>Order Now</Button>
+                        <Button variant='contained' sx={{borderRadius:'50px',bgcolor:'#3CB815'}}>Order Now</Button>
                     </Box>
                 </Box>
             </Box>

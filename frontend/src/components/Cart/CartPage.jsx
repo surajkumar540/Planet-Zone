@@ -1,12 +1,12 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, CardMedia, Typography } from '@mui/material';
 import SingleCartProduct from './SingleCartProduct';
 import CartTable from "./CartTable"
 
 const CartProducts = ({products}) => {
 
   return (
-    <Box bgcolor={'#F1F3F6'}>
+    <Box bgcolor={'#F8F8F8'}>
         <Box textAlign={'center'} mb={4}>
             <Typography fontSize={'3rem'}>Cart Products</Typography>
             <Typography>Summer brakes products at your point</Typography>
@@ -23,10 +23,12 @@ const CartProducts = ({products}) => {
             {
               products.length>0&&<CartTable/>
             }
-            
-
         </Box>
 
+        {products.length===0&&<Box display={'flex'} justifyContent={'center'}>
+          <img src="https://mir-s3-cdn-cf.behance.net/projects/404/95974e121862329.Y3JvcCw5MjIsNzIxLDAsMTM5.png"/>
+        </Box>
+}
 
     </Box>
   )

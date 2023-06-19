@@ -8,7 +8,7 @@ const PaymentMethod = () => {
   return (
     <>
       <Header />
-      <Progress />
+      <Progress currentStep={1}/>
       <Box>
         <Box>
           <Typography variant="h4" pl="3rem">
@@ -16,9 +16,9 @@ const PaymentMethod = () => {
           </Typography>
         </Box>
 
-        <Box bgcolor={"dodgerblue"} border={'1px solid grey'} mt='3rem'>
+        <Box bgcolor={"white"} border={'1px solid grey'} mt='3rem'>
           
-          <Box bgcolor={"pink"} mb="2rem" display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
+          <Box mb="2rem" display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
      
             <Box width={'40%'}>
               <CardMedia
@@ -35,7 +35,8 @@ const PaymentMethod = () => {
               inputProps={{ "aria-label": "A" }}
             />
           </Box>
-          <Box bgcolor={"pink"} mb="2rem" display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
+
+          <Box mb="2rem" display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
      
             <Box width={'40%'}>
               <CardMedia

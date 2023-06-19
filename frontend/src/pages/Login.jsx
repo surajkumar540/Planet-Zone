@@ -3,13 +3,13 @@ import { Typography, Box, CardMedia, FormControl, IconButton, InputAdornment, In
 import loginImg from "../assets/Auth/login.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import ForgetModal from '../components/Modals/Auth/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer"
+import { login } from '../api/devApi';
 
 const Login = () => {
+  const navigate=useNavigate()
   const [showPassword, setShowPassword] = React.useState(false);
   const [formValues, setFormValues] = useState({  email: '', password: ''});
   const [formErrors, setFormErrors] = useState({});
@@ -49,9 +49,21 @@ const Login = () => {
       console.log(errorObj,"erro")
       return;
     }
+
+    try{
+      const response=await login(formValues);
+      if(response.status)
+      {
+        navigate("/")
+        alert("You are login successfully")
+      }
+    }catch(error)
+    {
+      console.log(error)
+    }
+
     setIsSubmit(false)
     clearFormValues();
-    console.log(clearFormValues, "clear");
 
   }
 

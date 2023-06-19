@@ -39,7 +39,7 @@ const loginController=asyncHandler(async(req,res)=>{
 
 
 const signupController=asyncHandler(async(req,res)=>{
-    const {name,email,password,confirm_password}=req.body;
+    const {name,email,password,confirmPassword}=req.body;
 
     //Validate
     //Email validation & verification
@@ -57,7 +57,7 @@ const signupController=asyncHandler(async(req,res)=>{
         return;
     }
 
-    if(password!==confirm_password)
+    if(password!==confirmPassword)
     {
         res.status(409).json({
             message:"Password and confirm password not matched",

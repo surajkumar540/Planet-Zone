@@ -10,6 +10,26 @@ const headerData =
 }
 
 //////-------------------------------///////////
+/////Authentication ////
+//////-------------------------------///////////
+
+export const signup = async (data) => {
+    const response = await axios.post(`/api/signup`,data, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+export const login = async (data) => {
+    const response = await axios.post(`/api/login`,data, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+//////-------------------------------///////////
 /////get All products ////
 //////-------------------------------///////////
 

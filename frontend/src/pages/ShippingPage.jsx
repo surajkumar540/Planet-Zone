@@ -4,6 +4,8 @@ import { Container, Paper, Typography, TextField, Button, Grid, Box } from '@mui
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 
 const steps = [
   'Shipping Address',
@@ -23,8 +25,8 @@ const ShippingPage = () => {
 
   return (
     <>
-
-      <Grid container>
+      <Header/>
+      <Grid container marginY={2}>
         {/* <Grid item xs={12}>
           <img src="https://img.freepik.com/premium-photo/shopping-cart-symbol-with-torn-paper_220873-11807.jpg?w=996" alt="Background" style={{ width: '100%', height: 'auto' }} />
           */}
@@ -40,7 +42,7 @@ const ShippingPage = () => {
         </Box>
 
         {/* form */}
-        <Container maxWidth="sm" >
+        <Container maxWidth="md" >
           <Paper elevation={3} sx={{ padding: 3 }}  >
             <Typography variant="h4" gutterBottom>
               Shipping Address
@@ -50,12 +52,14 @@ const ShippingPage = () => {
               <Box display="flex" justifyContent="center" gap={3}>
                 <TextField
                   label="Full Name"
+                  fullWidth
                   required
                   sx={{ mb: 2 }}
                 />
 
                 <TextField
                   label="Phone no"
+                  fullWidth
                   required
                   sx={{ mb: 2 }}
                 />
@@ -63,17 +67,20 @@ const ShippingPage = () => {
               <Box display="flex" justifyContent="center" gap={3}>
                 <TextField
                   label="State"
+                  fullWidth
                   required
                   sx={{ mb: 2 }}
                 />
                 <TextField
                   label="City/Town"
                   required
+                  fullWidth
                   sx={{ mb: 2 }}
                 />
               </Box>
+              
 
-              <Box display="flex" justifyContent="center" mx="18px">
+              <Box display="flex" justifyContent="center" >
 
                 <TextField
                   label="Address"
@@ -88,12 +95,14 @@ const ShippingPage = () => {
               <Box display="flex" justifyContent="center" gap={3}>
                 <TextField
                   label="Pincode"
+                  fullWidth
                   required
                   sx={{ mb: 2 }}
                 />
                 <TextField
                   label="Landmark"
                   required
+                  fullWidth
                   sx={{ mb: 2 }}
                 />
               </Box>
@@ -106,7 +115,7 @@ const ShippingPage = () => {
         </Container>
         {/* </Grid> */}
       </Grid>
-
+      <Footer/>
     </>
   );
 };

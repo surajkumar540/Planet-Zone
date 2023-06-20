@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -10,8 +10,12 @@ const steps = [
   'Create Order',
 ];
 
-export default function Progress() {
+export default function Progress({currentStep}) {
   const [step,setStep]=useState(0)
+  useEffect(()=>{
+    setStep(currentStep)
+  },[])
+
   return (
     <Box sx={{ width: '100%',my:'3rem' }}>
       <Stepper activeStep={step} alternativeLabel>

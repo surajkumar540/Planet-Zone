@@ -15,7 +15,7 @@ const Poster3 = () => {
                         title="green iguana"
                         />
                     </Box>
-                    <Box bgcolor='dodgerblue' height='60vh' flex='0.5' display='flex'>
+                    <Box bgcolor='#3CB815' height='60vh' flex='0.5' display='flex'>
                         <Box display='flex' flexDirection='column' alignItems='center' justifyContent='center' >
 
                             <Typography display='flex' justifyContent='start' width="77%" fontFamily='sans-serif' fontWeight='700' fontSize="40px" color='white' paddingBottom="10px">All About Organic</Typography>

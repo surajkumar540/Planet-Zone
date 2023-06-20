@@ -21,7 +21,7 @@ const Home = () => {
       <Header/>
       <Poster1/>
       {/* <Products products={products}/> */}
-      {/* <Poster3/> */}
+      <Poster3/>
       {/* <Products products={products}/> */}
       {/* <Poster2/> */}
       <Footer/>

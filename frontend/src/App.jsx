@@ -14,6 +14,8 @@ import PaymentMethod from './pages/PaymentMethod'
 import Profile from './pages/Profile'
 import { useDispatch } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
+import ShippingPage from './pages/ShippingPage'
+import OrderDetailes from './pages/OrderDetailes'
 
 function App() {
   const dispatch=useDispatch()
@@ -37,6 +39,9 @@ function App() {
         <Route path="/about" element={ <AboutUs/> } /> 
         <Route path="/profile" element={ <Profile/> } /> 
         <Route path="/contact" element={ <ContactUs/> } /> 
+        <Route path="/shipping" element={ <ShippingPage/> } />
+        <Route path="/order" element={ <OrderDetailes/> } />
+
       </Routes>
     </>
   )

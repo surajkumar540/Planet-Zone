@@ -14,6 +14,7 @@ import PaymentMethod from './pages/PaymentMethod'
 import { useDispatch } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
 import ShippingPage from './pages/ShippingPage'
+import OrderDetailes from './pages/OrderDetailes'
 
 function App() {
   const dispatch=useDispatch()
@@ -37,6 +38,7 @@ function App() {
         <Route path="/otp" element={ <OtpVerify/> } />
         <Route path="/change-password" element={ <ChangePassword/> } />
         <Route path="/shipping" element={ <ShippingPage/> } />
+        <Route path="/order" element={ <OrderDetailes/> } />
 
       </Routes>
     </>

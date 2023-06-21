@@ -57,7 +57,7 @@ function Header(props) {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar component="nav" sx={{
-        bgcolor:"whitesmoke",
+        bgcolor:"#3CB815",
         }}>
         <Toolbar>
           <IconButton
@@ -72,7 +72,7 @@ function Header(props) {
           <Typography
             variant="h6"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block'
-            ,color:"#3CB815",
+            ,color:"white",
             textDecoration:'none'
           } }}
           component={Link} to={'/'}
@@ -81,7 +81,7 @@ function Header(props) {
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map((item) => (
-              <Button key={item} sx={{ color: '#3CB815',textTransform:'capitalize' }} component={Link} to={navPathObj[item]}>
+              <Button key={item} sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={navPathObj[item]}>
                 {item}
               </Button>
             ))}

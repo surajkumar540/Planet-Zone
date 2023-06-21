@@ -3,10 +3,12 @@ import { Typography, Box, CardMedia, FormControl, IconButton, TextField, InputAd
 import signupImg from "../assets/Auth/signup.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link } from "react-router-dom"
+import { Link,useNavigate } from "react-router-dom"
 import { validateSignUpPage } from '../utils/validate';
+import { signup } from '../api/devApi';
 
 const SignUp = () => {
+  const navigate=useNavigate()
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [formValues, setFormValues] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -50,6 +52,18 @@ const SignUp = () => {
       setFormErrors(errorObj)
       return;
     }
+
+    try{
+      const response=await signup(formValues)
+      if(response.status)
+      {
+        navigate("/login")
+      }
+    }catch(error)
+    {
+      console.log(error)
+    }
+
     
     clearFormValues();
     setIsSubmit(false)

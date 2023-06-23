@@ -3,6 +3,7 @@ const connectDb=require("./config/config")
 const dotenv=require("dotenv");
 const productRouter=require('./routes/ProductRouter');
 const userRouter=require('./routes/UserRouter')
+const shippingRouter=require("./routes/ShippingRouter")
 // var bodyParser = require('body-parser')
 const PORT=4000;
 dotenv.config();
@@ -12,6 +13,7 @@ const app=express(); // To make server from express use only one time at server 
 app.use(express.json())
 app.use(userRouter);
 app.use(productRouter);
+app.use(shippingRouter);
 
 
 app.listen(process.env.PORT||PORT,()=>{

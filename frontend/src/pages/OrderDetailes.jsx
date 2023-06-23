@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@mui/styles';
+// import { makeStyles } from '@mui/styles';
 import { Container, Paper, Typography, TextField, Button, Grid, Box, Divider, Checkbox } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -25,6 +25,7 @@ const OrderDetailes = () => {
 
     return (
         <>
+            <Header/>
             <Grid container marginY={2}>
                 {/* <Grid item xs={12}>
           <img src="https://img.freepik.com/premium-photo/shopping-cart-symbol-with-torn-paper_220873-11807.jpg?w=996" alt="Background" style={{ width: '100%', height: 'auto' }} />
@@ -41,7 +42,7 @@ const OrderDetailes = () => {
                 </Box>
 
                 {/* form */}
-                <Container maxWidth="md" >
+                <Container maxWidth="lg" >
                     <Paper elevation={3} sx={{ padding: 3 }}  >
                         <form onSubmit={handleSubmit}>
 
@@ -100,7 +101,7 @@ const OrderDetailes = () => {
             <Grid container marginY={2}>
 
                 {/* form */}
-                <Container maxWidth="md" >
+                <Container maxWidth="lg" >
                     <Paper elevation={3} sx={{ padding: 3 }}  >
                         <Box mt={2}>
                             <Typography variant="h4" gutterBottom>
@@ -152,7 +153,7 @@ const OrderDetailes = () => {
             <Grid container marginY={2}>
 
                 {/* form */}
-                <Container maxWidth="md" >
+                <Container maxWidth="lg" >
                     <Paper elevation={3} sx={{ padding: 3 }}  >
                         <Box mt={2}>
                             <Typography variant="h4" gutterBottom>
@@ -209,6 +210,7 @@ const OrderDetailes = () => {
 
                 {/* </Grid> */}
             </Grid>
+            <Footer/>
         </>
     );
 };

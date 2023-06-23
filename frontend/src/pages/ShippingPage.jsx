@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@mui/styles';
+// import { makeStyles } from '@mui/styles';
 import { Container, Paper, Typography, TextField, Button, Grid, Box } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -42,7 +42,7 @@ const ShippingPage = () => {
         </Box>
 
         {/* form */}
-        <Container maxWidth="md" >
+        <Container maxWidth="lg" >
           <Paper elevation={3} sx={{ padding: 3 }}  >
             <Typography variant="h4" gutterBottom>
               Shipping Address

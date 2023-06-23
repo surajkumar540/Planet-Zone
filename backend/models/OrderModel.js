@@ -49,7 +49,6 @@ const orderSchema=mongoose.Schema({
             required:true
         }
     },
-
     payment:{
         type:String,
         required:true

@@ -12,8 +12,8 @@ connectDb()//Connecting to mongo db database
 const app=express(); // To make server from express use only one time at server file
 app.use(express.json())
 app.use(userRouter);
+app.use(productRouter);
 app.use(authToken,shippingRouter);
-app.use(authToken,productRouter);
 
 
 app.listen(process.env.PORT||PORT,()=>{

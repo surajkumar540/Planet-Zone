@@ -3,10 +3,12 @@ const User=require("../models/UserModel")
 
 const getShippingAdd=async(req,res)=>{
     try{
-        const userId=req.params.userId;
+        const userId=req.userId;
         console.log(userId)
+        const result=await Shipping.findOne({User:userId})
+        
         res.status(200).json({
-            message:"Shipping",
+            data:result.shippingAddress,
             status:true
         })
     }catch(error)
@@ -20,13 +22,19 @@ const getShippingAdd=async(req,res)=>{
 
 const addNewShippingAdd=async(req,res)=>{
     try{
-        const {user,address,state,city,pinCode}=req.body;
+        const {address,state,city,pinCode}=req.body;
+        const user=req.userId;
 
         //Find if user exists or not
         const userObj=await User.findOne({_id:user})
         const shippingAddExist=await Shipping.findOne({User:user})
-        if(Object.keys(userObj).length===0||Object.keys(shippingAddExist).length>0)
+
+        if((userObj&&Object.keys(userObj).length===0)||(shippingAddExist&&Object.keys(shippingAddExist).length>0))
         { 
+            res.status(200).json({
+                message:"Already shipping address available",
+                status:true
+            })
             return;
         }
         
@@ -42,10 +50,9 @@ const addNewShippingAdd=async(req,res)=>{
             ]
         })
 
-        console.log(response)
         
         res.status(200).json({
-            message:"Shipping",
+            message:"Shipping address successfully added",
             status:true
         })
     }catch(error)

@@ -27,7 +27,7 @@ const loginController=asyncHandler(async(req,res)=>{
         return;
     }
 
-    const token=await jwt.sign({email:existingUser.email,id:existingUser._id},process.env.SECRET_KEY)
+    const token=await jwt.sign({id:existingUser._id},process.env.SECRET_KEY,{expiresIn:"20d"})
 
     res.status(200).json({
         message:"User login successfully",

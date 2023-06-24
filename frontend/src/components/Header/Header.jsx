@@ -14,6 +14,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
@@ -22,7 +23,7 @@ const navPathObj={
   "Shop":'/',
   "Contact":'/contact',
   "About":"/about",
-  "Cart":'/cart'
+  "Cart":'/cart',
 }
 
 function Header(props) {
@@ -79,12 +80,18 @@ function Header(props) {
           >
             Planet
           </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center' }}>
             {navItems.map((item) => (
               <Button key={item} sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={navPathObj[item]}>
                 {item}
               </Button>
             ))}
+            
+            <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815'}}>Login</Button>
+
+            <Box component={Link} to='/profile' sx={{color:'white',display:'flex',width:"3.5rem",justifyContent:'center'}}>
+              <AccountCircleRoundedIcon fontSize='large'/>
+            </Box>
           </Box>
         </Toolbar>
       </AppBar>

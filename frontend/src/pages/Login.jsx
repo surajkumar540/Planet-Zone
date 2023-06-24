@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, Box, CardMedia, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Button, TextField } from '@mui/material';
+import { Typography, Box, CardMedia, FormControl, IconButton, InputAdornment, Button, TextField } from '@mui/material';
 import loginImg from "../assets/Auth/login.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -7,8 +7,10 @@ import { Link,useNavigate } from "react-router-dom";
 import ForgetModal from '../components/Modals/Auth/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
 import { login } from '../api/devApi';
+import { useDispatch } from 'react-redux';
 
 const Login = () => {
+  const dispatch=useDispatch()
   const navigate=useNavigate()
   const [showPassword, setShowPassword] = React.useState(false);
   const [formValues, setFormValues] = useState({  email: '', password: ''});
@@ -54,8 +56,8 @@ const Login = () => {
       const response=await login(formValues);
       if(response.status)
       {
+        localStorage.setItem("token",response.token)
         navigate("/")
-        alert("You are login successfully")
       }
     }catch(error)
     {

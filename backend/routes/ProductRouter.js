@@ -1,7 +1,6 @@
 const express=require('express');
 const router=express.Router();
 const productController=require('../controller/ProductController');
-// const products=require('../data/product') // Static product json data
 
 router.route('/products').get(productController.allProductsController)
 

@@ -1,24 +1,34 @@
 const Product=require('../models/ProductModel')
 const asyncHandler = require('express-async-handler')
 
-const allProductsController= asyncHandler(async(req,res)=>{
-    
-    const allProducts= await Product.find()
-    res.status(200).json({
-        data:allProducts,
-        status:true
-    })
+const allProductsController= async(req,res)=>{
+    try{
 
-})
+        const allProducts= await Product.find()
+        res.status(200).json({
+            data:allProducts,
+            status:true
+        })
+    }catch(error)
+    {
+        console.log(error,"all")
+    }
 
-const singleProductController= asyncHandler(async(req,res)=>{
-    const product=await Product.findOne({_id:req.params.productId});
-    
-    res.status(200).json({
-        data:product,
-        status:true
-    })
-})
+}
+
+const singleProductController=async(req,res)=>{
+    try{
+        const product=await Product.findOne({_id:req.params.productId});
+        
+        res.status(200).json({
+            data:product,
+            status:true
+        })
+    }catch(error)
+    {
+
+    }
+}
 
 module.exports={
     allProductsController,

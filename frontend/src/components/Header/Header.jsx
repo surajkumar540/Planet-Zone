@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
@@ -28,9 +29,11 @@ const navPathObj={
 }
 
 function Header(props) {
-  const navigate=useNavigate()
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  const navigate=useNavigate();
+  const isLogged=useSelector((state)=>state?.user?.isLogged);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -89,11 +92,14 @@ function Header(props) {
               </Button>
             ))}
             
-            <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
-
-            <Box sx={{display:'flex',width:"3.5rem",justifyContent:'center'}}>         
+            {
+              isLogged?<Box sx={{display:'flex',width:"3.5rem",justifyContent:'center'}}>         
               <AccountCircleRoundedIcon fontSize='large'/>
-            </Box>
+            </Box>:<Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
+            }
+            
+
+            
             
           </Box>
         </Toolbar>

@@ -17,11 +17,13 @@ import { useDispatch } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
 import ShippingPage from './pages/ShippingPage'
 import OrderDetailes from './pages/OrderDetailes'
+import { tokenVerificationAsync } from './redux/reducers/userSlice'
 
 function App() {
   const dispatch=useDispatch()
 
   useEffect(()=>{
+    dispatch(tokenVerificationAsync())
     dispatch(fetchAllProducts())
   },[])
   

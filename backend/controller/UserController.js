@@ -89,16 +89,18 @@ const signupController = async (req, res) => {
 const tokenController = async (req, res) => {
     try {
         const token=req.headers.authorization.split(" ")[1];
-        
-        const jwtResponse=jwt.verify(token,process.env.SECRET_KEY)
-
-        if(Object.keys(jwtResponse).length>0)
+        if(token)
         {
-            res.status(200).json({
-                message: "Token is valid",
-                status:true
-            });
-        }else{
+            const jwtResponse=jwt.verify(token,process.env.SECRET_KEY)
+            if(Object.keys(jwtResponse).length>0)
+            {
+                res.status(200).json({
+                    message: "Token is valid",
+                    status:true
+                });
+            }
+        }
+        else{
             res.status(401).json({
                 message: "Unauthorized user",
                 status: false,

@@ -13,15 +13,45 @@ import ContactUs from './pages/ContactUs'
 import AboutUs from './pages/AboutUs'
 import PaymentMethod from './pages/PaymentMethod'
 import Profile from './pages/Profile'
-import { useDispatch } from 'react-redux'
+import { useDispatch,useSelector } from 'react-redux'
 import { fetchAllProducts } from './redux/reducers/productSlice'
 import ShippingPage from './pages/ShippingPage'
 import OrderDetailes from './pages/OrderDetailes'
+import { tokenVerificationAsync } from './redux/reducers/userSlice'
+import { useNavigate } from 'react-router-dom'
+import { getToken } from './utils/functions'
 
 function App() {
+  const isLogged=useSelector((state)=>state?.user?.isLogged)
   const dispatch=useDispatch()
+  const navigate=useNavigate()
+
+  const checkPath=()=>{
+    let path=location.pathname;
+    const token=getToken()
+
+    if(token)
+    {
+      if(path==='/login'||path==='/signup'||path==='/otp'||path==='/change-password')
+      {
+        navigate("/")
+      }else{
+        navigate(path)
+      }
+
+    }else{
+      if(path==='/login'||path==='/signup'||path==='/otp'||path==='/change-password')
+      {
+        navigate(path)
+      }else{
+        navigate("/")
+      }
+    }
+  }
 
   useEffect(()=>{
+    checkPath();
+    dispatch(tokenVerificationAsync())
     dispatch(fetchAllProducts())
   },[])
   

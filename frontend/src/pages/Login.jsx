@@ -8,6 +8,7 @@ import ForgetModal from '../components/Modals/Auth/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
 import { login } from '../api/devApi';
 import { useDispatch } from 'react-redux';
+import { setUserJustLoggedIn } from '../redux/reducers/userSlice';
 
 const Login = () => {
   const dispatch=useDispatch()
@@ -58,6 +59,7 @@ const Login = () => {
       {
         localStorage.setItem("token",response.token)
         navigate("/")
+        dispatch(setUserJustLoggedIn())
       }
     }catch(error)
     {

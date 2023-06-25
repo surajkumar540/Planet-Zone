@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
@@ -28,9 +29,11 @@ const navPathObj={
 }
 
 function Header(props) {
-  const navigate=useNavigate()
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  const navigate=useNavigate();
+  const isLogged=useSelector((state)=>state?.user?.isLogged);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -82,18 +85,27 @@ function Header(props) {
           >
             Planet
           </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center' }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center'}}>
             {navItems.map((item) => (
               <Button key={item} sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={navPathObj[item]}>
                 {item}
               </Button>
             ))}
             
-            <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
-
-            <Box sx={{display:'flex',width:"3.5rem",justifyContent:'center'}}>         
+            {
+              isLogged?<Box sx={{display:'flex',width:"3.5rem",justifyContent:'center'}}>         
               <AccountCircleRoundedIcon fontSize='large'/>
-            </Box>
+            </Box>:(
+            <>
+              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
+              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>
+            </>
+            )
+            
+            }
+            
+
+            
             
           </Box>
         </Toolbar>

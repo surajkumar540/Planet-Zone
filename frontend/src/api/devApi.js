@@ -10,7 +10,7 @@ const headerData =
 }
 
 //////-------------------------------///////////
-/////Authentication ////
+///////-------Authentication -------------////
 //////-------------------------------///////////
 
 export const signup = async (data) => {
@@ -29,8 +29,16 @@ export const login = async (data) => {
     return response.data
 }
 
+export const tokenVerify = async (data) => {
+    const response = await axios.get(`/api/tokenVerification`,headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
 //////-------------------------------///////////
-/////get All products ////
+/////============get All products ==========////
 //////-------------------------------///////////
 
 export const getAllProducts = async () => {
@@ -41,9 +49,6 @@ export const getAllProducts = async () => {
     return response.data
 }
 
-//////-------------------------------///////////
-/////user verification already exists or not api call in new  version////
-//////-------------------------------///////////
 
 export const fetchSingleProductApi = async (pid) => {
     const response = await axios.get(`/api/product/${pid}`, headerData);

@@ -2,6 +2,8 @@ const express=require('express');
 const router=express.Router();
 const userController=require('../controller/UserController')
 
+router.route('/tokenVerification').get(userController.tokenController)
+
 router.route('/login').post(userController.loginController)
 
 router.route('/signup').post(userController.signupController)

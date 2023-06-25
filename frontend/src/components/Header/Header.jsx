@@ -85,7 +85,7 @@ function Header(props) {
           >
             Planet
           </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center' }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center'}}>
             {navItems.map((item) => (
               <Button key={item} sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={navPathObj[item]}>
                 {item}
@@ -95,7 +95,13 @@ function Header(props) {
             {
               isLogged?<Box sx={{display:'flex',width:"3.5rem",justifyContent:'center'}}>         
               <AccountCircleRoundedIcon fontSize='large'/>
-            </Box>:<Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
+            </Box>:(
+            <>
+              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
+              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>
+            </>
+            )
+            
             }
             
 

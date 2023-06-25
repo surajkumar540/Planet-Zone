@@ -6,6 +6,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Link,useNavigate } from "react-router-dom"
 import { validateSignUpPage } from '../utils/validate';
 import { signup } from '../api/devApi';
+import Header from "../components/Header/Header"
 
 const SignUp = () => {
   const navigate=useNavigate()
@@ -74,10 +75,9 @@ const SignUp = () => {
  
 
   return (
-    <Box display={'flex'} height={'100vh'}>
-
-
-
+    <>
+    <Header/>
+    <Box display={'flex'} height={'calc(100vh - 64px)'} >
 
       <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'} bgcolor={'#3C8F7D'}>
 
@@ -220,6 +220,7 @@ const SignUp = () => {
       </Box>
 
     </Box>
+    </>
   )
 }
 

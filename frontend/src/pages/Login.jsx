@@ -9,6 +9,7 @@ import { validateSignInPage } from '../utils/validate';
 import { login } from '../api/devApi';
 import { useDispatch } from 'react-redux';
 import { setUserJustLoggedIn } from '../redux/reducers/userSlice';
+import Header from '../components/Header/Header';
 
 const Login = () => {
   const dispatch=useDispatch()
@@ -73,8 +74,8 @@ const Login = () => {
 
   return (
     <>
-    {/* <Header/> */}
-    <Box display={'flex'} height={'100vh'}>
+    <Header/>
+    <Box display={'flex'} height={'calc(100vh - 64px)'}>
 
 
       <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
@@ -175,7 +176,6 @@ const Login = () => {
       </Box>
 
     </Box>
-    {/* <Footer/> */}
     </>
   )
 }

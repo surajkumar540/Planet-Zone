@@ -3,6 +3,7 @@ import { Typography, Box, CardMedia, FormControl, Button, TextField } from '@mui
 import otpImg from "../assets/Auth/otp.jpg"
 import { Link } from "react-router-dom";
 import { validateOtp } from '../utils/validate';
+import Header from '../components/Header/Header';
 const OtpVerify = () => {
   const [formValues, setFormValues] = useState({ number:"" });
   const [formErrors, setFormErrors] = useState({});
@@ -39,7 +40,9 @@ const OtpVerify = () => {
   }
 
   return (
-    <Box display={'flex'} height={'100vh'}>
+    <>
+    <Header/>
+    <Box display={'flex'} height={'calc(100vh - 64px)'}>
 
 
       <Box flex={0.5} bgcolor={'#f86247fc'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
@@ -124,6 +127,7 @@ const OtpVerify = () => {
       </Box>
 
     </Box>
+    </>
   )
 }
 

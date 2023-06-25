@@ -28,7 +28,19 @@ const navPathObj={
   "Cart":'/cart',
 }
 
+const pageTheme={
+  "/":"#3CB815",
+  "/about":"#3CB815",
+  "/cart":"#3CB815",
+  "/contact":"#3CB815",
+  "/login":"#38A0F0",
+  "/signup":"#058F71",
+  "/otp":"#F7300D",
+  "/change-password":"#FF9900",
+}
+
 function Header(props) {
+  console.log(location.pathname)
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   
@@ -63,7 +75,9 @@ function Header(props) {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar component="nav" sx={{
-        bgcolor:"#3CB815",
+        // bgcolor:"#3CB815",
+        boxShadow:location.pathname!=='/'&&"rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+        bgcolor:pageTheme[location.pathname],
         }}>
         <Toolbar>
           <IconButton
@@ -97,8 +111,8 @@ function Header(props) {
               <AccountCircleRoundedIcon fontSize='large'/>
             </Box>:(
             <>
-              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
-              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:'#3CB815','&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>
+              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:pageTheme[location.pathname],'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
+              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:pageTheme[location.pathname],'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>
             </>
             )
             

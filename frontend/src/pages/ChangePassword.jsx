@@ -5,6 +5,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Link } from "react-router-dom"
 import { validateChangePassword } from '../utils/validate';
+import Header from '../components/Header/Header';
 
 const ChangePassword = () => {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -55,7 +56,9 @@ const ChangePassword = () => {
   }
 
   return (
-    <Box display={'flex'} height={'100vh'}>
+    <>
+    <Header/>
+    <Box display={'flex'}height={'calc(100vh - 64px)'}>
 
 
       <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
@@ -176,6 +179,7 @@ const ChangePassword = () => {
 
 
     </Box>
+    </>
   )
 }
 

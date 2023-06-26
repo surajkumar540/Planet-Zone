@@ -18,11 +18,16 @@ const userSlice = createSlice({
     setUserJustLoggedIn:(state)=>{
         state.isLogged=true;
         state.status=STATUSES.IDLE;
+    },
+    setUserJustLoggedOut:(state)=>{
+      state.isLogged=false;
+      state.status=STATUSES.IDLE;
+      localStorage.clear()
     }
   },
 });
 
-export const { setLogged,setStatus,setUserJustLoggedIn} = userSlice.actions;
+export const { setLogged,setStatus,setUserJustLoggedIn,setUserJustLoggedOut} = userSlice.actions;
 export default userSlice.reducer;
 
 export const tokenVerificationAsync = () => {

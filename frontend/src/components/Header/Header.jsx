@@ -16,8 +16,8 @@ import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import HeaderMenu from '../Tools/ProfileMenu';
 import AccountMenu from '../Tools/AccountMenu';
+
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
@@ -44,7 +44,6 @@ const pageTheme={
 function Header(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
-  
   const navigate=useNavigate();
   const isLogged=useSelector((state)=>state?.user?.isLogged);
 
@@ -117,9 +116,7 @@ function Header(props) {
             
             }
             
-            
-
-            
+   
             
           </Box>
         </Toolbar>

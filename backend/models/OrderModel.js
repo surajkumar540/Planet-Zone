@@ -8,6 +8,11 @@ const orderSchema=mongoose.Schema({
     },
     orderItems:[
         {
+            Product:{
+                type:mongoose.Schema.Types.ObjectId,
+                required:true,
+                ref:"Product"
+            },
             name:{
                 type:String,
                 required:true
@@ -24,10 +29,13 @@ const orderSchema=mongoose.Schema({
                 type:Number,
                 required:true
             },
-            Product:{
-                type:mongoose.Schema.Types.ObjectId,
-                required:true,
-                ref:"Product"
+            brand:{
+                type:String,
+                required:true
+            },
+            category:{
+                type:String,
+                required:true
             }
         }
     ],
@@ -49,48 +57,46 @@ const orderSchema=mongoose.Schema({
             required:true
         }
     },
-    payment:{
-        type:String,
-        required:true
-    },
-    paymentResult:{
-        id:{type:String},
-        status:{type:String},
-        update_time:{type:String},
-        email_address:{type:String}
-    },
-    taxPrice:{
-        type:Number,
-        required:true,
-        default:0.0
-    },
-    shippingPrice:{
-        type:Number,
-        required:true, 
-        default:0.0
-    },
-    totalPrice:{
-        type:Number,
-        required:true,
-        default:0.0
-    },
-    isPaid:{
-        type:Boolean,
-        required:true,
-        default:false
-    },
-    paidAt:{
-        type:Date
-    },
-    isDelivered:{
-        type:Boolean,
-        required:true,
-        default:false
-    },
-    deliveredAt:{
-        type:Date
-    }
 
+    paymentMethod:{
+        payment:{
+            type:String,
+            required:true
+        },
+        taxPrice:{
+            type:Number,
+            required:true,
+            default:0.0
+        },
+        shippingPrice:{
+            type:Number,
+            required:true, 
+            default:0.0
+        },
+        totalPrice:{
+            type:Number,
+            required:true,
+            default:0.0
+        },
+        isPaid:{
+            type:Boolean,
+            required:true,
+            default:false
+        },
+        paidAt:{
+            type:Date
+        },
+        isDelivered:{
+            type:Boolean,
+            required:true,
+            default:false
+        },
+        deliveredAt:{
+            type:Date
+        }
+    
+    }
+    
 },{timestamps:true});
 
 const Order=mongoose.model("Order",orderSchema);

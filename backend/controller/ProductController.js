@@ -1,5 +1,4 @@
 const Product=require('../models/ProductModel')
-const asyncHandler = require('express-async-handler')
 
 const allProductsController= async(req,res)=>{
     try{
@@ -11,7 +10,10 @@ const allProductsController= async(req,res)=>{
         })
     }catch(error)
     {
-        console.log(error,"all")
+        res.status(400).json({
+            message:"Bad request",
+            status:false
+        });
     }
 
 }
@@ -26,7 +28,10 @@ const singleProductController=async(req,res)=>{
         })
     }catch(error)
     {
-
+        res.status(400).json({
+            message:"Bad request",
+            status:false
+        });
     }
 }
 

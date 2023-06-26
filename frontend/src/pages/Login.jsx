@@ -4,7 +4,7 @@ import loginImg from "../assets/Auth/login.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Link,useNavigate } from "react-router-dom";
-import ForgetModal from '../components/Modals/Auth/ForgetModal';
+import ForgetModal from '../components/Modals/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
 import { login } from '../api/devApi';
 import { useDispatch } from 'react-redux';

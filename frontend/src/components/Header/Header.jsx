@@ -14,9 +14,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
-import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import HeaderMenu from '../Tools/ProfileMenu';
+import AccountMenu from '../Tools/AccountMenu';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
@@ -32,6 +33,7 @@ const pageTheme={
   "/":"#3CB815",
   "/about":"#3CB815",
   "/cart":"#3CB815",
+  "/profile":"#3CB815",
   "/contact":"#3CB815",
   "/login":"#38A0F0",
   "/signup":"#058F71",
@@ -40,7 +42,6 @@ const pageTheme={
 }
 
 function Header(props) {
-  console.log(location.pathname)
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   
@@ -107,9 +108,7 @@ function Header(props) {
             ))}
             
             {
-              isLogged?<Box sx={{display:'flex',width:"3.5rem",justifyContent:'center'}}>         
-              <AccountCircleRoundedIcon fontSize='large'/>
-            </Box>:(
+              isLogged?<AccountMenu/>:(
             <>
               <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:pageTheme[location.pathname],'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
               <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:pageTheme[location.pathname],'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>
@@ -117,6 +116,7 @@ function Header(props) {
             )
             
             }
+            
             
 
             

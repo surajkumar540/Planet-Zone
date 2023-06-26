@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "nodemon backend/server.js",
+    "server": "supervisor backend/server.js",
     "client": "vite",
     "data:import": "node backend/seeder.js",
     "data:destroy": "node backend/seeder.js -d"
@@ -18,10 +18,9 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
+    "forever": "^4.0.3",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.1.0"
-  },
-  "devDependencies": {
+    "mongoose": "^7.1.0",
     "nodemon": "^2.0.22"
   }
 }

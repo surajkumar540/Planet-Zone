@@ -1,5 +1,5 @@
 const mongoose= require("mongoose");
-
+ 
 const shippingSchema=mongoose.Schema({
     User:{
         type:mongoose.Schema.Types.ObjectId,

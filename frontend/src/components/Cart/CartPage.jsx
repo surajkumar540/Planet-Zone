@@ -29,7 +29,7 @@ const handleSubmit = ()=>{
           }
 
           <Box display='flex' justifyContent="right" pr={15}>
-            <Button variant='contained' onClick={handleSubmit}>Submit</Button>
+            <Button variant='contained' onClick={handleSubmit}>Place Order</Button>
           </Box>
 
         </Box>

@@ -40,11 +40,10 @@ const PaymentMethod = () => {
               <Divider />
             </Box>
             <Box>
-              <Typography variant="h6">Choose a payment option:</Typography>
               <RadioGroup name="paymentOption" value={selectedOption} onChange={handleOptionChange}>
                 <FormControlLabel value="creditCard" control={<Radio />} label="Credit Card" />
                 <FormControlLabel value="paypal" control={<Radio />} label="PayPal" />
-                <FormControlLabel value="googlePay" control={<Radio />} label="Google Pay" />
+                <FormControlLabel value="CashOnDelivery" control={<Radio />} label="Cash on Delivery" />
               </RadioGroup>
               <Box py={2}>
                 <Button variant="contained" onClick={handleSubmit}>Submit</Button>

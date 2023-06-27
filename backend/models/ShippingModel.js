@@ -6,12 +6,20 @@ const shippingSchema=mongoose.Schema({
         required:true,
         ref:"User"
     },
-    shippingAddress:[{
-        address:{           
+    shippingAddress:{
+        fullName:{           
             type:String,
             required:true
         },
+        phoneNo:{           
+            type:Number,
+            required:true
+        },
         state:{
+            type:String,
+            required:true
+        },
+        address:{           
             type:String,
             required:true
         },
@@ -22,8 +30,12 @@ const shippingSchema=mongoose.Schema({
         pinCode:{
             type:Number,
             required:true
+        },
+        landMark:{           
+            type:String,
+            required:true
         }
-    }]
+    }
 },{timestamps:true})
 
 const Shipping=mongoose.model("Shipping",shippingSchema);

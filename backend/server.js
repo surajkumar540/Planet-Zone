@@ -15,8 +15,8 @@ app.use(express.json())
 app.use(userRouter);
 // app.use(authToken,shippingRouter);
 // app.use(authToken,productRouter);
-app.use(shippingRouter);
 app.use(productRouter);
+app.use(authToken,shippingRouter);
 app.use(authToken,orderRouter);
 
 app.listen(process.env.PORT||PORT,()=>{

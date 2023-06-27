@@ -7,6 +7,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { useNavigate } from 'react-router-dom';
+import { shippingAdd } from '../api/devApi';
 
 const steps = [
   'Shipping Address',
@@ -18,7 +19,7 @@ const ShippingPage = () => {
   const [formValues,setFormValues] = useState({fullName:"",phoneNo:"",state:"",city:"",address:"",pinCode:"",landMark:""})
   const navigate= useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     // Handle shipping form submission
     const userDataObj = {
@@ -29,8 +30,19 @@ const ShippingPage = () => {
       "pinCode":formValues.pinCode,
       "landMark":formValues.landMark
       }
-  
-      navigate("/payment")
+
+      try{
+        const response=await shippingAdd(userDataObj);
+        console.log(response)
+        if(response.status)
+        {
+          navigate("/payment")
+        }
+      }catch(error)
+      {
+        console.log(error)
+        
+      }
     };
 
   const handleChange = (e) => {

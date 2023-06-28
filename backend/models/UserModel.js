@@ -13,6 +13,11 @@ const userSchema=mongoose.Schema({
         type:String,
         required:true
     },
+    otpVerify:{
+        type:Boolean,
+        required:true,
+        default:false
+    },
     isAdmin:{
         type:Boolean,
         required:true,

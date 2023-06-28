@@ -54,7 +54,6 @@ const signupController = async (req, res) => {
 
     //Check if user already signup
     const existingUser = await User.findOne({ email: email });
-    console.log(existingUser,"user chekc")
     if (existingUser?.email && existingUser?.password) {
       res.status(409).json({
         message: "User already exist",
@@ -82,13 +81,28 @@ const signupController = async (req, res) => {
         otp: otp,
         count: 1,
       });
+
     } else {
+
       if (otpExist.count >= 3) {
-        res.status(404).json({
-          message: "Email limit exceed",
-          status: false,
-        });
-        return;
+        
+
+        const dateLimit=new Date(otpExist.dateLimit).getTime()
+        const todayDate=new Date().getTime()
+
+        //86400000 represent 1 day in millisecond if time is more than a day then reset count
+        if(todayDate-dateLimit>86400000)
+        {
+          const response = await Otp.findOneAndUpdate({email: email},{count: 1});
+        }
+        else{
+          res.status(404).json({
+            message: "Email limit exceed",
+            status: false,
+          });
+          return;
+        }     
+        
       } else {
         const response = await Otp.findOneAndUpdate({email: email},{count: otpExist.count + 1});
       }

@@ -14,6 +14,11 @@ const otpSchema=mongoose.Schema({
         required:true,
         default:0
     },
+    dateLimit:{
+        type:Date,
+        require:true,
+        default:Date.now()
+    }
 },{timestamps:true})
 
 

@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
+const mail=require('../config/mail')
 
 const loginController = async (req, res) => {
   try {
@@ -62,6 +63,7 @@ const signupController = async (req, res) => {
       return;
     }
 
+    console.log(password,confirmPassword)
     if (password !== confirmPassword) {
       res.status(409).json({
         message: "Password and confirm password not matched",
@@ -78,10 +80,18 @@ const signupController = async (req, res) => {
       password: hashedPassword,
     });
 
+    const mailObj={
+      mail:email,
+      subject:'Email verification',
+      text:"Your Email verification Code is "
+    }
+    mail(mailObj)
     res.status(201).json({
-      message: "User registered successfully",
+      message: "Otp sent successfully",
       status: true,
     });
+
+    
   } catch (error) {
     res.status(400).json({
       message: "Error in token verification",

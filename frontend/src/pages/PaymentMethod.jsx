@@ -1,61 +1,59 @@
 import React from "react";
+import { useState } from "react";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import Progress from "../components/Tools/Progress";
-import { Box, CardMedia, Radio, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { FormControlLabel, Radio, RadioGroup, Typography, Box, Button } from '@mui/material';
+import { Container, Paper, Grid, Divider, Checkbox } from '@mui/material';
+
 
 const PaymentMethod = () => {
+  const [selectedOption, setSelectedOption] = useState('');
+
+  const navigate = useNavigate();
+
+  const handleOptionChange = (event) => {
+    setSelectedOption(event.target.value);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // Perform necessary actions with the selected option
+    console.log(selectedOption);
+    navigate("/order")
+  };
+
   return (
     <>
       <Header />
-      <Progress currentStep={1}/>
-      <Box>
-        <Box>
-          <Typography variant="h4" pl="3rem">
-            Choose a Payment Method
-          </Typography>
-        </Box>
+      <Progress currentStep={1} />
 
-        <Box bgcolor={"white"} border={'1px solid grey'} mt='3rem'>
-          
-          <Box mb="2rem" display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
-     
-            <Box width={'40%'}>
-              <CardMedia
-                sx={{ height: 250}}
-                image="https://cdn.pixabay.com/photo/2015/05/26/09/37/paypal-784404_1280.png"
-                title="green iguana"
-              />
+      <Container maxWidth="lg" >
+        <Paper elevation={3} sx={{ padding: 3 }}  >
+          <form onSubmit={handleSubmit}>
+
+            <Box mt={2}>
+              <Typography variant="h4" gutterBottom>
+                Payment Method
+              </Typography>
+              <Divider />
             </Box>
-            <Radio
-              // checked={selectedValue === 'a'}
-              // onChange={handleChange}
-              value="a"
-              name="radio-buttons"
-              inputProps={{ "aria-label": "A" }}
-            />
-          </Box>
-
-          <Box mb="2rem" display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
-     
-            <Box width={'40%'}>
-              <CardMedia
-                sx={{ height: 250}}
-                image="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/2560px-Stripe_Logo%2C_revised_2016.svg.png"
-                title="green iguana"
-              />
+            <Box>
+              <RadioGroup name="paymentOption" value={selectedOption} onChange={handleOptionChange}>
+                <FormControlLabel value="creditCard" control={<Radio />} label="Credit Card" />
+                <FormControlLabel value="paypal" control={<Radio />} label="PayPal" />
+                <FormControlLabel value="CashOnDelivery" control={<Radio />} label="Cash on Delivery" />
+              </RadioGroup>
+              <Box py={2}>
+                <Button variant="contained" onClick={handleSubmit}>Submit</Button>
+              </Box>
             </Box>
-            <Radio
-              // checked={selectedValue === 'a'}
-              // onChange={handleChange}
-              value="a"
-              name="radio-buttons"
-              inputProps={{ "aria-label": "A" }}
-            />
-          </Box>
+          </form>
+        </Paper>
+      </Container>
 
-        </Box>
-      </Box>
+
       <Footer />
     </>
   );

@@ -12,19 +12,35 @@ const transporter = nodemailer.createTransport({
     }
   });
 
-  async function main() {
+async function main({mail,subject,text}) {
+    const otp=generateOTP()
+    try{
 
-    const info = await transporter.sendMail({
-      from: "no-reply@gmail.com", // sender address
-      to: "jai.singh.corporate@gmail.com", // list of receivers
-      subject: "Hello Jai Singh", // Subject line
-      text: "Hello world? How are you", // plain text body
-      html: "<b>Hello world?</b>", // html body
+        const info = await transporter.sendMail({
+        from: "jaibhandari804@gmail.com", // sender address
+        to: String(mail), // list of receivers
+        subject: String(subject), // Subject line
+        text: `${text} ${otp}`, // plain text body
+        html: `${text} ${otp}`, // html body
     });
-  
+    
     console.log("Message sent: %s", info.messageId);
-      
+    }catch(error)
+    {
+        console.log(error);
+    }
+        
 }
+
+
+function generateOTP() {
+    var digits = '0123456789';
+    let OTP = '';
+    for (let i = 0; i < 6; i++ ) {
+        OTP += digits[Math.floor(Math.random() * 10)];
+    }
+    return OTP;
+}  
   
  module.exports= main;
   

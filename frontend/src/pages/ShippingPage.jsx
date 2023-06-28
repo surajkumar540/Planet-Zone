@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 // import { makeStyles } from '@mui/styles';
 import { Container, Paper, Typography, TextField, Button, Grid, Box } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
@@ -6,6 +6,8 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
+import { useNavigate } from 'react-router-dom';
+import { shippingAdd } from '../api/devApi';
 
 const steps = [
   'Shipping Address',
@@ -14,12 +16,41 @@ const steps = [
 ];
 const ShippingPage = () => {
 
+  const [formValues,setFormValues] = useState({fullName:"",phoneNo:"",state:"",city:"",address:"",pinCode:"",landMark:""})
+  const navigate= useNavigate()
 
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     // Handle shipping form submission
-  };
+    const userDataObj = {
+      "fullName":formValues.fullName,
+      "phoneNo":formValues.phoneNo,
+      "state":formValues.state,
+      "city":formValues.city,
+      "pinCode":formValues.pinCode,
+      "landMark":formValues.landMark
+      }
+
+      try{
+        const response=await shippingAdd(userDataObj);
+        console.log(response)
+        if(response.status)
+        {
+          navigate("/payment")
+        }
+      }catch(error)
+      {
+        console.log(error)
+        
+      }
+    };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const newObject={...formValues,[name]:value};
+    setFormValues({...newObject});
+}
+
 
 
 
@@ -55,6 +86,10 @@ const ShippingPage = () => {
                   fullWidth
                   required
                   sx={{ mb: 2 }}
+                  type="text"
+                  name='fullName'
+                  value={formValues.fullName}
+                  onChange={handleChange}
                 />
 
                 <TextField
@@ -62,6 +97,10 @@ const ShippingPage = () => {
                   fullWidth
                   required
                   sx={{ mb: 2 }}
+                  type="number"
+                  name='phoneNo'
+                  value={formValues.phoneNo}
+                  onChange={handleChange}
                 />
               </Box>
               <Box display="flex" justifyContent="center" gap={3}>
@@ -70,12 +109,20 @@ const ShippingPage = () => {
                   fullWidth
                   required
                   sx={{ mb: 2 }}
+                  type="text"
+                  name='state'
+                  value={formValues.state}
+                  onChange={handleChange}
                 />
                 <TextField
                   label="City/Town"
                   required
                   fullWidth
                   sx={{ mb: 2 }}
+                  type="text"
+                  name='city'
+                  value={formValues.city}
+                  onChange={handleChange}
                 />
               </Box>
               
@@ -89,6 +136,10 @@ const ShippingPage = () => {
                   multiline
                   rows={3}
                   sx={{ mb: 2 }}
+                  type="text"
+                  name='address'
+                  value={formValues.address}
+                  onChange={handleChange}
                 />
               </Box>
 
@@ -98,12 +149,20 @@ const ShippingPage = () => {
                   fullWidth
                   required
                   sx={{ mb: 2 }}
+                  type="text"
+                  name='pinCode'
+                  value={formValues.pinCode}
+                  onChange={handleChange}
                 />
                 <TextField
                   label="Landmark"
                   required
                   fullWidth
                   sx={{ mb: 2 }}
+                  type="text"
+                  name='landMark'
+                  value={formValues.landMark}
+                  onChange={handleChange}
                 />
               </Box>
               <Button type="submit" variant="contained" color="primary">

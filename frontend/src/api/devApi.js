@@ -58,6 +58,16 @@ export const fetchSingleProductApi = async (pid) => {
     return response.data
 }
 
+// add shipping addres
+export const shippingAdd = async () => {
+    const response = await axios.post(`/api/shipping`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
 // order details
 export const orderDetailesApi = async () => {
     const response = await axios.post(`/api/createOrder`, headerData);

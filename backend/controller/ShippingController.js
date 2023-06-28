@@ -22,9 +22,9 @@ const getShippingAdd=async(req,res)=>{
 
 const addNewShippingAdd=async(req,res)=>{
     try{
-        const {address,state,city,pinCode}=req.body;
+        const {fullName,phoneNo,state,city,address,pinCode,landMark}=req.body;
+       
         const user=req.userId;
-
         //Find if user exists or not
         const userObj=await User.findOne({_id:user})
         const shippingAddExist=await Shipping.findOne({User:user})
@@ -33,21 +33,24 @@ const addNewShippingAdd=async(req,res)=>{
         { 
             res.status(200).json({
                 message:"Already shipping address available",
-                status:true
+                status:false
             })
             return;
         }
         
         const response=await Shipping.create({
             User:user,
-            shippingAddress:[
+            shippingAddress:
                 {
-                    address,
+                    fullName,
+                    phoneNo,
                     state,
                     city,
-                    pinCode
+                    address,
+                    pinCode,
+                    landMark
                 }
-            ]
+            
         })
 
         
@@ -57,6 +60,7 @@ const addNewShippingAdd=async(req,res)=>{
         })
     }catch(error)
     {
+        console.log(error,"err")
         res.status(500).json({
             message:"Something is wrong",
             status:false

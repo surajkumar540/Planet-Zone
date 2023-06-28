@@ -6,9 +6,11 @@ const userRouter=require('./routes/UserRouter')
 const shippingRouter=require("./routes/ShippingRouter")
 const authToken=require("./middlewares/authToken")
 const orderRouter = require("./routes/OrderRouter");
+const main=require('./config/mail')
 const PORT=4000;
 dotenv.config();
 
+// main().catch(console.error); 
 connectDb()//Connecting to mongo db database
 const app=express(); // To make server from express use only one time at server file
 app.use(express.json())

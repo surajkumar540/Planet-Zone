@@ -10,4 +10,6 @@ router.route('/otpVerify').post(userController.otpController);
 
 router.route('/forgetOtp').post(userController.forgetOtpController);
 
+router.route('/changePassword').post(userController.changePasswordController);
+
 module.exports=router;

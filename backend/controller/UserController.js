@@ -8,6 +8,15 @@ const functions = require("../utils/functions");
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if(!email || !password)
+    {
+      res.status(404).json({
+        message: "Something is missing",
+        status: false,
+      });
+      return;
+    }
+
 
     const existingUser = await User.findOne({ email: email });
 
@@ -60,6 +69,15 @@ const loginController = async (req, res) => {
 const signupController = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
+
+    if(!name||!email||!password||!confirmPassword)
+    {
+      res.status(404).json({
+        message: "Something is missing",
+        status: false,
+      });
+      return;
+    }
 
     //Check if user already signup
     const existingUser = await User.findOne({ email: email });
@@ -149,8 +167,17 @@ const signupController = async (req, res) => {
 const otpController = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const existingUser = await User.findOne({ email: email });
 
+    if(!email||!otp)
+    {
+      res.status(404).json({
+        message: "Something is missing",
+        status: false,
+      });
+      return;
+    }
+
+    const existingUser = await User.findOne({ email: email });
     //Check if person email already verified
     if (existingUser?.emailVerify) {
       res.status(200).json({
@@ -172,10 +199,8 @@ const otpController = async (req, res) => {
     }
 
     if (userOtpObj.otp === String(otp)) {
-      const user = await User.findOneAndUpdate(
-        { email: email },
-        { emailVerify: true }
-      );
+      const user = await User.findOneAndUpdate({ email: email },{ emailVerify: true });
+      const otp = await Otp.findOneAndUpdate({ email: email },{ otp: "" });
       res.status(200).json({
         message: "Email verified successfully",
         status: true,
@@ -189,11 +214,22 @@ const otpController = async (req, res) => {
   }
 };
 
-//Otp sent for forget password
 
+//Otp sent for forget password
 const forgetOtpController = async (req, res) => {
   try {
     const { email } = req.body;
+    
+    if(!email)
+    {
+      res.status(404).json({
+        message: "Enter email ",
+        status: false,
+      });
+      return;
+    }
+
+
     const existingUser = await User.findOne({ email: email });
 
     //Check if user not found
@@ -282,9 +318,95 @@ const forgetOtpController = async (req, res) => {
   }
 };
 
+
+//Otp sent for forget password
+const changePasswordController = async (req, res) => {
+  try {
+    const { email,otp,password,confirmPassword } = req.body;
+    
+    if(!email || !otp|| !password|| !confirmPassword)
+    {
+      res.status(404).json({
+        message: "Something is missing",
+        status: false,
+      });
+      return;
+    }
+
+    const existingUser = await User.findOne({ email: email });
+    //Check if user not found
+    if (!existingUser) {
+      res.status(404).json({
+        message: "User not found",
+        status: false,
+      });
+      return;
+    }
+
+    //Check if user account is verified
+    if (!existingUser.emailVerify) {
+      res.status(409).json({
+        message: "Sign up to verify your account",
+        status: false,
+      });
+      return;
+    }
+
+     //Check for password and confirmPassword
+     if (password !== confirmPassword) {
+      res.status(409).json({
+        message: "Password and confirm password not matched",
+        status: false,
+      });
+      return;
+    }
+
+
+    //Check if otp already exist
+    const otpExist = await Otp.findOne({ email: email });
+    if(!otpExist.otp)
+    {
+      //If otp not exists on collection
+      res.status(404).json({
+        message: "Please try again",
+        status: false,
+      });
+      return;
+    }
+    else if(otpExist.otp!==String(otp))
+    {
+      //If otp didn't matched
+      res.status(404).json({
+        message: "Otp not matched",
+        status: false,
+      });
+      return;
+    }
+    
+    //If everything is good then change password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user=await User.findOneAndUpdate({email:email},{password:hashedPassword})
+
+    res.status(201).json({
+      message: "Password changed successfully",
+      status: true,
+    });
+
+
+  } 
+  catch (error) {
+
+    res.status(404).json({
+      message: "Something is wrong while changing password",
+      status: false,
+    });
+  }
+};
+
 module.exports = {
   loginController,
   signupController,
   otpController,
   forgetOtpController,
+  changePasswordController
 };

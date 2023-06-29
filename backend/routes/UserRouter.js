@@ -6,6 +6,8 @@ router.route('/login').post(userController.loginController)
 
 router.route('/signup').post(userController.signupController)
 
-router.route('/otpVerify').post(userController.otpController)
+router.route('/otpVerify').post(userController.otpController);
+
+router.route('/forgetOtp').post(userController.forgetOtpController);
 
 module.exports=router;

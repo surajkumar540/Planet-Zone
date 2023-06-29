@@ -3,7 +3,7 @@ const User = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
 const mail = require("../config/mail");
 const Otp = require("../models/OtpModel");
-const functions=require("../utils/functions")
+const functions = require("../utils/functions");
 
 const loginController = async (req, res) => {
   try {
@@ -14,6 +14,15 @@ const loginController = async (req, res) => {
     if (!existingUser) {
       res.status(404).json({
         message: "User not found",
+        status: false,
+      });
+      return;
+    }
+
+    //Check for user email verification
+    if (!existingUser.emailVerify) {
+      res.status(409).json({
+        message: "Sign up to verify your account",
         status: false,
       });
       return;
@@ -73,16 +82,15 @@ const signupController = async (req, res) => {
 
     //Check if otp already exist
     const otpExist = await Otp.findOne({ email: email });
-    const otp = functions.generateOTP()
+    const otp = functions.generateOTP();
 
     if (!otpExist) {
       const response = await Otp.create({
         email: email,
         otp: otp,
-        count: 1,
+        registerOtpCount: 1,
       });
 
-      
       //Create User in Database
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await User.create({
@@ -90,34 +98,33 @@ const signupController = async (req, res) => {
         email: email,
         password: hashedPassword,
       });
-
     } else {
-
-      if (otpExist.count >= 3) {
-        
-
-        const dateLimit=new Date(otpExist.dateLimit).getTime()
-        const todayDate=new Date().getTime()
+      if (otpExist.registerOtpCount >= 3) {
+        const dateLimit = new Date(otpExist.dateLimit).getTime();
+        const todayDate = new Date().getTime();
 
         //86400000 represent 1 day in millisecond if time is more than a day then reset count
-        if(todayDate-dateLimit>86400000)
-        {
-          const response = await Otp.findOneAndUpdate({email: email},{otp:otp,count: 1});
-        }
-        else{
+        if (todayDate - dateLimit > 86400000) {
+          const response = await Otp.findOneAndUpdate(
+            { email: email },
+            { otp: otp, registerOtpCount: 1 }
+          );
+        } else {
           res.status(404).json({
             message: "Email limit exceed",
             status: false,
           });
           return;
-        }     
-        
+        }
       } else {
-        const response = await Otp.findOneAndUpdate({email: email},{otp:otp,count: otpExist.count + 1});
+        const response = await Otp.findOneAndUpdate(
+          { email: email },
+          { otp: otp, registerOtpCount: otpExist.registerOtpCount + 1 }
+        );
       }
     }
 
-    //Send mail to User  
+    //Send mail to User
     const mailObj = {
       mail: email,
       subject: "Email verification",
@@ -126,14 +133,11 @@ const signupController = async (req, res) => {
 
     mail(mailObj);
 
-
     res.status(201).json({
       message: "Otp sent successfully",
       status: true,
     });
-
   } catch (error) {
-    console.log(error)
     res.status(400).json({
       message: "Error in signup",
       status: false,
@@ -141,15 +145,14 @@ const signupController = async (req, res) => {
   }
 };
 
-
+//Otp send to verify email
 const otpController = async (req, res) => {
   try {
     const { email, otp } = req.body;
     const existingUser = await User.findOne({ email: email });
 
     //Check if person email already verified
-    if(existingUser?.emailVerify)
-    {
+    if (existingUser?.emailVerify) {
       res.status(200).json({
         message: "Email already verified",
         status: true,
@@ -157,32 +160,123 @@ const otpController = async (req, res) => {
       return;
     }
 
-    const userOtpObj=await Otp.findOne({email:email})
+    const userOtpObj = await Otp.findOne({ email: email });
 
     //if otp object and api otp didn't matched
-    if(userOtpObj.otp!==String(otp))
-    {
+    if (userOtpObj.otp !== String(otp)) {
       res.status(404).json({
         message: "Otp did not matched",
         status: true,
       });
-      return 
+      return;
     }
 
-
-    if(userOtpObj.otp===String(otp))
-    {
-      const user=await User.findOneAndUpdate({email:email},{emailVerify:true})
+    if (userOtpObj.otp === String(otp)) {
+      const user = await User.findOneAndUpdate(
+        { email: email },
+        { emailVerify: true }
+      );
       res.status(200).json({
         message: "Email verified successfully",
         status: true,
       });
     }
-
-    
   } catch (error) {
     res.status(400).json({
-      message: "Error in token verification",
+      message: "Error in OTP verification",
+      status: false,
+    });
+  }
+};
+
+//Otp sent for forget password
+
+const forgetOtpController = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const existingUser = await User.findOne({ email: email });
+
+    //Check if user not found
+    if (!existingUser) {
+      res.status(404).json({
+        message: "User not found",
+        status: false,
+      });
+      return;
+    }
+
+    //Check if user account is verified
+    if (!existingUser.emailVerify) {
+      res.status(409).json({
+        message: "Sign up to verify your account",
+        status: false,
+      });
+    }
+
+    //Check if otp already exist
+    const otpExist = await Otp.findOne({ email: email });
+    const otp = functions.generateOTP();
+
+    if (!otpExist) {
+
+      const response = await Otp.create({
+        email: email,
+        otp: otp,
+        forgetOtpCount: 1,
+        registerOtpCount: 0,
+      });
+    
+    } else {
+      if (otpExist.forgetOtpCount >= 4) {
+        
+        const dateLimit = new Date(otpExist.dateLimit).getTime();
+        const todayDate = new Date().getTime();
+
+        //86400000 represent 1 day in millisecond if time is more than a day then reset count
+        if (todayDate - dateLimit > 86400000) {
+          
+          const response = await Otp.findOneAndUpdate(
+            { email: email },
+            { otp: otp, forgetOtpCount: 1 }
+          );
+
+        } 
+        else {
+          res.status(404).json({
+            message: "Email limit exceed",
+            status: false,
+          });
+          return;
+        }
+      } 
+      else {
+
+        const response = await Otp.findOneAndUpdate({ email: email },{ otp: otp, forgetOtpCount: otpExist.forgetOtpCount + 1 });
+
+      }
+    }
+
+    //Send mail to User to forget your account
+    const mailObj = {
+      mail: email,
+      subject: "Email verification",
+      text: `Your Forget Email verification Code is ${otp}`,
+    };
+
+    mail(mailObj);
+
+    
+    res.status(201).json({
+      message: "Forget Otp sent successfully",
+      status: true,
+    });
+
+
+  } 
+  catch (error) {
+    console.log(error);
+    res.status(400).json({
+      message: "Something is wrong in Forget otp",
       status: false,
     });
   }
@@ -192,4 +286,5 @@ module.exports = {
   loginController,
   signupController,
   otpController,
+  forgetOtpController,
 };

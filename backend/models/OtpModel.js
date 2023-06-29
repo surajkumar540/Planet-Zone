@@ -9,7 +9,12 @@ const otpSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    count:{
+    registerOtpCount:{
+        type:Number,
+        required:true,
+        default:0
+    },
+    forgetOtpCount:{
         type:Number,
         required:true,
         default:0

@@ -117,8 +117,7 @@ const signupController = async (req, res) => {
       }
     }
 
-    //Send mail to User
-    
+    //Send mail to User  
     const mailObj = {
       mail: email,
       subject: "Email verification",
@@ -142,17 +141,45 @@ const signupController = async (req, res) => {
   }
 };
 
+
 const otpController = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { email, otp } = req.body;
     const existingUser = await User.findOne({ email: email });
-    
-    
 
-    res.status(201).json({
-      message: "User Registered successfully",
-      status: true,
-    });
+    //Check if person email already verified
+    if(existingUser?.emailVerify)
+    {
+      res.status(200).json({
+        message: "Email already verified",
+        status: true,
+      });
+      return;
+    }
+
+    const userOtpObj=await Otp.findOne({email:email})
+
+    //if otp object and api otp didn't matched
+    if(userOtpObj.otp!==String(otp))
+    {
+      res.status(404).json({
+        message: "Otp did not matched",
+        status: true,
+      });
+      return 
+    }
+
+
+    if(userOtpObj.otp===String(otp))
+    {
+      const user=await User.findOneAndUpdate({email:email},{emailVerify:true})
+      res.status(200).json({
+        message: "Email verified successfully",
+        status: true,
+      });
+    }
+
+    
   } catch (error) {
     res.status(400).json({
       message: "Error in token verification",

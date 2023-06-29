@@ -54,7 +54,7 @@ const signupController = async (req, res) => {
 
     //Check if user already signup
     const existingUser = await User.findOne({ email: email });
-    if (existingUser?.email && existingUser?.password) {
+    if (existingUser?.email && existingUser?.emailVerify) {
       res.status(409).json({
         message: "User already exist",
         status: false,
@@ -82,6 +82,15 @@ const signupController = async (req, res) => {
         count: 1,
       });
 
+      
+      //Create User in Database
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const result = await User.create({
+        name: name,
+        email: email,
+        password: hashedPassword,
+      });
+
     } else {
 
       if (otpExist.count >= 3) {
@@ -93,7 +102,7 @@ const signupController = async (req, res) => {
         //86400000 represent 1 day in millisecond if time is more than a day then reset count
         if(todayDate-dateLimit>86400000)
         {
-          const response = await Otp.findOneAndUpdate({email: email},{count: 1});
+          const response = await Otp.findOneAndUpdate({email: email},{otp:otp,count: 1});
         }
         else{
           res.status(404).json({
@@ -104,12 +113,12 @@ const signupController = async (req, res) => {
         }     
         
       } else {
-        const response = await Otp.findOneAndUpdate({email: email},{count: otpExist.count + 1});
+        const response = await Otp.findOneAndUpdate({email: email},{otp:otp,count: otpExist.count + 1});
       }
     }
 
     //Send mail to User
-    await Otp.findOne({ email: email });
+    
     const mailObj = {
       mail: email,
       subject: "Email verification",
@@ -117,6 +126,7 @@ const signupController = async (req, res) => {
     };
 
     mail(mailObj);
+
 
     res.status(201).json({
       message: "Otp sent successfully",
@@ -136,22 +146,8 @@ const otpController = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const existingUser = await User.findOne({ email: email });
-
-    if (existingUser.email && existingUser.password) {
-      res.status(409).json({
-        message: "User already exist",
-        status: false,
-      });
-      return;
-    }
-
-    //Create User in Database
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await User.create({
-      name: name,
-      email: email,
-      password: hashedPassword,
-    });
+    
+    
 
     res.status(201).json({
       message: "User Registered successfully",

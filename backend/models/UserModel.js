@@ -13,7 +13,7 @@ const userSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    otpVerify:{
+    emailVerify:{
         type:Boolean,
         required:true,
         default:false

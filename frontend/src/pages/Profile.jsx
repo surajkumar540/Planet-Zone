@@ -3,7 +3,7 @@ import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import { Box, Typography, TextField,CardMedia,InputLabel,MenuItem,Select,FormControl, Button,Input ,InputAdornment  } from "@mui/material";
 import C from "../assets/Auth/c.jpg"
-import { getProfile } from "../api/devApi";
+import { getProfile, setProfile } from "../api/devApi";
 
 const Profile = () => {
     const [firstName,setFirstName]=useState("")
@@ -15,7 +15,6 @@ const Profile = () => {
     const [twitter,setTwitter]=useState("")
     const [address,setAddress]=useState("");
     const [edit,setEdit]=useState(false);
-
     const setProfileData=async()=>{
       try{
         const obj={
@@ -28,8 +27,13 @@ const Profile = () => {
           twitter,
           address
         }
-
-        // const response
+        console.log(obj)
+        const response=await setProfile(obj);
+        if(response.status)
+        {
+          setEdit(false)
+          fetchProfileData()
+        }
       }catch(error)
       {
         console.log(error)
@@ -42,6 +46,11 @@ const Profile = () => {
         setFirstName(data.firstName);
         setLastName(data.lastName);
         setEmail(data.email);
+        setPhoneNo(data.phoneNo)
+        setGender(data.gender)
+        setLinkedIn(data.linkedIn)
+        setTwitter(data.twitter)
+        setAddress(data.address)
       }catch(error)
       {
         console.log(error)
@@ -137,7 +146,7 @@ const Profile = () => {
             </Box>
             
             {edit&&<Box>
-                <Button variant="contained" sx={{width:'10rem',textTransform:'capitalize'}}>Save</Button>
+                <Button variant="contained" sx={{width:'10rem',textTransform:'capitalize'}} onClick={setProfileData}>Save</Button>
             </Box>}
           </Box>
 

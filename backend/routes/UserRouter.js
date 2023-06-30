@@ -17,6 +17,6 @@ router.route('/changePassword').post(userController.changePasswordController);
 
 router.route('/profile').get(authToken,userController.getProfileController);
 
-router.route('/profile').post(authToken,userController.getProfileController);
+router.route('/profile').post(authToken,userController.setProfileController);
 
 module.exports=router;

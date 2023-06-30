@@ -2,18 +2,30 @@ const bcrypt=require("bcryptjs")
 
 const users=[
     {
-        name:'admin',
+        firstName:'admin',
+        lastName:'singh',
         email:'jaibhandari804@gmail.com',
         password:bcrypt.hashSync('Test@1234',10),
         isAdmin:true,
-        emailVerify:true
+        emailVerify:true,
+        phoneNo:'',
+        linkedIn:"",
+        twitter:"",
+        address:"",
+        gender:"male"
     },
     {
-        name:'suraj',
-        email:'suraj@gmail.com',
+        firstName:'admin',
+        lastName:'singh',
+        email:'surajgautam56876@gmail.com',
         password:bcrypt.hashSync('Test@1234',10),
         isAdmin:true,
-        emailVerify:true
+        emailVerify:true,
+        phoneNo:'',
+        linkedIn:"",
+        twitter:"",
+        address:"",
+        gender:"male"
     }
 ]
 

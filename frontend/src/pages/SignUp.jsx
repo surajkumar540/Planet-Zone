@@ -93,7 +93,7 @@ const SignUp = () => {
               <Box display={'flex'}>
 
              
-              <FormControl sx={{ m: 1 }} variant="outlined" >
+              <FormControl sx={{ mr: 1 }} variant="outlined" >
 
                 <TextField
 
@@ -109,7 +109,7 @@ const SignUp = () => {
                 />
               </FormControl>
 
-              <FormControl sx={{ m: 1 }} variant="outlined" >
+              <FormControl sx={{ ml: 1 }} variant="outlined" >
 
                 <TextField
 

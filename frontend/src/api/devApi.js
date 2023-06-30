@@ -29,13 +29,34 @@ export const login = async (data) => {
     return response.data
 }
 
-export const tokenVerify = async (data) => {
+export const tokenVerify = async () => {
     const response = await axios.get(`/api/tokenVerification`,headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
     return response.data
 }
+
+
+
+
+//////-------------------------------///////////
+/////============User Profile ==========////
+//////-------------------------------///////////
+
+
+export const getProfile = async () => {
+    const response = await axios.get(`/api/profile`,headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
+
+
+
 
 //////-------------------------------///////////
 /////============get All products ==========////

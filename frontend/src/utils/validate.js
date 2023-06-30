@@ -4,8 +4,12 @@ export const validateSignUpPage = (values) => {
   const passwordRegex = new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z].*[a-z]).{8,20}$");
   const emailRegex = new RegExp("[a-z0-9]+@[a-z]+\.[a-z]{2,3}");
 
-  if (!values.name) {
-    errors.name = "First name is required";
+  if (!values.firstName) {
+    errors.firstName = "First name is required";
+  }
+
+  if (!values.lastName) {
+    errors.lastName = "Last name is required";
   }
 
   if (!values.email) {

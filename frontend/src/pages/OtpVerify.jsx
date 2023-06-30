@@ -5,12 +5,21 @@ import { Link } from "react-router-dom";
 import { validateOtp } from '../utils/validate';
 import Header from '../components/Header/Header';
 import { otpVerfiy } from '../api/devApi';
+import { useDispatch ,useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { setLogged } from '../redux/reducers/userSlice';
 
 const OtpVerify = () => {
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
   const [formValues, setFormValues] = useState({ number:"" });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
+
   
+  const emailRex = useSelector((state)=> state.user.email);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     console.log(name, value)
@@ -37,13 +46,21 @@ const OtpVerify = () => {
       return;
     }
 
-    try{
-      const response=await otpVerfiy(formValues);
-      console.log(response);
-    //   if(response.status)
-    //   {
 
-    //   }
+    const dummyData = {
+      "otp":formValues.number,
+      "email":emailRex
+    }
+
+    try{
+      const response=await otpVerfiy(dummyData);
+      // console.log(response);
+      if(response.status && response.token)
+      {
+          localStorage.setItem("token",response.token);
+          dispatch(setLogged(true));
+          navigate("/")
+      }
     }catch(error)
     {
       console.log(error)

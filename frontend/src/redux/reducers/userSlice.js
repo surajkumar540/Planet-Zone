@@ -6,7 +6,8 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
     isLogged: false,
-    status:STATUSES.IDLE
+    status:STATUSES.IDLE,
+    email:""
   },
   reducers: {
     setLogged:(state,action)=>{
@@ -23,11 +24,15 @@ const userSlice = createSlice({
       state.isLogged=false;
       state.status=STATUSES.IDLE;
       localStorage.clear()
+    },
+    setEmail:(state,action)=>{
+      state.email = action.payload;
     }
   },
 });
 
-export const { setLogged,setStatus,setUserJustLoggedIn,setUserJustLoggedOut} = userSlice.actions;
+
+export const { setLogged,setStatus,setUserJustLoggedIn,setUserJustLoggedOut,setEmail} = userSlice.actions;
 export default userSlice.reducer;
 
 export const tokenVerificationAsync = () => {
@@ -38,10 +43,11 @@ export const tokenVerificationAsync = () => {
         dispatch(setLogged(response.status))
         if (response.status) {       
             dispatch(setStatus(STATUSES.IDLE))
-        }else{
-          dispatch(setStatus(STATUSES.ERROR))
-          localStorage.clear()
         }
+        // else{
+        //   dispatch(setStatus(STATUSES.ERROR))
+        //   localStorage.clear()
+        // }
           
     } catch (err) {
         dispatch(setLogged(false))

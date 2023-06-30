@@ -37,6 +37,7 @@ export const otpVerfiy = async (data) => {
     return response.data
 }
 
+
 export const forgetOtp = async (data) => {
     const response = await axios.post(`/api/forgetOtp`,data, headerData);
     if (!response.statusText === "OK") {

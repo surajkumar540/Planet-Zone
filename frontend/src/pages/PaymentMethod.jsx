@@ -6,9 +6,13 @@ import Progress from "../components/Tools/Progress";
 import { useNavigate } from "react-router-dom";
 import { FormControlLabel, Radio, RadioGroup, Typography, Box, Button } from '@mui/material';
 import { Container, Paper, Grid, Divider, Checkbox } from '@mui/material';
+import { paymentMethod } from '../redux/reducers/orderSlice';
+import { useDispatch } from "react-redux";
 
 
 const PaymentMethod = () => {
+
+  const dispatch = useDispatch();
   const [selectedOption, setSelectedOption] = useState('');
 
   const navigate = useNavigate();
@@ -21,6 +25,8 @@ const PaymentMethod = () => {
     event.preventDefault();
     // Perform necessary actions with the selected option
     console.log(selectedOption);
+    dispatch(paymentMethod(selectedOption))
+    
     navigate("/order")
   };
 

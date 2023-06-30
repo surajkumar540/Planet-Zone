@@ -12,6 +12,9 @@ const transporter = nodemailer.createTransport({
     }
   });
 
+console.log( process.env.MAIL_USERNAME)
+console.log( process.env.MAIL_PASSWORD)
+
 async function main({mail,subject,text}) {
     try{
 

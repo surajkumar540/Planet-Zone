@@ -6,8 +6,10 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { shippingAdd } from '../api/devApi';
+import orderSlice from '../redux/reducers/orderSlice';
 
 const steps = [
   'Shipping Address',
@@ -16,6 +18,7 @@ const steps = [
 ];
 const ShippingPage = () => {
 
+  const dispatch = useDispatch();
   const [formValues,setFormValues] = useState({fullName:"",phoneNo:"",state:"",city:"",address:"",pinCode:"",landMark:""})
   const navigate= useNavigate()
 
@@ -26,6 +29,7 @@ const ShippingPage = () => {
       "fullName":formValues.fullName,
       "phoneNo":formValues.phoneNo,
       "state":formValues.state,
+      "address":formValues.address,
       "city":formValues.city,
       "pinCode":formValues.pinCode,
       "landMark":formValues.landMark
@@ -34,8 +38,15 @@ const ShippingPage = () => {
       try{
         const response=await shippingAdd(userDataObj);
         console.log(response)
+        
         if(response.status)
         {
+          dispatch(orderSlice(userDataObj))
+          navigate("/payment")
+        }
+
+        if(response.message == "Already shipping address available"){
+          dispatch(orderSlice(userDataObj))
           navigate("/payment")
         }
       }catch(error)

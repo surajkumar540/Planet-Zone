@@ -7,8 +7,11 @@ import { Link,useNavigate } from "react-router-dom"
 import { validateSignUpPage } from '../utils/validate';
 import { signup } from '../api/devApi';
 import Header from "../components/Header/Header"
+import { setEmail } from '../redux/reducers/userSlice';
+import { useDispatch } from 'react-redux';
 
 const SignUp = () => {
+  const dispatch = useDispatch()
   const navigate=useNavigate()
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
@@ -56,9 +59,11 @@ const SignUp = () => {
 
     try{
       const response=await signup(formValues)
+      
       if(response.status)
       {
-        navigate("/login")
+        dispatch(setEmail(formValues.email))
+        navigate("/otp")
       }
     }catch(error)
     {

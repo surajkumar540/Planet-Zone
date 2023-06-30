@@ -7,6 +7,8 @@ router.route('/login').post(userController.loginController)
 
 router.route('/signup').post(userController.signupController)
 
+router.route('/tokenVerification').get(userController.tokenController)
+
 router.route('/otpVerify').post(userController.otpController);
 
 router.route('/forgetOtp').post(userController.forgetOtpController);

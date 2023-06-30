@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
-import { Box, Typography, TextField,CardMedia,InputLabel,MenuItem,Select,FormControl, Button } from "@mui/material";
+import { Box, Typography, TextField,CardMedia,InputLabel,MenuItem,Select,FormControl, Button,Input ,InputAdornment  } from "@mui/material";
 import C from "../assets/Auth/c.jpg"
+import { getProfile } from "../api/devApi";
 
 const Profile = () => {
-    const [firstName,setFirstName]=useState("Jai")
+    const [firstName,setFirstName]=useState("")
     const [lastName,setLastName]=useState("Singh")
     const [email,setEmail]=useState("jaibhandari804@gmail.com")
     const [gender,setGender]=useState("male")
@@ -14,6 +15,21 @@ const Profile = () => {
     const [twitter,setTwitter]=useState("jaisingh2000")
     const [address,setAddress]=useState("B-1750, Holambi kalan Metro vihar phase- 2");
     const [edit,setEdit]=useState(false);
+
+    const fetchProfileData=async()=>{
+      try{
+        const {name,email}=await getProfile();
+        setFirstName(name);
+        setEmail(email);
+      }catch(error)
+      {
+        console.log(error)
+      }
+    }
+
+    useEffect(()=>{
+      fetchProfileData()
+    },[])
 
   return (
     <>
@@ -30,9 +46,18 @@ const Profile = () => {
               
               <Box flex={0.75} display={'flex'} flexDirection={'column'} justifyContent={'space-around'}>
                 <Box display={'flex'} mb={{xs:'1rem',md:'0rem'}}>
+
                     <Box flex={0.5}>
-                      <TextField disabled={edit===false?true:false} value={firstName} onChange={(e)=>setFirstName(e.target.value)} id="outlined-basic" label="First name" variant="outlined" sx={{width:"95%"}}/>
+                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                      <InputLabel htmlFor="standard-adornment-amount">First Name</InputLabel>
+                      <Input disabled={edit===false?true:false} value={firstName} onChange={(e)=>setFirstName(e.target.value)}
+                        id="standard-adornment-amount"
+                      />
+                    </FormControl>
+
+                      {/* <TextField disabled={edit===false?true:false} value={firstName} onChange={(e)=>setFirstName(e.target.value)} id="outlined-basic" label="First name" variant="outlined" sx={{width:"95%"}}/> */}
                     </Box>
+
                     <Box flex={0.5} display={'flex'} justifyContent={'flex-end'}>
                       <TextField disabled={edit===false?true:false} value={lastName} onChange={(e)=>setLastName(e.target.value)} id="outlined-basic" label="Last name" variant="outlined" sx={{width:"95%"}}/>
                     </Box>

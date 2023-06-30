@@ -67,7 +67,6 @@ const loginController = async (req, res) => {
 };
 
 
-
 const signupController = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -162,6 +161,36 @@ const signupController = async (req, res) => {
       message: "Error in signup",
       status: false,
     });
+  }
+};
+
+
+// For token verification
+const tokenController = async (req, res) => {
+  try {
+      const token=req.headers.authorization.split(" ")[1];
+      if(token)
+      {
+          const jwtResponse=jwt.verify(token,process.env.SECRET_KEY)
+          if(Object.keys(jwtResponse).length>0)
+          {
+              res.status(200).json({
+                  message: "Token is valid",
+                  status:true
+              });
+          }
+      }
+      else{
+          res.status(401).json({
+              message: "Unauthorized user",
+              status: false,
+          });
+      }
+  } catch (error) {
+      res.status(401).json({
+          message: "Unauthorized user",
+          status: false,
+      });
   }
 };
 
@@ -414,7 +443,6 @@ const changePasswordController = async (req, res) => {
 const getProfileController = async (req, res) => {
   try {
     const userId=req.userId;
-    console.log(userId)
     
     if(!userId)
     {
@@ -450,6 +478,7 @@ const getProfileController = async (req, res) => {
 module.exports = {
   loginController,
   signupController,
+  tokenController,
   otpController,
   forgetOtpController,
   changePasswordController,

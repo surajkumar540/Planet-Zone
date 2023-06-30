@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { shippingAdd } from '../api/devApi';
 import orderSlice from '../redux/reducers/orderSlice';
+import { shippingAddress } from '../redux/reducers/orderSlice';
 
 const steps = [
   'Shipping Address',
@@ -41,12 +42,12 @@ const ShippingPage = () => {
         
         if(response.status)
         {
-          dispatch(orderSlice(userDataObj))
+          dispatch(shippingAddress(userDataObj))
           navigate("/payment")
         }
 
         if(response.message == "Already shipping address available"){
-          dispatch(orderSlice(userDataObj))
+          dispatch(shippingAddress(userDataObj))
           navigate("/payment")
         }
       }catch(error)

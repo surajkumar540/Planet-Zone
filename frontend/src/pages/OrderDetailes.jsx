@@ -16,8 +16,8 @@ const steps = [
 ];
 
 
-const orderDetailes = useSelector((state)=> state?.order.shipping)
-console.log(orderDetailes)
+// const orderDetailes = useSelector((state)=> state?.order.shipping)
+// console.log(orderDetailes)
 
 const OrderDetailes = () => {
 

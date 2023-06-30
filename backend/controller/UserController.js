@@ -66,6 +66,8 @@ const loginController = async (req, res) => {
   }
 };
 
+
+
 const signupController = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -163,7 +165,8 @@ const signupController = async (req, res) => {
   }
 };
 
-//Otp send to verify email
+
+// Otp send to verify email
 const otpController = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -215,7 +218,7 @@ const otpController = async (req, res) => {
 };
 
 
-//Otp sent for forget password
+// Otp sent for forget password
 const forgetOtpController = async (req, res) => {
   try {
     const { email } = req.body;
@@ -319,7 +322,7 @@ const forgetOtpController = async (req, res) => {
 };
 
 
-//Otp sent for forget password
+// Make new password
 const changePasswordController = async (req, res) => {
   try {
     const { email,otp,password,confirmPassword } = req.body;
@@ -403,10 +406,52 @@ const changePasswordController = async (req, res) => {
   }
 };
 
+
+
+
+
+//Get details of User Profile
+const getProfileController = async (req, res) => {
+  try {
+    const userId=req.userId;
+    console.log(userId)
+    
+    if(!userId)
+    {
+      res.status(404).json({
+        message: "Something is wrong",
+        status: false,
+      });
+      return;
+    }
+
+    const existingUser = await User.findOne({ _id: userId });
+    const userDetailsObj={
+      name:existingUser.name,
+      email:existingUser.email
+    }
+
+    res.status(201).json({
+      data:userDetailsObj,
+      status: true,
+    });
+
+
+  } 
+  catch (error) {
+
+    res.status(404).json({
+      message: "Something is wron",
+      status: false,
+    });
+  }
+};
+
 module.exports = {
   loginController,
   signupController,
   otpController,
   forgetOtpController,
-  changePasswordController
+  changePasswordController,
+  getProfileController
 };

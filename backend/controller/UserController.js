@@ -232,9 +232,16 @@ const otpController = async (req, res) => {
     }
 
     if (userOtpObj.otp === String(otp)) {
+      
+      const token = await jwt.sign(
+        { id: existingUser._id },
+        process.env.SECRET_KEY,
+        { expiresIn: "7d" }
+      );
       const user = await User.findOneAndUpdate({ email: email },{ emailVerify: true });
       const otp = await Otp.findOneAndUpdate({ email: email },{ otp: "" });
       res.status(200).json({
+        token:token,
         message: "Email verified successfully",
         status: true,
       });
@@ -490,7 +497,6 @@ const setProfileController = async (req, res) => {
     const userId=req.userId;
     const {firstName="",lastName="",gender="",phoneNo="",linkedIn="",twitter="",address=""}=req.body;
     
-    
     if(!userId)
     {
       res.status(404).json({
@@ -500,11 +506,19 @@ const setProfileController = async (req, res) => {
       return;
     }
     
-    const existingUser = await User.findOne({ _id: userId });
+    const user = await User.findOneAndUpdate({ _id: userId},{
+      firstName:firstName,
+      lastName:lastName,
+      gender:gender,
+      linkedIn:linkedIn,
+      twitter:twitter,
+      phoneNo:phoneNo,
+      address:address
+    });
     
-
-    res.status(201).json({
-      data:userDetailsObj,
+    console.log(user)
+    res.status(200).json({
+      message:"Data updated successfully",
       status: true,
     });
 

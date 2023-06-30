@@ -4,7 +4,9 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
-import {useNavigate} from "react-router-dom"
+import { forgetOtp } from '../../api/devApi';
+import { useNavigate } from "react-router-dom"
+import { useSelector } from 'react-redux';
 
 const style = {
     position: 'absolute',
@@ -19,14 +21,36 @@ const style = {
 };
 
 export default function ForgetModal() {
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    // const emailRex = useSelector((state) => state.user.email);
+
+    const handleSendForgetOtp = async () => {
+
+        const dummy = {
+            "email": "surajgautam56878@gmail.com"
+        }
+
+
+        try {
+            const response = await forgetOtp(dummy);
+
+            if (response.status) {
+                navigate("/change-password");
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
     return (
         <Box>
-            <Typography mt={'.3rem'} textAlign={'center'} color={'red'} sx={{cursor:'pointer'}} onClick={handleOpen}>Forgot Password ?</Typography>
+            <Typography mt={'.3rem'} textAlign={'center'} color={'red'} sx={{ cursor: 'pointer' }} onClick={() => { handleOpen(); handleSendForgetOtp(); }}>Forgot Password ?</Typography>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -39,11 +63,11 @@ export default function ForgetModal() {
                     </Typography>
 
                     <Box marginTop={3} marginBottom={4}>
-                        <TextField type='email'  label="mail@example.com" variant="outlined" fullWidth />
+                        <TextField type='email' label="mail@example.com" variant="outlined" fullWidth />
                     </Box>
 
                     <Box textAlign='center' bgcolor={'pink'}>
-                        <Button variant='contained' fullWidth onClick={()=>navigate("/change-password")}>Send Otp</Button>
+                        <Button variant='contained' fullWidth onClick={() => navigate("/change-password")}>Send Otp</Button>
                     </Box>
 
                 </Box>

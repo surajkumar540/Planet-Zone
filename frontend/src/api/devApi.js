@@ -37,6 +37,23 @@ export const otpVerfiy = async (data) => {
     return response.data
 }
 
+export const forgetOtp = async (data) => {
+    const response = await axios.post(`/api/forgetOtp`,data, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+export const changePassword = async (data) => {
+    const response = await axios.post(`/api/changePassword`,data, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
 export const tokenVerify = async (data) => {
     const response = await axios.get(`/api/tokenVerification`,headerData);
     if (!response.statusText === "OK") {

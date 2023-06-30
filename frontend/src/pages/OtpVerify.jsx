@@ -4,6 +4,8 @@ import otpImg from "../assets/Auth/otp.jpg"
 import { Link } from "react-router-dom";
 import { validateOtp } from '../utils/validate';
 import Header from '../components/Header/Header';
+import { otpVerfiy } from '../api/devApi';
+
 const OtpVerify = () => {
   const [formValues, setFormValues] = useState({ number:"" });
   const [formErrors, setFormErrors] = useState({});
@@ -33,6 +35,18 @@ const OtpVerify = () => {
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
       return;
+    }
+
+    try{
+      const response=await otpVerfiy(formValues);
+      console.log(response);
+    //   if(response.status)
+    //   {
+
+    //   }
+    }catch(error)
+    {
+      console.log(error)
     }
 
     setIsSubmit(false)

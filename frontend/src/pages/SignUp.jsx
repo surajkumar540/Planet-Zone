@@ -56,6 +56,7 @@ const SignUp = () => {
 
     try{
       const response=await signup(formValues)
+      
       if(response.status)
       {
         navigate("/login")

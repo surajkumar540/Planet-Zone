@@ -6,6 +6,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
+import { useSelector } from 'react-redux';
 // import { orderDetailesApi } from '../api/devApi';
 
 const steps = [
@@ -13,9 +14,12 @@ const steps = [
     'Payment',
     'Order Detailes',
 ];
+
+
+// const orderDetailes = useSelector((state)=> state?.order.shipping)
+// console.log(orderDetailes)
+
 const OrderDetailes = () => {
-
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();

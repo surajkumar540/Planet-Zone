@@ -100,6 +100,12 @@ export const validateChangePassword = (values) => {
     errors.email = "Enter valid email"
   }
 
+  if (!values.number) {
+    errors.number = "OTP is required";
+  } else if (values.number.length < 6) {
+    errors.number = "Enter valid otp"
+  }
+
   if (!passwordRegex.test(values.password)) {
     errors.password = "It must contain 1 capital,1 small letter,1 special sign,1 number "
   }

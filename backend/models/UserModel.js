@@ -32,6 +32,10 @@ const userSchema=mongoose.Schema({
         type:String,
         default:""
     },
+    address:{
+        type:String,
+        default:""
+    },
     emailVerify:{
         type:Boolean,
         required:true,

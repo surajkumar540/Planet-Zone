@@ -1,9 +1,12 @@
 const mongoose=require("mongoose");
 
 const userSchema=mongoose.Schema({
-    name:{
+    firstName:{
         type:String,
         required:true
+    },
+    lastName:{
+        type:String
     },
     email:{
         type:String,
@@ -12,6 +15,22 @@ const userSchema=mongoose.Schema({
     password:{
         type:String,
         required:true
+    },
+    gender:{
+        type:String,
+        default:""
+    },
+    phoneNo:{
+        type:String,
+        default:""
+    },
+    linkedIn:{
+        type:String,
+        default:""
+    },
+    twitter:{
+        type:String,
+        default:""
     },
     emailVerify:{
         type:Boolean,

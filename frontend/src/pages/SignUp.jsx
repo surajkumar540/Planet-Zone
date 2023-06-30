@@ -12,7 +12,7 @@ const SignUp = () => {
   const navigate=useNavigate()
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const [formValues, setFormValues] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [formValues, setFormValues] = useState({ firstName: '',lastName: '', email: '', password: '', confirmPassword: '' });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
 
@@ -20,7 +20,7 @@ const SignUp = () => {
   const handleClickShowConrfirmPassword = () => setShowConfirmPassword((show) => !show);
 
   const clearFormValues=()=>{
-    setFormValues({ name: '', email: '', password: '', confirmPassword: '' });
+    setFormValues({ firstName: '',lastName:"", email: '', password: '', confirmPassword: '' });
     setFormErrors({})
 }
 
@@ -90,21 +90,42 @@ const SignUp = () => {
           <form onSubmit={handleSubmit}>
             <Box display={'flex'} flexDirection={'column'} alignItems={'center'} >
 
-              <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
+              <Box display={'flex'}>
+
+             
+              <FormControl sx={{ m: 1 }} variant="outlined" >
 
                 <TextField
 
                   sx={{ width: "100%" }}
                   id="filled-error-helper-text"
                   type={'text'}
-                  error={formErrors.name ? true : false}
-                  helperText={formErrors.name}
-                  name='name'
-                  value={formValues.name}
-                  label="Full Name"
+                  error={formErrors.firstName ? true : false}
+                  helperText={formErrors.firstName}
+                  name='firstName'
+                  value={formValues.firstName}
+                  label="First Name"
                   onChange={handleChange}
                 />
               </FormControl>
+
+              <FormControl sx={{ m: 1 }} variant="outlined" >
+
+                <TextField
+
+                  sx={{ width: "100%" }}
+                  id="filled-error-helper-text"
+                  type={'text'}
+                  error={formErrors.lastName ? true : false}
+                  helperText={formErrors.lastName}
+                  name='lastName'
+                  value={formValues.lastName}
+                  label="Last Name"
+                  onChange={handleChange}
+                />
+              </FormControl>
+
+              </Box>
 
               <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
 

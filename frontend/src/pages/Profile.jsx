@@ -7,20 +7,41 @@ import { getProfile } from "../api/devApi";
 
 const Profile = () => {
     const [firstName,setFirstName]=useState("")
-    const [lastName,setLastName]=useState("Singh")
-    const [email,setEmail]=useState("jaibhandari804@gmail.com")
-    const [gender,setGender]=useState("male")
-    const [phoneNo,setPhoneNo]=useState("9667201750")
-    const [linkedIn,setLinkedIn]=useState("jai-singh-linked")
-    const [twitter,setTwitter]=useState("jaisingh2000")
-    const [address,setAddress]=useState("B-1750, Holambi kalan Metro vihar phase- 2");
+    const [lastName,setLastName]=useState("")
+    const [email,setEmail]=useState("")
+    const [gender,setGender]=useState("")
+    const [phoneNo,setPhoneNo]=useState("")
+    const [linkedIn,setLinkedIn]=useState("")
+    const [twitter,setTwitter]=useState("")
+    const [address,setAddress]=useState("");
     const [edit,setEdit]=useState(false);
+
+    const setProfileData=async()=>{
+      try{
+        const obj={
+          firstName,
+          lastName,
+          email,
+          gender,
+          phoneNo,
+          linkedIn,
+          twitter,
+          address
+        }
+
+        // const response
+      }catch(error)
+      {
+        console.log(error)
+      }
+    }
 
     const fetchProfileData=async()=>{
       try{
-        const {name,email}=await getProfile();
-        setFirstName(name);
-        setEmail(email);
+        const {data}=await getProfile();
+        setFirstName(data.firstName);
+        setLastName(data.lastName);
+        setEmail(data.email);
       }catch(error)
       {
         console.log(error)
@@ -48,14 +69,7 @@ const Profile = () => {
                 <Box display={'flex'} mb={{xs:'1rem',md:'0rem'}}>
 
                     <Box flex={0.5}>
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                      <InputLabel htmlFor="standard-adornment-amount">First Name</InputLabel>
-                      <Input disabled={edit===false?true:false} value={firstName} onChange={(e)=>setFirstName(e.target.value)}
-                        id="standard-adornment-amount"
-                      />
-                    </FormControl>
-
-                      {/* <TextField disabled={edit===false?true:false} value={firstName} onChange={(e)=>setFirstName(e.target.value)} id="outlined-basic" label="First name" variant="outlined" sx={{width:"95%"}}/> */}
+                      <TextField disabled={edit===false?true:false} value={firstName} onChange={(e)=>setFirstName(e.target.value)} id="outlined-basic" label="First name" variant="outlined" sx={{width:"95%"}}/>
                     </Box>
 
                     <Box flex={0.5} display={'flex'} justifyContent={'flex-end'}>
@@ -63,7 +77,7 @@ const Profile = () => {
                     </Box>
                 </Box>
                 <Box >
-                  <TextField disabled={edit===false?true:false} value={email} onChange={(e)=>setEmail(e.target.value)} id="outlined-basic" label="Email" variant="outlined" fullWidth />
+                  <TextField disabled value={email} onChange={(e)=>setEmail(e.target.value)} id="outlined-basic" label="Email" variant="outlined" fullWidth />
                 </Box>
               </Box>
 
@@ -90,7 +104,6 @@ const Profile = () => {
                     disabled={edit===false?true:false}
                     label="Gender"
                     >
-                    <MenuItem value="">Select</MenuItem>
                     <MenuItem value={'male'}>Male</MenuItem>
                     <MenuItem value={'female'}>Female</MenuItem>
                     </Select>

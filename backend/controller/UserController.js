@@ -69,9 +69,9 @@ const loginController = async (req, res) => {
 
 const signupController = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { firstName,lastName, email, password, confirmPassword } = req.body;
 
-    if(!name||!email||!password||!confirmPassword)
+    if(!firstName||!email||!password||!confirmPassword)
     {
       res.status(404).json({
         message: "Something is missing",
@@ -113,7 +113,8 @@ const signupController = async (req, res) => {
       //Create User in Database
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await User.create({
-        name: name,
+        firstName: firstName,
+        lastName:lastName,
         email: email,
         password: hashedPassword,
       });
@@ -452,12 +453,55 @@ const getProfileController = async (req, res) => {
       });
       return;
     }
-
+    
     const existingUser = await User.findOne({ _id: userId });
     const userDetailsObj={
-      name:existingUser.name,
-      email:existingUser.email
+      firstName:existingUser.firstName,
+      lastName:existingUser.lastName,
+      email:existingUser.email,
+      gender:existingUser.gender,
+      linkedIn:existingUser.linkedIn,
+      twitter:existingUser.twitter,
+      phoneNo:existingUser.phoneNo,
+      address:existingUser.address
     }
+    
+    res.status(201).json({
+      data:userDetailsObj,
+      status: true,
+    });
+
+
+  } 
+  catch (error) {
+
+    res.status(404).json({
+      message: "Something is wrong",
+      status: false,
+    });
+  }
+};
+
+
+
+//Set details of User Profile
+const setProfileController = async (req, res) => {
+  try {
+    const userId=req.userId;
+    const {firstName="",lastName="",gender="",phoneNo="",linkedIn="",twitter="",address=""}=req.body;
+    
+    
+    if(!userId)
+    {
+      res.status(404).json({
+        message: "Something is wrong",
+        status: false,
+      });
+      return;
+    }
+    
+    const existingUser = await User.findOne({ _id: userId });
+    
 
     res.status(201).json({
       data:userDetailsObj,
@@ -482,5 +526,6 @@ module.exports = {
   otpController,
   forgetOtpController,
   changePasswordController,
-  getProfileController
+  getProfileController,
+  setProfileController
 };

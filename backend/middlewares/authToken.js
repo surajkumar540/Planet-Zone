@@ -5,7 +5,6 @@ const authToken=async(req,res,next)=>{
         const token=req.headers.authorization.split(" ")[1]
         const {id}=jwt.verify(token,process.env.SECRET_KEY)
         req.userId=id
-        console.log(id)
         next()
     }catch(error)
     {

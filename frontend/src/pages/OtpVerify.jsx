@@ -92,7 +92,8 @@ const OtpVerify = () => {
 
   const resendOtp = async () => {
     const dummyData = {
-      "name": userObj.firstName,
+      "firstName": userObj.firstName,
+      "lastName": userObj.lastName,
       "email": userObj.email,
       "password": userObj.password,
       "confirmPassword": userObj.password

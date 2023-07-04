@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // import { makeStyles } from '@mui/styles';
 import { Container, Paper, Typography, TextField, Button, Grid, Box } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
@@ -8,7 +8,7 @@ import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { shippingAdd } from '../api/devApi';
+import { shippingAdd, getShipping } from '../api/devApi';
 import orderSlice from '../redux/reducers/orderSlice';
 import { shippingAddress } from '../redux/reducers/orderSlice';
 
@@ -20,55 +20,84 @@ const steps = [
 const ShippingPage = () => {
 
   const dispatch = useDispatch();
-  const [formValues,setFormValues] = useState({fullName:"",phoneNo:"",state:"",city:"",address:"",pinCode:"",landMark:""})
-  const navigate= useNavigate()
+  const navigate = useNavigate()
+  const [isAddress, setIsAddress] = useState();
+  const [formValues, setFormValues] = useState({ fullName: "", phoneNo: "", state: "", city: "", address: "", pinCode: "", landMark: "" })
 
-  const handleSubmit = async(e) => {
+
+
+
+
+  const fetchAddressData = async () => {
+
+    try {
+
+      const response = await getShipping();
+      // console.log(response,"dd")
+      const { fullName, phoneNo, state, city, address, pinCode, landMark } = response?.data;
+      setFormValues({
+        fullName, phoneNo, state, city, address, pinCode, landMark
+      })
+      // setFormValues()
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
+
+
+  useEffect(() => {
+    fetchAddressData();
+  }, [])
+
+
+
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle shipping form submission
     const userDataObj = {
-      "fullName":formValues.fullName,
-      "phoneNo":formValues.phoneNo,
-      "state":formValues.state,
-      "address":formValues.address,
-      "city":formValues.city,
-      "pinCode":formValues.pinCode,
-      "landMark":formValues.landMark
+      "fullName": formValues.fullName,
+      "phoneNo": formValues.phoneNo,
+      "state": formValues.state,
+      "address": formValues.address,
+      "city": formValues.city,
+      "pinCode": formValues.pinCode,
+      "landMark": formValues.landMark
+    }
+
+    try {
+      const response = await shippingAdd(userDataObj);
+      console.log(response)
+
+      if (response.status) {
+        dispatch(shippingAddress(userDataObj))
+        navigate("/payment")
       }
 
-      try{
-        const response=await shippingAdd(userDataObj);
-        console.log(response)
-        
-        if(response.status)
-        {
-          dispatch(shippingAddress(userDataObj))
-          navigate("/payment")
-        }
-
-        if(response.message == "Already shipping address available"){
-          dispatch(shippingAddress(userDataObj))
-          navigate("/payment")
-        }
-      }catch(error)
-      {
-        console.log(error)
-        
+      if (response.message == "Already shipping address available") {
+        dispatch(shippingAddress(userDataObj))
+        navigate("/payment")
       }
-    };
+    } catch (error) {
+      console.log(error)
+
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const newObject={...formValues,[name]:value};
-    setFormValues({...newObject});
-}
+    const newObject = { ...formValues, [name]: value };
+    setFormValues({ ...newObject });
+  }
 
 
 
 
   return (
     <>
-      <Header/>
+      <Header />
       <Grid container marginY={2}>
         {/* <Grid item xs={12}>
           <img src="https://img.freepik.com/premium-photo/shopping-cart-symbol-with-torn-paper_220873-11807.jpg?w=996" alt="Background" style={{ width: '100%', height: 'auto' }} />
@@ -137,7 +166,7 @@ const ShippingPage = () => {
                   onChange={handleChange}
                 />
               </Box>
-              
+
 
               <Box display="flex" justifyContent="center" >
 
@@ -186,9 +215,10 @@ const ShippingPage = () => {
         </Container>
         {/* </Grid> */}
       </Grid>
-      <Footer/>
+      <Footer />
     </>
   );
 };
 
 export default ShippingPage;
+

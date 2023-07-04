@@ -6,6 +6,7 @@ const userRouter=require('./routes/UserRouter')
 const shippingRouter=require("./routes/ShippingRouter")
 const authToken=require("./middlewares/authToken")
 const orderRouter = require("./routes/OrderRouter");
+const contactRouter = require("./routes/ContactRouter");
 const main=require('./config/mail')
 const PORT=4000;
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(userRouter);
 app.use(productRouter);
 app.use(authToken,shippingRouter);
 app.use(authToken,orderRouter);
+app.use(contactRouter);
 
 app.listen(process.env.PORT||PORT,()=>{
     console.log(`${process.env.NODE_ENV} Server is working on ${process.env.PORT} `);

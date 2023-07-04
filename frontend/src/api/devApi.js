@@ -141,3 +141,12 @@ export const orderDetailesApi = async () => {
     return response.data
 }
 
+
+export const orderInitApi = async (obj) => {
+    const response = await axios.post(`/api/orderInit`,obj, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+

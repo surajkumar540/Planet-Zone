@@ -29,10 +29,10 @@ const orderInitController=async(req,res)=>{
 
         if (!order) return res.status(500).send("Some error occured");
 
-        console.log(order,"mera order")
-        res.status(409).json({
-            order:order,
-            status:false
+        res.status(200).json({
+            data:order,
+            KEY_ID:process.env.RAZORPAY_KEY_ID,
+            status:true
         })
 
     }catch(error)

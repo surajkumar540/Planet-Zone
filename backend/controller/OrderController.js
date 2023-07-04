@@ -1,4 +1,46 @@
 const Order = require('../models/OrderModel');
+const Razorpay = require("razorpay");
+
+const orderInitController=async(req,res)=>{
+    try{
+        const {amount}=req.body;
+
+        if(!amount||amount.lenght===0)
+        {  
+            res.status(409).json({
+                message:"Amount is required",
+                status:false
+            })
+            return;
+        }
+        
+        const instance = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_SECRET,
+        });
+
+        const options = {
+            amount: amount*100, // amount in smallest currency unit
+            currency: "INR",
+            receipt: "txn_23134",
+        };
+
+        const order = await instance.orders.create(options);
+
+        if (!order) return res.status(500).send("Some error occured");
+
+        res.status(200).json({
+            data:order,
+            KEY_ID:process.env.RAZORPAY_KEY_ID,
+            status:true
+        })
+
+    }catch(error)
+    {
+        res.send(error)
+    }
+}
+
 
 const createOrderController = async(req,res)=>{   
     
@@ -36,4 +78,4 @@ const createOrderController = async(req,res)=>{
     }
 }
 
-module.exports = {createOrderController};
+module.exports = {createOrderController,orderInitController};

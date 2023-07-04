@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import { forgetOtp } from '../../api/devApi';
 import { useNavigate } from "react-router-dom"
 import { useSelector } from 'react-redux';
+import { useState } from 'react';
 
 const style = {
     position: 'absolute',
@@ -22,16 +23,16 @@ const style = {
 
 export default function ForgetModal() {
     const navigate = useNavigate()
+    const [email,setEmail]=useState("")
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-
     // const emailRex = useSelector((state) => state.user.email);
 
     const handleSendForgetOtp = async () => {
 
         const dummy = {
-            "email": "surajgautam56878@gmail.com"
+            "email": email
         }
 
 
@@ -50,7 +51,7 @@ export default function ForgetModal() {
 
     return (
         <Box>
-            <Typography mt={'.3rem'} textAlign={'center'} color={'red'} sx={{ cursor: 'pointer' }} onClick={() => { handleOpen(); handleSendForgetOtp(); }}>Forgot Password ?</Typography>
+            <Typography mt={'.3rem'} textAlign={'center'} color={'red'} sx={{ cursor: 'pointer' }} onClick={() => { handleOpen(); }}>Forgot Password ?</Typography>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -63,11 +64,11 @@ export default function ForgetModal() {
                     </Typography>
 
                     <Box marginTop={3} marginBottom={4}>
-                        <TextField type='email' label="mail@example.com" variant="outlined" fullWidth />
+                        <TextField type='email' label="mail@example.com" variant="outlined" fullWidth value={email} onChange={(e)=>setEmail(e.target.value)}/>
                     </Box>
 
                     <Box textAlign='center' bgcolor={'pink'}>
-                        <Button variant='contained' fullWidth onClick={() => navigate("/change-password")}>Send Otp</Button>
+                        <Button variant='contained' fullWidth onClick={ handleSendForgetOtp}>Send Otp</Button>
                     </Box>
 
                 </Box>

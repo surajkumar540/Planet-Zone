@@ -7,7 +7,7 @@ const userSlice = createSlice({
   initialState: {
     isLogged: false,
     status:STATUSES.IDLE,
-    userObj:""
+    userObj:{}
   },
   reducers: {
     setLogged:(state,action)=>{

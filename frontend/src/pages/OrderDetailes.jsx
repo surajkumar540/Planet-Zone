@@ -16,13 +16,15 @@ const steps = [
 ];
 
 
-// const orderDetailes = useSelector((state)=> state?.order.shipping)
-// console.log(orderDetailes)
 
 
 
 const OrderDetailes = () => {
 
+    
+    // const orderDetailes = useSelector((state)=> state?.order.shipping)
+    // console.log(orderDetailes)
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         // Handle shipping form submission

@@ -81,7 +81,6 @@ const SignUp = () => {
 
   return (
     <>
-    <Header/>
     <Box display={'flex'} height={'calc(100vh - 64px)'} >
 
       <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'} bgcolor={'#138F74'}>

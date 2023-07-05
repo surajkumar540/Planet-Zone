@@ -4,7 +4,7 @@ const ContactUs = require("../models/ContactUsModal");
 const createContactController = async (req, res) => {
 
     try {
-        const { name, email, phoneNo, address, city } = req.body;
+        const { name, email, phoneNo, address, city,message } = req.body;
 
         const existingUser = await ContactUs.findOne({ email: email });
 
@@ -32,7 +32,8 @@ const createContactController = async (req, res) => {
             email: email,
             phoneNo: phoneNo,
             address: address,
-            city: city
+            city: city,
+            message:message
         });
 
     }

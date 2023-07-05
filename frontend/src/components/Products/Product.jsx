@@ -5,14 +5,28 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarIcon from '@mui/icons-material/Star';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch,useSelector } from 'react-redux';
+import { addToCartAsync } from '../../redux/reducers/cartSlice';
 
 const Product = ({obj}) => {
     const {_id}=obj;
     const navigate=useNavigate();
+    const dispatch=useDispatch()
+
+    //Send item to cart 
+    // const handleCart=()=>{
+    //     const dummy={
+    //         id:obj?._id,
+    //         qty:1
+    //     }
+    //     dispatch(addToCartAsync(dummy))
+    //     navigate("/cart")
+    // }
 
   return (
     <Box onClick={()=>navigate(`/product/${_id}`)} 
-    sx={{height:'20rem',width:'15rem',bgcolor:'white',borderRadius:'10px',display:'flex',flexDirection:'column',boxShadow:'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',cursor:'pointer','&:hover': {transform: 'scale(1.01)',transition:'0.5s ease-in-out'}
+    sx={{height:'20rem',width:'15rem', bgcolor:'white', borderRadius:'10px', display:'flex', flexDirection:'column',boxShadow:'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px', cursor:'pointer', zIndex:'0',
+    '&:hover': {transform: 'scale(1.01)',transition:'0.5s ease-in-out'}
     }} >
 
         <Box flex={0.68} boxSizing={'border-box'} p={'.5rem'}>
@@ -46,11 +60,13 @@ const Product = ({obj}) => {
                         </Box>
                     </Box>
 
-                    <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'center'}>
-                        <IconButton>
+                    {/* <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'center'} bgcolor={'pink'} zIndex={500} 
+                    // onClick={handleCart}
+                    >
+                        <IconButton >
                             <ShoppingCartOutlinedIcon sx={{ color: '#009688' }}/>
                         </IconButton>
-                    </Box>
+                    </Box> */}
                 </Box>
             </Box>
         </Box>

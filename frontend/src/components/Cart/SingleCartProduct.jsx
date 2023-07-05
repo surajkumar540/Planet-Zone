@@ -47,7 +47,7 @@ const SingleCartProduct = ({ obj }) => {
     }
 
   return (
-    <Box sx={{ display: "flex", height: "12rem", mb: "3rem", width: "88%", bgcolor: "white", borderRadius: "10px", boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",cursor:'pointer' ,"&:hover":{} }} >
+    <Box sx={{ display: "flex", height: "12rem", mb: "3rem", width: "88%", bgcolor: "white", borderRadius: "10px", boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",cursor:'pointer' ,'&:hover': {transform: 'scale(1.01)',transition:'0.5s ease-in-out'} }} >
 
       <Box flex={0.2} boxSizing={"border-box"} p="0.5rem" onClick={showProductFun}>
         <CardMedia

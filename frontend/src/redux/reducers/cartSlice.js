@@ -59,7 +59,7 @@ export const { addToCart, removeFromCart,setStatus } = cartSlice.actions;
 export default cartSlice.reducer;
 
 export const addToCartAsync = (getObj) => {
-  return async function addToCartThunk(dispatch, getState) {    
+  return async function addToCartThunk(dispatch) {    
     try {
         dispatch(setStatus(STATUSES.LOADING))
         const response = await fetchSingleProductApi(getObj.id);
@@ -74,7 +74,7 @@ export const addToCartAsync = (getObj) => {
                 name: product.name,
                 rating:product.rating,
                 price: product.price,
-                qty: getObj.qty,
+                qty: (getObj.qty||1),
                 };
         
                 dispatch(addToCart(newObj))

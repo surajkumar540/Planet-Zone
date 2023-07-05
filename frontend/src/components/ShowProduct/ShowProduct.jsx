@@ -10,7 +10,6 @@ const ShowProduct = ({obj}) => {
     const [qty,setQty]=useState(0);
 
     const handleCart=()=>{
-        console.log("call")
         const dummy={
             id:obj?._id,
             qty:qty

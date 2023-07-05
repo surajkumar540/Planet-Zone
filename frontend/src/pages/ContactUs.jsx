@@ -1,15 +1,12 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import React from "react";
 import Avatar from '@mui/material/Avatar';
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
 import Banner from "../components/Tools/Banner";
 import Location from "../components/Tools/Location";
 
 const ContactUs = () => {
     return (
         <>
-            <Header/>
             <Banner title='#Contact Us' text='Connect with us to be part of our family'/>
             <Location/>
 
@@ -75,7 +72,6 @@ const ContactUs = () => {
                 </Box>
 
             </Box>
-            <Footer/>
         </>
     )
 }

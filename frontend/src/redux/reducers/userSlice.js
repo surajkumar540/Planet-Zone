@@ -44,10 +44,10 @@ export const tokenVerificationAsync = () => {
         if (response.status) {       
             dispatch(setStatus(STATUSES.IDLE))
         }
-        // else{
-        //   dispatch(setStatus(STATUSES.ERROR))
-        //   localStorage.clear()
-        // }
+        else{
+          dispatch(setStatus(STATUSES.ERROR))
+          localStorage.clear()
+        }
           
     } catch (err) {
         dispatch(setLogged(false))

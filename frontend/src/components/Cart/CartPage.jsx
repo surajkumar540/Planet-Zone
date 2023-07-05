@@ -9,9 +9,9 @@ const CartProducts = ({ products }) => {
 
   const navigate = useNavigate();
 
-const handleSubmit = ()=>{
-  navigate("/shipping")
-}
+  const handleSubmit = ()=>{
+    navigate("/shipping")
+  }
 
   return (
     <Box bgcolor={'#F8F8F8'} pt='3rem'>
@@ -28,9 +28,13 @@ const handleSubmit = ()=>{
             })
           }
 
-          <Box display='flex' justifyContent="right" pr={15}>
+          {
+            products.length>0 &&  <Box display='flex' justifyContent="right" pr={15}>
             <Button variant='contained' onClick={handleSubmit}>Place Order</Button>
-          </Box>
+            </Box>
+           
+          }
+          
 
         </Box>
         {

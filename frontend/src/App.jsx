@@ -20,6 +20,8 @@ import OrderDetailes from './pages/OrderDetailes'
 import { tokenVerificationAsync } from './redux/reducers/userSlice'
 import { useNavigate } from 'react-router-dom'
 import { getToken } from './utils/functions'
+import Header from './components/Header/Header'
+import Footer from './components/Footer/Footer'
 
 function App() {
   const isLogged=useSelector((state)=>state?.user?.isLogged)
@@ -50,8 +52,8 @@ function App() {
   }
 
   useEffect(()=>{
-    checkPath();
     dispatch(tokenVerificationAsync())
+    checkPath();
     dispatch(fetchAllProducts())
   },[])
   
@@ -64,6 +66,10 @@ function App() {
         <Route path="/signup" element={ <SignUp/> } />
         <Route path="/otp" element={ <OtpVerify/> } />
         <Route path="/change-password" element={ <ChangePassword/> } />
+      </Routes>
+       
+       <Header/>
+       <Routes>
         <Route path="/" element={ <Home/> } /> 
         <Route path="/product/:pid" element={ <ShowProducts/> } /> 
         <Route path="/cart" element={ <Cart/> } /> 
@@ -73,8 +79,8 @@ function App() {
         <Route path="/contact" element={ <ContactUs/> } /> 
         <Route path="/shipping" element={ <ShippingPage/> } />
         <Route path="/order" element={ <OrderDetailes/> } />
-
       </Routes>
+      <Footer/>
     </>
   )
 }

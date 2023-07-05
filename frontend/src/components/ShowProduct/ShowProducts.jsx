@@ -1,8 +1,6 @@
 import React,{useEffect, useState} from 'react';
-import Header from '../Header/Header';
 import ShowProduct from './ShowProduct';
 import Products from '../Products/Products';
-import Footer from '../Footer/Footer';
 import { useSelector } from 'react-redux';
 import { fetchSingleProductApi } from '../../api/devApi';
 import { useParams } from 'react-router-dom';
@@ -35,11 +33,9 @@ const ShowProducts = () => {
 
   return (
     <>
-    <Header/>
     {/* send single products state/props in show product comp */}
     <ShowProduct obj={singleProduct}/> 
     <Products products={products}/>
-    <Footer/>
     </>
   )
 }

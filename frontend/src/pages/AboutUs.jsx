@@ -4,12 +4,6 @@ import Features from "../components/About/Features";
 import Banner from '../components/Tools/Banner';
 
 const AboutUs = () => {
-    const styles = {
-        // background: `url(${OrganicImg}) no-repeat center center fixed`,
-        backgroundSize: "cover",
-        height: "100vh",
-        width: "100%",
-    };
     return (
         <>
             <Banner title='#About Us' text='Know us better and connect with us'/>

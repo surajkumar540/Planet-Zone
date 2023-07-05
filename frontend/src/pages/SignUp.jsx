@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, Box, CardMedia, FormControl, IconButton, TextField, InputAdornment, OutlinedInput, Button, InputLabel } from '@mui/material';
+import { Typography, Box, CardMedia, FormControl, IconButton, TextField, InputAdornment, Button } from '@mui/material';
 import signupImg from "../assets/Auth/signup.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';

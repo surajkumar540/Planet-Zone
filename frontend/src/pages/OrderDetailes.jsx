@@ -1,5 +1,4 @@
 import React from 'react';
-// import { makeStyles } from '@mui/styles';
 import { Container, Paper, Typography, TextField, Button, Grid, Box, Divider, Checkbox } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -21,9 +20,6 @@ const steps = [
 
 const OrderDetailes = () => {
 
-    
-    // const orderDetailes = useSelector((state)=> state?.order.shipping)
-    // console.log(orderDetailes)
     
     const handleSubmit = async (e) => {
         e.preventDefault();

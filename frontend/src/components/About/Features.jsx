@@ -15,7 +15,7 @@ const Features = () => {
                         />
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
-                        <Box bgcolor='#9BABB8' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
+                        <Box bgcolor='#9BABB8' color='green' fontSize="16px" borderRadius='5px' paddingX={"5px"} >
                             Free Shiping
                         </Box>
                     </Box>
@@ -30,7 +30,7 @@ const Features = () => {
                         />
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
-                        <Box bgcolor='#D7C0AE' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
+                        <Box bgcolor='#D7C0AE' color='green' fontSize="16px" borderRadius='5px' paddingX={"5px"} >
                             Online Order
                         </Box>
                     </Box>
@@ -45,7 +45,7 @@ const Features = () => {
                         />
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
-                        <Box bgcolor='#F3BCC8' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
+                        <Box bgcolor='#F3BCC8' color='green' fontSize="16px" borderRadius='5px' paddingX={"5px"} >
                             Save Money
                         </Box>
                     </Box>
@@ -60,7 +60,7 @@ const Features = () => {
                         />
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
-                        <Box bgcolor='#B799FF' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
+                        <Box bgcolor='#B799FF' color='green' fontSize="16px" borderRadius='5px' paddingX={"5px"} >
                             Promotion
                         </Box>
                     </Box>
@@ -75,7 +75,7 @@ const Features = () => {
                         />
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
-                        <Box bgcolor='#99A98F' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
+                        <Box bgcolor='#99A98F' color='green' fontSize="16px" borderRadius='5px' paddingX={"5px"} >
                             Happy Sale
                         </Box>
                     </Box>
@@ -89,7 +89,7 @@ const Features = () => {
                         />
                     </Card>
                     <Box paddingTop='10px' display='flex' justifyContent='center'>
-                        <Box bgcolor='#FFD966' color='green' fontWeight="bold" fontSize="16px" borderRadius='5px' paddingX={"5px"} >
+                        <Box bgcolor='#FFD966' color='green' fontSize="16px" borderRadius='5px' paddingX={"5px"} >
                             24/7 Support
                         </Box>
                     </Box>

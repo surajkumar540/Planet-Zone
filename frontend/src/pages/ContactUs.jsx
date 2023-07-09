@@ -3,26 +3,55 @@ import React from "react";
 import Avatar from '@mui/material/Avatar';
 import Banner from "../components/Tools/Banner";
 import Location from "../components/Tools/Location";
+import { useState } from "react";
+import { contactUsApi } from "../api/devApi";
 
 const ContactUs = () => {
+
+    const [name,setName]=useState("")
+    const [email,setEmail]=useState("")
+    const [city,setCity]=useState("");
+    const [message,setMessage]=useState("");
+
+
+    const handleSendMail=async(e)=>{
+        e.preventDefault()
+        try{
+            const obj={name,email,city,message}
+            const response=await contactUsApi(obj)
+            if(response.status)
+            {
+                setName("")
+                setEmail("")
+                setCity("")
+                setMessage("")
+            }
+        }catch(error)
+        {
+            console.log(error)
+        }
+    }
+
     return (
         <>
             <Banner title='#Contact Us' text='Connect with us to be part of our family'/>
             <Location/>
 
             <Box display='flex' margin={3} border="1px solid #D9D9D9" borderRadius='6px'>
+
+
                 <Box display='flex' flexDirection='column' flex='0.7' gap={2} p='2rem'>
+                <form onSubmit={handleSendMail}>
                     <Typography >Leave a Message</Typography>
                     <Typography fontSize="25px" fontWeight="bold">We love to hear from you</Typography>
-                    <TextField size='small' type="text" fullWidth label="Your Name" id="name" />
-                    <TextField size='small' type="email" fullWidth label="E-mail" id="email" />
-                    <TextField size='small' type="number" fullWidth label="Phone No" id="phone no" />
-                    <TextField size='small' type="text" fullWidth label="Address" id="address" />
-                    <TextField size='small' type="text" fullWidth label="City" id="city" />
-                    <TextField multiline rows={5} fullWidth label="Your Message" id="message" />
-                    <Button variant="contained" sx={{width:'100px'}} color="success">
+                    <TextField size='small' type="text" fullWidth label="Your Name" name="name" value={name} onChange={(e)=>setName(e.target.value)}/>
+                    <TextField size='small' type="email" fullWidth label="E-mail" name="email" onChange={(e)=>setEmail(e.target.value)}/>
+                    <TextField size='small' type="text" fullWidth label="City" name="city" onChange={(e)=>setCity(e.target.value)}/>
+                    <TextField multiline rows={5} fullWidth label="Your Message" name="message" onChange={(e)=>setMessage(e.target.value)}/>
+                    <Button variant="contained" sx={{width:'100px'}} color="success" type="submit">
                         Submit
                     </Button>
+                </form>
                 </Box>
 
                 <Box display='flex' flex='0.3' flexDirection="column" justifyContent='center' alignItems='start' gap={4}>

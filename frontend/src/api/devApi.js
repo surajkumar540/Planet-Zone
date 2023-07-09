@@ -150,3 +150,14 @@ export const orderInitApi = async (obj) => {
     return response.data
 }
 
+/////////////////Contact us api
+
+
+
+export const contactUsApi = async (obj) => {
+    const response = await axios.post(`/api/contactUs`,obj, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}

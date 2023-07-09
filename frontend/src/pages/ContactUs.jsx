@@ -14,9 +14,11 @@ const ContactUs = () => {
                 <Box display='flex' flexDirection='column' flex='0.7' gap={2} p='2rem'>
                     <Typography >Leave a Message</Typography>
                     <Typography fontSize="25px" fontWeight="bold">We love to hear from you</Typography>
-                    <TextField size='small' fullWidth label="Your Name" id="name" />
-                    <TextField size='small' fullWidth label="E-mail" id="email" />
-                    <TextField size='small' fullWidth label="Subject" id="subject" />
+                    <TextField size='small' type="text" fullWidth label="Your Name" id="name" />
+                    <TextField size='small' type="email" fullWidth label="E-mail" id="email" />
+                    <TextField size='small' type="number" fullWidth label="Phone No" id="phone no" />
+                    <TextField size='small' type="text" fullWidth label="Address" id="address" />
+                    <TextField size='small' type="text" fullWidth label="City" id="city" />
                     <TextField multiline rows={5} fullWidth label="Your Message" id="message" />
                     <Button variant="contained" sx={{width:'100px'}} color="success">
                         Submit

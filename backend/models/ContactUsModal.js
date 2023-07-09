@@ -20,6 +20,10 @@ const contactUsSchema=mongoose.Schema({
     city:{
         type:String,
         required:true
+    },
+    message:{
+    type:String,
+    required:true
     }
 },{timestamps:true})
 

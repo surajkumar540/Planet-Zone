@@ -16,9 +16,9 @@ const app=express(); // To make server from express use only one time at server 
 app.use(express.json())
 app.use(userRouter);
 app.use(productRouter);
+app.use(contactRouter);
 app.use(authToken,shippingRouter);
 app.use(authToken,orderRouter);
-app.use(contactRouter);
 
 app.listen(process.env.PORT||PORT,()=>{
     console.log(`${process.env.NODE_ENV} Server is working on ${process.env.PORT} `);

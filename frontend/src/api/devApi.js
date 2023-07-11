@@ -90,9 +90,6 @@ export const setProfile = async (data) => {
 
 
 
-
-
-
 //////-------------------------------///////////
 /////============get All products ==========////
 //////-------------------------------///////////
@@ -114,16 +111,19 @@ export const fetchSingleProductApi = async (pid) => {
     return response.data
 }
 
-// add shipping address
-export const shippingAdd = async (data) => {
-    const response = await axios.post(`/api/shipping`,data, headerData);
+/////////////////============Contact us api
+
+export const contactUsApi = async (obj) => {
+    const response = await axios.post(`/api/contactUs`,obj, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
     return response.data
 }
 
-// get shipping address
+
+//-------------------- get shipping address
+
 export const getShipping = async () => {
     const response = await axios.get(`/api/shipping`, headerData);
     if (!response.statusText === "OK") {
@@ -132,30 +132,29 @@ export const getShipping = async () => {
     return response.data
 }
 
-// order details
+
+export const shippingAdd = async (data) => {
+    const response = await axios.post(`/api/shipping`,data, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
+//-------------------- payment Start
+
+export const paymentInit = async (obj) => {
+    const response = await axios.post(`/api/paymentInit`,obj, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+// ----------------------order details
 export const orderDetailesApi = async () => {
     const response = await axios.post(`/api/createOrder`, headerData);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
-
-
-export const orderInitApi = async (obj) => {
-    const response = await axios.post(`/api/orderInit`,obj, headerData);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
-
-/////////////////Contact us api
-
-
-
-export const contactUsApi = async (obj) => {
-    const response = await axios.post(`/api/contactUs`,obj, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }

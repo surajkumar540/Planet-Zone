@@ -3,7 +3,6 @@ import { useState } from "react";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import Progress from "../components/Tools/Progress";
-import { useNavigate } from "react-router-dom";
 import {
   FormControlLabel,
   Radio,
@@ -16,13 +15,11 @@ import { Container, Paper, Grid, Divider, Checkbox } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch } from "react-redux";
 import { loadScript } from "../utils/functions";
-import { orderInitApi } from "../api/devApi";
+import { paymentInit } from "../api/devApi";
 
 const PaymentMethod = () => {
   const dispatch = useDispatch();
   const [selectedOption, setSelectedOption] = useState("");
-
-  const navigate = useNavigate();
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -50,7 +47,8 @@ const PaymentMethod = () => {
       }
   
       // creating a new order
-      const result = await orderInitApi({amount:1})
+      const result = await paymentInit({amount:1})
+      console.log(result,"receive")
   
       if (!result) {
         alert("Server error. Are you online?");

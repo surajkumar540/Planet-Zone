@@ -9,7 +9,6 @@ import Footer from '../components/Footer/Footer';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { shippingAdd, getShipping } from '../api/devApi';
-import orderSlice from '../redux/reducers/orderSlice';
 import { shippingAddress } from '../redux/reducers/orderSlice';
 
 const steps = [

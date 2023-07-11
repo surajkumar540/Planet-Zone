@@ -9,7 +9,7 @@ import Footer from '../components/Footer/Footer';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { shippingAdd, getShipping } from '../api/devApi';
-import { shippingAddress } from '../redux/reducers/orderSlice';
+import { setPrice, shippingAddress } from '../redux/reducers/orderSlice';
 
 const steps = [
   'Shipping Address',
@@ -77,6 +77,7 @@ const ShippingPage = () => {
 
       if (response.message == "Already shipping address available") {
         dispatch(shippingAddress(userDataObj))
+      
         navigate("/payment")
       }
     } catch (error) {

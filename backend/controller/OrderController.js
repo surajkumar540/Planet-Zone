@@ -26,7 +26,6 @@ const paymentInitController = async (req, res) => {
     };
 
     const order = await instance.orders.create(options);
-    console.log(order);
 
     const paymentObj = {
       _id: order.id,
@@ -50,6 +49,47 @@ const paymentInitController = async (req, res) => {
     res.status(200).json({
       data: order,
       KEY_ID: process.env.RAZORPAY_KEY_ID,
+      status: true,
+    });
+  } catch (error) {
+    res.send(error);
+  }
+};
+
+const paymentSuccessController = async (req, res) => {
+  try {
+    const {orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature}=req.body;
+
+    if(!orderCreationId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature)
+    {
+        res.status(409).json({
+            message:"All fields are required",
+            status:false
+        })
+    }
+
+    const paymentObj=await Payment.find({_id:orderCreationId})
+    if(!paymentObj)
+    {
+        res.status(401).json({
+            message:"Unauthorize access",
+            status:false
+        }) 
+    }
+
+    console.log(paymentObj,"my obj")
+    const updatedPaymentObj=await Payment.findOneAndUpdate({_id:orderCreationId},{summary:{orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature},amount_paid:paymentObj[0]?.amount})
+
+    if(!updatedPaymentObj)
+    {
+        res.status(404).json({
+            message:"Something went wrong",
+            status:false
+        }) 
+    }
+
+    res.status(200).json({
+      date:updatedPaymentObj,
       status: true,
     });
   } catch (error) {
@@ -87,4 +127,4 @@ const createOrderController = async (req, res) => {
   }
 };
 
-module.exports = { paymentInitController, createOrderController };
+module.exports = { paymentInitController,paymentSuccessController ,createOrderController };

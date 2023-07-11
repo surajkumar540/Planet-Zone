@@ -35,6 +35,20 @@ const paymentSchema = mongoose.Schema(
     created_at: {
       type: Number,
     },
+    summary:{
+      orderCreationId:{
+        type:String
+      },
+      razorpayOrderId:{
+        type:String
+      },
+      razorpayPaymentId:{
+        type:String
+      },
+      razorpaySignature:{
+        type:String
+      }
+    }
   },
   { timestamps: true }
 );
@@ -42,16 +56,3 @@ const paymentSchema = mongoose.Schema(
 const Payment = mongoose.model("Payment", paymentSchema);
 
 module.exports = Payment;
-
-//   id: 'order_MCNOPThvcmvJrA',
-//   entity: 'order',
-//   amount: 100,
-//   amount_paid: 0,
-//   amount_due: 100,
-//   currency: 'INR',
-//   receipt: 'txn_1689052768554',
-//   offer_id: null,
-//   status: 'created',
-//   attempts: 0,
-//   notes: [],
-//   created_at: 1689052768

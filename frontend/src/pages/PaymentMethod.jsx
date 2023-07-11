@@ -11,14 +11,15 @@ import {
   Box,
   Button,
 } from "@mui/material";
-import { Container, Paper, Grid, Divider, Checkbox } from "@mui/material";
+import { Container, Paper, Divider } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
-import { paymentInit } from "../api/devApi";
+import { paymentInit,paymentSuccess } from "../api/devApi";
 
 const PaymentMethod = () => {
   const dispatch = useDispatch();
+  const price=useSelector((state)=>state.order.price)
   const [selectedOption, setSelectedOption] = useState("");
 
   const handleOptionChange = (event) => {
@@ -47,8 +48,7 @@ const PaymentMethod = () => {
       }
   
       // creating a new order
-      const result = await paymentInit({amount:1})
-      console.log(result,"receive")
+      const result = await paymentInit({amount:price})
   
       if (!result) {
         alert("Server error. Are you online?");
@@ -62,7 +62,7 @@ const PaymentMethod = () => {
         key: KEY_ID, // Enter the Key ID generated from the Dashboard
         amount: amount.toString(),
         currency: currency,
-        name: "Jai Corporation",
+        name: "Planet Corporation",
         description: "Test Transaction",
         image:"https://res.cloudinary.com/practicaldev/image/fetch/s--CYyAcHOK--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_800/https://dev-to-uploads.s3.amazonaws.com/i/svo3oqttbs7joyvlfe5b.png",
         order_id: order_id,
@@ -73,26 +73,25 @@ const PaymentMethod = () => {
             razorpayOrderId: response.razorpay_order_id,
             razorpaySignature: response.razorpay_signature,
           };
-  
-          // const result = await axios.post(
-          //   "http://localhost:5000/payment/success",
-          //   data
-          // );
-  
-          // alert(result.data.msg);
-          alert("payment successful",response)
-          console.log(data)
+          try{
+            const response=await paymentSuccess(data)
+            console.log(response)
+            alert("payment successful",response)
+          }catch(error)
+          {
+            console.log(error)
+          }
         },
         prefill: {
-          name: "",
-          email: "",
-          contact: "9999999999",
+          name: "Jai",
+          email: "jai.singh@gmail.com",
+          contact: "9667201750",
         },
         notes: {
           address: "Planet Corporate Office",
         },
         theme: {
-          color: "dodgerblue",
+          color: "salmon",
         },
       };
   

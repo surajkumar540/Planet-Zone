@@ -4,7 +4,8 @@ const orderSlice=createSlice({
     name:"order",
     initialState:{
         shipping:{},
-        payment:{}
+        payment:{},
+        price:""
     },
     reducers:{
         shippingAddress:(state,action)=>{
@@ -14,9 +15,12 @@ const orderSlice=createSlice({
         paymentMethod:(state,action)=>{
             const obj = action.payload;
             state.payment = obj
+        },
+        setPrice:(state,action)=>{
+            state.price=action.payload;
         }
     }
 })
 
-export const {shippingAddress, paymentMethod}=orderSlice.actions;
+export const {shippingAddress, paymentMethod, setPrice}=orderSlice.actions;
 export default orderSlice.reducer;

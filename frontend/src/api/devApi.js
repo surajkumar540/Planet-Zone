@@ -1,7 +1,5 @@
 import axios from "axios";
 
-const UserApiVersion = "/api/signup";
-
 const headerData =
 {
     headers: {

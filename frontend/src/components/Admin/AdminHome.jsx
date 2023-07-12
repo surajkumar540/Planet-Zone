@@ -1,12 +1,13 @@
 import React from 'react'
 import AdminHeader from '../Header/AdminHeader'
-import ProductRow from './ProductRow'
-import ProductHeading from './ProductHeading'
+import ProductRow from '../Table/ProductRow'
+import ProductHeading from '../Table/ProductHeading'
+import AddProductButton from '../Table/AddProductButton'
 
 const AdminHome = () => {
   return (
-    <>
-        <AdminHeader/> 
+    <>  
+        <AddProductButton/>
         <ProductHeading/>
         <ProductRow/>
         <ProductRow/>

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Box,CardMedia, Typography,Button} from '@mui/material';
 import Bag from "../../assets/Home/bag.jpg"
+import { useNavigate } from 'react-router-dom';
 
 const Poster1 = () => {
+    const navigate=useNavigate()
   return (
     <Box sx={{height:{xs:'50vh',sm:'80vh'},display:'flex'}}>
         
@@ -16,7 +18,7 @@ const Poster1 = () => {
                         <Typography pl={{sm:'.6rem'}} fontSize={{sm:'.8rem',md:'1.3rem'}} color='#694f4f'>Pocket friendly products everywhere</Typography>
                     </Box>
                     <Box ml={{sm:'.5rem'}}>
-                        <Button variant='contained' size='small' sx={{borderRadius:'50px',bgcolor:'#3CB815'}}>Order Now</Button>
+                        <Button variant='contained' size='small' sx={{borderRadius:'50px',bgcolor:'#3CB815',textTransform:"capitalize"}} onClick={()=>navigate("/dashboard")}>Order Now</Button>
                     </Box>
                 </Box>
             </Box>

@@ -21,7 +21,7 @@ import { tokenVerificationAsync } from "./redux/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
 import { getToken } from "./utils/functions";
 import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
+import AdminHome from "./components/Admin/AdminHome";
 
 function App() {
   const isLogged = useSelector((state) => state?.user?.isLogged);
@@ -77,6 +77,7 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
        
         <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<AdminHome />} />
         <Route path="/product/:pid" element={<ShowProducts />} />
 
         <Route path="/cart" element={<Cart />} />

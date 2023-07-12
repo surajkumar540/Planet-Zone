@@ -1,3 +1,5 @@
+//sno name brand image price price
+
 const products= [
   {
     "name": "Adidas campus",

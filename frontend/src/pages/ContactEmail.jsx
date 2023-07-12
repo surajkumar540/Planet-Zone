@@ -67,9 +67,12 @@ export default function ContactEmail() {
                         <Typography fontSize="30px" fontWeight="bold" pl={2} >Contacts Mail</Typography>
                         <EmailOutlinedIcon />
                     </Box>
-                    <Box mr={2}>
-                       <DeleteModal/>
-                    </Box>
+                    {
+                        dummyData.length >= 1 &&
+                        <Box mr={2}>
+                            <DeleteModal />
+                        </Box>
+                    }
 
                 </Box>
 
@@ -87,10 +90,10 @@ export default function ContactEmail() {
                                             <EmailOutlinedIcon sx={{ fontSize: '18px' }} />
                                             <Typography textAlign="left" color="green"  >{item.email}</Typography>
                                         </Box>
-                                        <Typography textAlign="center"  width="100%" color="gray" >{item.phoneNo}</Typography>
+                                        <Typography textAlign="center" width="100%" color="gray" >{item.phoneNo}</Typography>
                                         <Typography textAlign="center" width="100%" >{item.city}</Typography>
                                         <Box textAlign="center" width="100%">
-                                            <RemoveCircleOutlinedIcon sx={{ cursor: "pointer", color:"red"}} />
+                                            <RemoveCircleOutlinedIcon sx={{ cursor: "pointer", color: "red" }} />
                                         </Box>
                                     </Box>
                                 </ListItem>

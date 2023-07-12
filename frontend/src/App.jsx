@@ -20,6 +20,7 @@ import OrderDetailes from './pages/OrderDetailes'
 import { tokenVerificationAsync } from './redux/reducers/userSlice'
 import { useNavigate } from 'react-router-dom'
 import { getToken } from './utils/functions'
+import ContactEmail from './pages/ContactEmail'
 
 function App() {
   const isLogged=useSelector((state)=>state?.user?.isLogged)
@@ -30,23 +31,23 @@ function App() {
     let path=location.pathname;
     const token=getToken()
 
-    if(token)
-    {
-      if(path==='/login'||path==='/signup'||path==='/otp'||path==='/change-password')
-      {
-        navigate("/")
-      }else{
-        navigate(path)
-      }
+    // if(token)
+    // {
+    //   if(path==='/login'||path==='/signup'||path==='/otp'||path==='/change-password')
+    //   {
+    //     navigate("/")
+    //   }else{
+    //     navigate(path)
+    //   }
 
-    }else{
-      if(path==='/login'||path==='/signup'||path==='/otp'||path==='/change-password')
-      {
-        navigate(path)
-      }else{
-        navigate("/")
-      }
-    }
+    // }else{
+    //   if(path==='/login'||path==='/signup'||path==='/otp'||path==='/change-password')
+    //   {
+    //     navigate(path)
+    //   }else{
+    //     navigate("/")
+    //   }
+    // }
   }
 
   useEffect(()=>{
@@ -73,6 +74,7 @@ function App() {
         <Route path="/contact" element={ <ContactUs/> } /> 
         <Route path="/shipping" element={ <ShippingPage/> } />
         <Route path="/order" element={ <OrderDetailes/> } />
+        <Route path="/contactemail" element={ <ContactEmail/> } />
 
       </Routes>
     </>

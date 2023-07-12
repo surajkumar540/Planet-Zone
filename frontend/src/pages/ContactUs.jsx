@@ -20,7 +20,6 @@ const ContactUs = () => {
                     <TextField size='small' type="text" fullWidth label="Your Name" id="name" />
                     <TextField size='small' type="email" fullWidth label="E-mail" id="email" />
                     <TextField size='small' type="number" fullWidth label="Phone No" id="phone no" />
-                    <TextField size='small' type="text" fullWidth label="Address" id="address" />
                     <TextField size='small' type="text" fullWidth label="City" id="city" />
                     <TextField multiline rows={5} fullWidth label="Your Message" id="message" />
                     <Button variant="contained" sx={{width:'100px'}} color="success">

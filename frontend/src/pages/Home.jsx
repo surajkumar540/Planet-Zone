@@ -5,6 +5,7 @@ import Poster2 from '../components/Poster/Poster2';
 import Poster3 from '../components/Poster/Poster3';
 import { useSelector } from 'react-redux';
 import Loader from '../components/Tools/Loader';
+import Footer from '../components/Footer/Footer';
 
 const Home = () => {
   const {data:products,status,message}=useSelector((state)=>state?.products)
@@ -21,6 +22,7 @@ const Home = () => {
       <Poster3/>
       <Products products={products}/>
       {/* <Poster2/> */}
+      <Footer/>
     </>
   )
 }

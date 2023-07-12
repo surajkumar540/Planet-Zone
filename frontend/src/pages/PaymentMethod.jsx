@@ -105,7 +105,6 @@ const PaymentMethod = () => {
 
   return (
     <>
-      <Header />
       <Progress currentStep={1} />
 
       <Container maxWidth="lg">

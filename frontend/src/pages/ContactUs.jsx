@@ -5,6 +5,7 @@ import Banner from "../components/Tools/Banner";
 import Location from "../components/Tools/Location";
 import { useState } from "react";
 import { contactUsApi } from "../api/devApi";
+import Footer from "../components/Footer/Footer";
 
 const ContactUs = () => {
 
@@ -42,14 +43,29 @@ const ContactUs = () => {
 
                 <Box display='flex' flexDirection='column' flex='0.7' gap={2} p='2rem'>
                 <form onSubmit={handleSendMail}>
-                    <Typography >Leave a Message</Typography>
-                    <Typography fontSize="25px" fontWeight="bold">We love to hear from you</Typography>
+                    <Box mb='1rem'>
+                    <Typography variant="h6">Leave a Message</Typography>
+                    <Typography fontSize="30px" fontWeight="bold">We love to hear from you</Typography>
+                    </Box>
+                    
+                    <Box mb='1rem'>
                     <TextField size='small' type="text" fullWidth label="Your Name" name="name" value={name} onChange={(e)=>setName(e.target.value)}/>
+                    </Box>
+
+                    <Box mb='1rem'>
                     <TextField size='small' type="email" fullWidth label="E-mail" name="email" onChange={(e)=>setEmail(e.target.value)}/>
+                    </Box>
+                    
+                    <Box mb='1rem'>
                     <TextField size='small' type="text" fullWidth label="City" name="city" onChange={(e)=>setCity(e.target.value)}/>
+                    </Box>
+                    
+                    <Box mb='1rem'>
                     <TextField multiline rows={5} fullWidth label="Your Message" name="message" onChange={(e)=>setMessage(e.target.value)}/>
-                    <Button variant="contained" sx={{width:'100px'}} color="success" type="submit">
-                        Submit
+                    </Box>
+                    
+                    <Button variant="contained" sx={{width:'100px'}} type="submit">
+                        Send
                     </Button>
                 </form>
                 </Box>
@@ -103,6 +119,7 @@ const ContactUs = () => {
                 </Box>
 
             </Box>
+            <Footer/>
         </>
     )
 }

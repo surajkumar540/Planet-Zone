@@ -38,7 +38,6 @@ const OrderDetailes = () => {
 
     return (
         <>
-            <Header />
             <form>
                 <Grid container marginY={2}>
                     {/* <Grid item xs={12}>

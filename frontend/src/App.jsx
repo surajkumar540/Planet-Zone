@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { getToken } from "./utils/functions";
 import Header from "./components/Header/Header";
 import AdminHome from "./components/Admin/AdminHome";
+import AddProduct from "./components/Admin/AddProduct";
 
 function App() {
   const isLogged = useSelector((state) => state?.user?.isLogged);
@@ -78,6 +79,7 @@ function App() {
        
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<AdminHome />} />
+        <Route path="/addProduct" element={<AddProduct />} />
         <Route path="/product/:pid" element={<ShowProducts />} />
 
         <Route path="/cart" element={<Cart />} />

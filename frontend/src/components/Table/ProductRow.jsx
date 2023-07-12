@@ -1,12 +1,12 @@
 import { Typography, Grid, Box, Avatar, Chip, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const ProductRow = () => {
+const ProductRow = ({obj,sno}) => {
   return (
     <Box marginX={'2rem'} marginY={'1rem'}>
     <Grid container sx={{bgcolor:'whitesmoke',paddingY:'.8rem',borderRadius:"10px",textAlign:'center'}}>
       <Grid item xs={1} alignSelf={"center"}>
-      <Typography>1</Typography>
+      <Typography>{sno}</Typography>
       </Grid>
 
       <Grid item xs={1} display={"flex"} justifyContent={"center"} alignItems={"center"} bgcolor={"coral"}>
@@ -15,24 +15,24 @@ const ProductRow = () => {
 
 
       <Grid item xs={3} alignSelf={"center"}>
-        <Typography>Iphone 11</Typography>
+        <Typography>{obj?.name}</Typography>
       </Grid>
 
 
       <Grid item xs={2} alignSelf={"center"}>
-        <Typography>Apple</Typography>
+        <Typography>{obj?.brand}</Typography>
       </Grid>
       
      
       <Grid item xs={2} alignSelf={"center"}>
         <Typography>
-            Mobiles
+            {obj?.category}
         </Typography>
       </Grid>
 
       <Grid item xs={2} alignSelf={"center"}>
         <Typography>
-            ₹12000
+            ₹ {obj?.price}
         </Typography>
       </Grid>
   

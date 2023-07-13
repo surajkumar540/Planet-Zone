@@ -38,7 +38,7 @@ function Header(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate=useNavigate();
-  const isLogged=useSelector((state)=>state?.user?.isLogged);
+  const isUserLogged=useSelector((state)=>state?.user?.isUserLogged);
   const cartItems=useSelector((state)=>state?.cart?.data)
 
   const handleDrawerToggle = () => {
@@ -124,7 +124,7 @@ function Header(props) {
               </Button>
             
             {
-              isLogged?<AccountMenu/>:(
+              isUserLogged?<AccountMenu/>:(
             <>
               <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:(pageTheme[location.pathname]|| "#3CB815"),'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
               <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:(pageTheme[location.pathname]|| "#3CB815"),'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>

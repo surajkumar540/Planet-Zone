@@ -8,7 +8,6 @@ import { Box } from "@mui/material";
 
 const AdminHome = () => {
   const [products,setProducts]=useState([])
-  console.log(products)
 
   const fetchProducts=async()=>{
     try{

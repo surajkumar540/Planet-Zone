@@ -8,7 +8,7 @@ import ForgetModal from '../components/Modals/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
 import { login, forgetOtp } from '../api/devApi';
 import { useDispatch } from 'react-redux';
-import { setUserJustLoggedIn } from '../redux/reducers/userSlice';
+import { setUserLogged,setAdminLogged } from '../redux/reducers/userSlice';
 import Header from '../components/Header/Header';
 
 const Login = () => {
@@ -59,13 +59,17 @@ const Login = () => {
       
       if(response.status)
       {
+        localStorage.setItem("token",response.token)
         if(response.isAdmin)
         {
           localStorage.setItem("admin",response.isAdmin);
+          dispatch(setAdminLogged())
+          navigate("/dashboard")
+        }else{
+          dispatch(setUserLogged())
+          navigate("/")
         }
-        localStorage.setItem("token",response.token)
-        navigate("/")
-        dispatch(setUserJustLoggedIn())
+
       }
     }catch(error)
     {

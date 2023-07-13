@@ -6,23 +6,28 @@ import { getAdmin } from "../../utils/functions";
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    isLogged: false,
+    isUserLogged: false,
+    isAdminLogged:false,
     status:STATUSES.IDLE,
     userObj:{}
   },
   reducers: {
-    setLogged:(state,action)=>{
-        state.isLogged=action.payload
+    setUserLogged:(state)=>{
+        state.isUserLogged=true
+    },
+    setAdminLogged:(state)=>{
+        state.isAdminLogged=true
     },
     setStatus:(state,action)=>{
         state.status=action.payload
     },
     setUserJustLoggedIn:(state)=>{
-        state.isLogged=true;
+        state.isUserLogged=true;
         state.status=STATUSES.IDLE;
     },
-    setUserJustLoggedOut:(state)=>{
-      state.isLogged=false;
+    setLoggedOut:(state)=>{
+      state.isUserLogged=false;
+      state.isAdminLogged=false;
       state.status=STATUSES.IDLE;
       localStorage.clear()
     },
@@ -33,7 +38,7 @@ const userSlice = createSlice({
 });
 
 
-export const { setLogged,setStatus,setUserJustLoggedIn,setUserJustLoggedOut,createAccount} = userSlice.actions;
+export const { setUserLogged,setStatus,setAdminLogged,setUserJustLoggedIn,setLoggedOut,createAccount} = userSlice.actions;
 export default userSlice.reducer;
 
 export const tokenVerificationAsync = () => {
@@ -42,21 +47,23 @@ export const tokenVerificationAsync = () => {
         dispatch(setStatus(STATUSES.LOADING))
         
         const admin=getAdmin()||false;
-
         const response = await tokenVerify({admin});
-        dispatch(setLogged(response.status))
+
         if (response.status) {       
+          if(admin)
+          {
+            dispatch(setAdminLogged())
+          }else{
+            dispatch(setUserLogged())
+          }
             dispatch(setStatus(STATUSES.IDLE))
         }
         else{
-          dispatch(setStatus(STATUSES.ERROR))
-          localStorage.clear()
+          dispatch(setLoggedOut())
         }
           
     } catch (err) {
-        dispatch(setLogged(false))
-        dispatch(setStatus(STATUSES.ERROR))
-        localStorage.clear();
+      dispatch(setLoggedOut())
     }
   };
 };

@@ -8,7 +8,7 @@ import { otpVerfiy } from '../api/devApi';
 import { signup } from '../api/devApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setLogged } from '../redux/reducers/userSlice';
+import { setUserLogged } from '../redux/reducers/userSlice';
 
 const OtpVerify = () => {
 
@@ -59,7 +59,7 @@ const OtpVerify = () => {
       // console.log(response);
       if (response.status && response.token) {
         localStorage.setItem("token", response.token);
-        dispatch(setLogged(true));
+        dispatch(setUserLogged());
         navigate("/")
       }
     } catch (error) {

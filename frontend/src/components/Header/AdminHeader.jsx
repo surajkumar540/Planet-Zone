@@ -38,7 +38,6 @@ function AdminHeader(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate=useNavigate();
-  const isLogged=useSelector((state)=>state?.user?.isLogged);
   const cartItems=useSelector((state)=>state?.cart?.data)
 
   const handleDrawerToggle = () => {

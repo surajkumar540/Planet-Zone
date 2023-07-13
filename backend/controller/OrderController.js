@@ -56,6 +56,12 @@ const paymentInitController = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
 const paymentSuccessController = async (req, res) => {
   try {
     const {orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature}=req.body;
@@ -96,6 +102,13 @@ const paymentSuccessController = async (req, res) => {
     res.send(error);
   }
 };
+
+
+
+
+
+
+
 
 const createOrderController = async (req, res) => {
   try {

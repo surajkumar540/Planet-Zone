@@ -40,10 +40,10 @@ const singleProductController=async(req,res)=>{
 const addNewProduct=async(req,res)=>{
     try{
         const user = req.userId;
-        const {}=req.body;
+        const productBody=req.body;
 
         const adminUser=await User.findOne({_id:user});
-        if(!adminUser.isAdmin)
+        if(!adminUser?.isAdmin)
         {
             res.status(401).json({
                 message:"Unauthorized User",
@@ -52,7 +52,8 @@ const addNewProduct=async(req,res)=>{
             return;
         }
     
-        // const product=await Product.findOne({_id:productId});
+        const product=await Product.create(productBody);
+        console.log(product)
         // if(product)
         // {
         //     res.status(409).json({
@@ -62,14 +63,15 @@ const addNewProduct=async(req,res)=>{
         //     return;
         // }
 
-        await Product.findOneAndRemove({_id:productId});
+        // await Product.findOneAndRemove({_id:productId});
         
         res.status(200).json({
-            message:"Deleted successfully",
+            message:"Product created successfully",
             status:true
         })
     }catch(error)
     {
+        console.log(error)
         res.status(400).json({
             message:"Bad request",
             status:false

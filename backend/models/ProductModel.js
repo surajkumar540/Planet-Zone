@@ -63,8 +63,7 @@ const productSchema=mongoose.Schema({
     },
     reviews:[reviewSchema],
     numReviews:{
-        type:Number,
-        required:true
+        type:Number
     },
     
 

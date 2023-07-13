@@ -1,11 +1,8 @@
-import { Typography, Grid, Box, Avatar, Chip, IconButton } from "@mui/material";
+import { Typography, Grid, Box, Avatar, CardMedia, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteSingleProduct } from "../../api/devApi";
-import { useDispatch } from "react-redux";
-import { fetchAllProducts } from "../../redux/reducers/productSlice";
 
 const ProductRow = ({obj,sno,refetch}) => {
-  const dispatch=useDispatch()
   const handleDeleteProduct=async(pid)=>{
     try{
       const response=await deleteSingleProduct(pid);
@@ -26,8 +23,15 @@ const ProductRow = ({obj,sno,refetch}) => {
       <Typography>{sno}</Typography>
       </Grid>
 
-      <Grid item xs={1} display={"flex"} justifyContent={"center"} alignItems={"center"} bgcolor={"coral"}>
-            
+      <Grid item xs={1} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+
+        <CardMedia
+          component="img"
+          height="50"
+          sx={{objectFit:'contain'}}
+          image={obj?.image||"https://images.pexels.com/photos/777001/pexels-photo-777001.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
+          alt="green iguana"
+        />
       </Grid>
 
 

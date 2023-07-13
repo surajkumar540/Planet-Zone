@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
 import { Box, Typography, TextField,CardMedia,InputLabel,MenuItem,Select,FormControl, Button,Input ,InputAdornment  } from "@mui/material";
 import C from "../assets/Auth/c.jpg"
 import { getProfile, setProfile } from "../api/devApi";
@@ -63,7 +61,6 @@ const Profile = () => {
 
   return (
     <>
-      <Header />
       <Box p={{xs:'.6rem',md:'1rem',lg:"2rem"}}>
         <Box>
           <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
@@ -152,7 +149,6 @@ const Profile = () => {
 
         </Box>
       </Box>
-      <Footer />
     </>
   );
 };

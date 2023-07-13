@@ -20,7 +20,7 @@ body {
 }
 
 .cs-loader {
-  background:#B2A4FF;
+  background:whitesmoke;
   position: absolute;
   top: 0;
   left: 0;
@@ -33,7 +33,7 @@ body {
   top: 50%;
   position: absolute;
   width: calc(100% - 200px);
-  color: #FFF;
+  color: #e12d09;
   padding: 0 100px;
   text-align: center;
 }

@@ -141,12 +141,23 @@ export const orderDetailesApi = async () => {
     return response.data
 }
 
-// order details
-export const contactUsApi = async (data) => {
-    const response = await axios.post(`/api/contactUs`, data, headerData);
+
+export const orderInitApi = async (obj) => {
+    const response = await axios.post(`/api/orderInit`,obj, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
     return response.data
 }
 
+/////////////////Contact us api
+
+
+
+export const contactUsApi = async (obj) => {
+    const response = await axios.post(`/api/contactUs`,obj, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}

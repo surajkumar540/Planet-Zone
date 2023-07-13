@@ -74,7 +74,7 @@ const Login = () => {
 
   return (
     <>
-    <Header/>
+    {/* <Header/> */}
     <Box display={'flex'} height={'calc(100vh - 64px)'}>
 
 

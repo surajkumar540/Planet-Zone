@@ -9,21 +9,13 @@ const contactUsSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    phoneNo:{
-        type:String,
-        required:true
-    },
-    address:{
-        type:String,
-        required:true
-    },
     city:{
         type:String,
         required:true
     },
     message:{
-    type:String,
-    required:true
+        type:String,
+        required:true
     }
 },{timestamps:true})
 

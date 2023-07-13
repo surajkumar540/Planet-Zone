@@ -54,7 +54,7 @@ const loginController = async (req, res) => {
 
     res.status(200).json({
       message: "User login successfully",
-      user: existingUser,
+      isAdmin:existingUser.isAdmin,
       token: token,
       status: true,
     });

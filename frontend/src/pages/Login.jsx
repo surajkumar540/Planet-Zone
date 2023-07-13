@@ -50,14 +50,19 @@ const Login = () => {
     const errorObj = validateSignInPage(formValues);
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
-      console.log(errorObj,"erro")
+      console.log(errorObj)
       return;
     }
 
     try{
       const response=await login(formValues);
+      
       if(response.status)
       {
+        if(response.isAdmin)
+        {
+          localStorage.setItem("type",response.isAdmin);
+        }
         localStorage.setItem("token",response.token)
         navigate("/")
         dispatch(setUserJustLoggedIn())

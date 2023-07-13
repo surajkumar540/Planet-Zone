@@ -1,6 +1,6 @@
 import "./App.css";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -28,29 +28,22 @@ function App() {
   const isLogged = useSelector((state) => state?.user?.isLogged);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const checkPath = () => {
     let path = location.pathname;
     const token = getToken();
 
     if (token) {
-      if (
-        path === "/login" ||
-        path === "/signup" ||
-        path === "/otp" ||
-        path === "/change-password"
-      ) {
+      if (path === "/login" ||path === "/signup" ||path === "/otp" ||path === "/change-password") 
+      {
         navigate("/");
       } else {
         navigate(path);
       }
     } else {
-      if (
-        path === "/login" ||
-        path === "/signup" ||
-        path === "/otp" ||
-        path === "/change-password"
-      ) {
+      if (path === "/login" ||path === "/signup" ||path === "/otp" ||path === "/change-password") 
+      {
         navigate(path);
       } else {
         navigate("/");
@@ -70,13 +63,13 @@ function App() {
 
   return (
     <>
-    <Header/>
+      <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/otp" element={<OtpVerify />} />
         <Route path="/change-password" element={<ChangePassword />} />
-       
+
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<AdminHome />} />
         <Route path="/addProduct" element={<AddProduct />} />

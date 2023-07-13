@@ -109,6 +109,15 @@ export const fetchSingleProductApi = async (pid) => {
     return response.data
 }
 
+
+export const deleteSingleProduct = async (pid) => {
+    const response = await axios.delete(`/api/product/${pid}`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
 /////////////////============Contact us api
 
 export const contactUsApi = async (obj) => {

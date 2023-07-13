@@ -30,7 +30,7 @@ const AdminHome = () => {
         {
           products?.map((item,index)=>{
             return <Box key={index}>
-              <ProductRow obj={item} sno={index+1}/>
+              <ProductRow obj={item} sno={index+1} refetch={fetchProducts}/>
             </Box>
           })
         }

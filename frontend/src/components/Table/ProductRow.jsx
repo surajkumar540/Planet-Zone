@@ -1,7 +1,24 @@
 import { Typography, Grid, Box, Avatar, Chip, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import { deleteSingleProduct } from "../../api/devApi";
+import { useDispatch } from "react-redux";
+import { fetchAllProducts } from "../../redux/reducers/productSlice";
 
-const ProductRow = ({obj,sno}) => {
+const ProductRow = ({obj,sno,refetch}) => {
+  const dispatch=useDispatch()
+  const handleDeleteProduct=async(pid)=>{
+    try{
+      const response=await deleteSingleProduct(pid);
+      if(response.status)
+      {
+        refetch()
+      }
+    }catch(error)
+    {
+      console.log(error)
+    }
+  }
+
   return (
     <Box marginX={'2rem'} marginY={'1rem'}>
     <Grid container sx={{bgcolor:'whitesmoke',paddingY:'.8rem',borderRadius:"10px",textAlign:'center'}}>
@@ -37,7 +54,7 @@ const ProductRow = ({obj,sno}) => {
       </Grid>
   
         <Grid item xs={1} alignSelf={"center"}>
-          <IconButton sx={{color:"red"}} size="small">
+          <IconButton sx={{color:"red"}} size="small" onClick={()=>handleDeleteProduct(obj?._id)}>
             <DeleteIcon/>
           </IconButton>
         </Grid>

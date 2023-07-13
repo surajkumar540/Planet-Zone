@@ -46,11 +46,7 @@ const loginController = async (req, res) => {
       return;
     }
 
-    const token = await jwt.sign(
-      { id: existingUser._id },
-      process.env.SECRET_KEY,
-      { expiresIn: "7d" }
-    );
+    const token = await jwt.sign({ id: existingUser._id,admin: existingUser.isAdmin },process.env.SECRET_KEY,{ expiresIn: "7d" });
 
     res.status(200).json({
       message: "User login successfully",
@@ -169,16 +165,25 @@ const signupController = async (req, res) => {
 // For token verification
 const tokenController = async (req, res) => {
   try {
+      const body=req.body;
+      const admin=body.admin==='true'?true:false;
+      
       const token=req.headers.authorization.split(" ")[1];
       if(token)
       {
           const jwtResponse=jwt.verify(token,process.env.SECRET_KEY)
-          if(Object.keys(jwtResponse).length>0)
+
+          if(Object.keys(jwtResponse).length>0 && jwtResponse.admin===admin )
           {
               res.status(200).json({
                   message: "Token is valid",
                   status:true
               });
+          }else{
+            res.status(401).json({
+              message: "Unauthorized user",
+              status: false,
+          });
           }
       }
       else{

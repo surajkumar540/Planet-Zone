@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { tokenVerify } from "../../api/devApi";
 import STATUSES from "../constants/status";
+import { getAdmin } from "../../utils/functions";
 
 const userSlice = createSlice({
   name: "user",
@@ -39,7 +40,10 @@ export const tokenVerificationAsync = () => {
   return async function tokenVerificationThunk(dispatch) {    
     try {
         dispatch(setStatus(STATUSES.LOADING))
-        const response = await tokenVerify();
+        
+        const admin=getAdmin()||false;
+
+        const response = await tokenVerify({admin});
         dispatch(setLogged(response.status))
         if (response.status) {       
             dispatch(setStatus(STATUSES.IDLE))

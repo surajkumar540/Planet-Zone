@@ -61,7 +61,7 @@ const Login = () => {
       {
         if(response.isAdmin)
         {
-          localStorage.setItem("type",response.isAdmin);
+          localStorage.setItem("admin",response.isAdmin);
         }
         localStorage.setItem("token",response.token)
         navigate("/")

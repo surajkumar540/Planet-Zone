@@ -25,6 +25,7 @@ import AdminHome from "./components/Admin/AdminHome";
 import AddProduct from "./components/Admin/AddProduct";
 import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
+import Error from "./components/Tools/Error";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
@@ -93,6 +94,7 @@ function App() {
         <Routes>
           <Route path="/dashboard" element={<AdminHome />} />
           <Route path="/addProduct" element={<AddProduct />} />
+          <Route path="*" element={<Error />} />
         </Routes>
       ) : (
         <Routes>
@@ -105,6 +107,7 @@ function App() {
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/shipping" element={<ShippingPage />} />
           <Route path="/order" element={<OrderDetailes />} />
+          <Route path="*" element={<Error />} />
         </Routes>
       )}
     </>

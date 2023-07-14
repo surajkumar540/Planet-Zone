@@ -16,8 +16,11 @@ import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
 import { paymentInit,paymentSuccess } from "../api/devApi";
+import { useNavigate } from "react-router-dom";
+import { clearCart } from "../redux/reducers/cartSlice";
 
 const PaymentMethod = () => {
+  const navigate=useNavigate()
   const dispatch = useDispatch();
   const price=useSelector((state)=>state.order.price)
   const [selectedOption, setSelectedOption] = useState("");
@@ -75,8 +78,11 @@ const PaymentMethod = () => {
           };
           try{
             const response=await paymentSuccess(data)
-            console.log(response)
-            alert("payment successful",response)
+            if(response.status)
+            {
+              dispatch(clearCart())
+              navigate("/cart")
+            }
           }catch(error)
           {
             console.log(error)
@@ -122,11 +128,6 @@ const PaymentMethod = () => {
                 value={selectedOption}
                 onChange={handleOptionChange}
               >
-                <FormControlLabel
-                  value="creditCard"
-                  control={<Radio />}
-                  label="Credit Card"
-                />
                 <FormControlLabel
                   value="RazorPay"
                   control={<Radio />}

@@ -18,9 +18,9 @@ const Home = () => {
   return (
     <>
       <Poster1/>
-      <Products products={products}/>
+      <Products products={products.slice(0,8)}/>
       <Poster3/>
-      <Products products={products}/>
+      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products}/>
       {/* <Poster2/> */}
       <Footer/>
     </>

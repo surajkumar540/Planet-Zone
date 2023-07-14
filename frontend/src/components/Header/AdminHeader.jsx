@@ -68,8 +68,7 @@ function AdminHeader(props) {
     <Box sx={{ display: 'flex' }}>
       <AppBar component="nav" sx={{
         boxShadow:location.pathname!=='/'&&"rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
-        bgcolor:(pageTheme[location.pathname] || "#6984B5"),
-        // backgroundImage: "linear-gradient(315deg, #b1bfd8 0%, #6782b4 74%)"
+        bgcolor:( "#6984B5"),
         }}>
         <Toolbar>
           <IconButton
@@ -87,7 +86,7 @@ function AdminHeader(props) {
             ,color:"white",
             textDecoration:'none'
           } }}
-          component={Link} to={'/'}
+          component={Link} to={'/dashboard'}
           >
             Planet
           </Typography>

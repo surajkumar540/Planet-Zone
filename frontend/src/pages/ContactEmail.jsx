@@ -35,32 +35,32 @@ export default function ContactEmail() {
             name: "Jai kumar",
             email: "priya@gmail.com",
             city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
+            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
         }, {
             name: "Pranay kumar",
             email: "jai@gmail.com",
             city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
+            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
         }, {
             name: "Priya kumar",
             email: "surajgautam56878@gmail.com",
             city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
+            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
         }, {
             name: "Raki kumar",
             email: "rakiggdsy8@gmail.com",
             city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
+            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
         }, {
             name: "Criuspus kumar",
             email: "crsiuhhsbpos8@gmail.com",
             city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
+            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
         }, {
             name: "Satyam kumar",
             email: "satyam8@gmail.com",
             city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
+            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
         }
     ]
 
@@ -90,7 +90,7 @@ export default function ContactEmail() {
                     {
                         dummyData.map((item) => {
                             return (
-                                <Grid item  xs={4}  bgcolor="white" borderRadius="10px" m={1} >
+                                <Grid item  xs={3.9}  bgcolor="white" borderRadius="10px" m={"0.3rem"}>
                                     <Box display="flex" alignItems="center" justifyContent="space-between">
                                         <Box display="flex" alignItems="center">
                                         <Avatar alt={item.name} sx={{height:60, width:60 }} src="/static/images/avatar/1.jpg" />

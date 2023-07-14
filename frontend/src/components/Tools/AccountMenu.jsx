@@ -10,7 +10,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import Logout from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setUserJustLoggedOut } from "../../redux/reducers/userSlice";
+import { setLoggedOut } from "../../redux/reducers/userSlice";
 
 export default function AccountMenu() {
   const navigate=useNavigate()
@@ -26,7 +26,7 @@ export default function AccountMenu() {
 
   
   const handleLogout=()=>{
-    dispatch(setUserJustLoggedOut());
+    dispatch(setLoggedOut());
     navigate("/")
   }
 

@@ -25,10 +25,6 @@ const productSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    image:{
-        type:String,
-        required:true
-    },
     brand:{
         type:String,
         required:true
@@ -37,8 +33,28 @@ const productSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    rating:{
+    countInStock:{
         type:Number,
+        required:true
+    },
+    price:{
+        type:Number,
+        required:true
+    },
+    discount:{
+        type:Number,
+        required:true
+    },
+    gst:{
+        type:Number,
+        required:true
+    },
+    totalPrice:{
+        type:Number,
+        required:true
+    },
+    image:{
+        type:String,
         required:true
     },
     description:{
@@ -47,18 +63,9 @@ const productSchema=mongoose.Schema({
     },
     reviews:[reviewSchema],
     numReviews:{
-        type:Number,
-        required:true
+        type:Number
     },
-    price:{
-        type:Number,
-        required:true
-    },
-    countInStock:{
-        type:Number,
-        required:true
-    }
-
+    
 
 },{timestamps:true})
 

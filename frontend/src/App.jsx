@@ -1,6 +1,6 @@
 import "./App.css";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -19,43 +19,47 @@ import ShippingPage from "./pages/ShippingPage";
 import OrderDetailes from "./pages/OrderDetailes";
 import { tokenVerificationAsync } from "./redux/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
-import { getToken } from "./utils/functions";
+import { getToken,getAdmin } from "./utils/functions";
 import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
-import ContactEmail from "./pages/ContactEmail"
+import AdminHome from "./components/Admin/AdminHome";
+import AddProduct from "./components/Admin/AddProduct";
+import AdminHeader from "./components/Header/AdminHeader";
+import Loader from "./components/Tools/Loader";
+import Error from "./components/Tools/Error";
 
 function App() {
-  const isLogged = useSelector((state) => state?.user?.isLogged);
+  const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
   const dispatch = useDispatch();
+  const [loading,setLoading]=useState(true);
   const navigate = useNavigate();
-
+  
   const checkPath = () => {
     let path = location.pathname;
     const token = getToken();
+    const admin=getAdmin();
+    if (token) {
+      
+      if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'))
+      {
+        navigate("/dashboard")
+      }
+      else if(path === "/login" ||path === "/signup") 
+      {
+        navigate("/");
+      } else {
+        navigate(path);
+      }
 
-    // if (token) {
-    //   if (
-    //     path === "/login" ||
-    //     path === "/signup" ||
-    //     path === "/otp" ||
-    //     path === "/change-password"
-    //   ) {
-    //     navigate("/");
-    //   } else {
-    //     navigate(path);
-    //   }
-    // } else {
-    //   if (
-    //     path === "/login" ||
-    //     path === "/signup" ||
-    //     path === "/otp" ||
-    //     path === "/change-password"
-    //   ) {
-    //     navigate(path);
-    //   } else {
-    //     navigate("/");
-    //   }
-    // }
+    } 
+    else {
+      if (path === "/login" ||path === "/signup") 
+      {
+        navigate(path);
+      } else {
+        navigate("/");
+      }
+    }
+    setLoading(false)
   };
 
   useEffect(() => {
@@ -68,29 +72,44 @@ function App() {
     "Authorization"
   ] = `Bearer ${localStorage.getItem("token")}`;
 
+  if(loading)
+  {
+    return(
+      <Loader/>
+    )  
+  }
+
   return (
     <>
-    <Header/>
+      {isAdminLogged ? <AdminHeader /> : <Header />}
+
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/otp" element={<OtpVerify />} />
         <Route path="/change-password" element={<ChangePassword />} />
-       
-        <Route path="/" element={<Home />} />
-        <Route path="/product/:pid" element={<ShowProducts />} />
-
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/payment" element={<PaymentMethod />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/shipping" element={<ShippingPage />} />
-        <Route path="/order" element={<OrderDetailes />} />
-        <Route path="/contactEmail" element={<ContactEmail />} />
-
       </Routes>
-      <Footer/>
+
+      {isAdminLogged ? (
+        <Routes>
+          <Route path="/dashboard" element={<AdminHome />} />
+          <Route path="/addProduct" element={<AddProduct />} />
+          <Route path="*" element={<Error />} />
+        </Routes>
+      ) : (
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:pid" element={<ShowProducts />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/payment" element={<PaymentMethod />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/shipping" element={<ShippingPage />} />
+          <Route path="/order" element={<OrderDetailes />} />
+          <Route path="*" element={<Error />} />
+        </Routes>
+      )}
     </>
   );
 }

@@ -1,8 +1,10 @@
 import React, { useEffect,useState } from 'react'
 import { Box,Typography,Divider } from '@mui/material'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { setPrice } from '../../redux/reducers/orderSlice'
 
 const CartTable = () => {
+    const dispatch=useDispatch()
     const {data:products}=useSelector((state)=>state?.cart);
     const [totalPrice,setTotalPrice]=useState(0)
     
@@ -12,6 +14,7 @@ const CartTable = () => {
             total+= item.price*item.qty
         })
         setTotalPrice(total)
+        dispatch(setPrice(total));
     }
 
     useEffect(()=>{

@@ -8,7 +8,7 @@ import ForgetModal from '../components/Modals/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
 import { login, forgetOtp } from '../api/devApi';
 import { useDispatch } from 'react-redux';
-import { setUserJustLoggedIn } from '../redux/reducers/userSlice';
+import { setUserLogged,setAdminLogged } from '../redux/reducers/userSlice';
 import Header from '../components/Header/Header';
 
 const Login = () => {
@@ -50,17 +50,27 @@ const Login = () => {
     const errorObj = validateSignInPage(formValues);
     if (Object.keys(errorObj).length > 0) {
       setFormErrors(errorObj)
-      console.log(errorObj,"erro")
+      console.log(errorObj)
       return;
     }
 
     try{
       const response=await login(formValues);
+      
       if(response.status)
       {
         localStorage.setItem("token",response.token)
-        navigate("/")
-        dispatch(setUserJustLoggedIn())
+        localStorage.setItem("userId",response.userId);
+        if(response.isAdmin)
+        {
+          localStorage.setItem("admin",response.isAdmin);
+          dispatch(setAdminLogged())
+          navigate("/dashboard")
+        }else{
+          dispatch(setUserLogged())
+          navigate("/")
+        }
+
       }
     }catch(error)
     {
@@ -74,7 +84,6 @@ const Login = () => {
 
   return (
     <>
-    {/* <Header/> */}
     <Box display={'flex'} height={'calc(100vh - 64px)'}>
 
 

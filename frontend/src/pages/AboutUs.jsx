@@ -2,6 +2,7 @@ import React from 'react'
 import { Box, Typography,CardMedia } from '@mui/material'
 import Features from "../components/About/Features";
 import Banner from '../components/Tools/Banner';
+import Footer from '../components/Footer/Footer';
 
 const AboutUs = () => {
     return (
@@ -67,10 +68,8 @@ const AboutUs = () => {
                 </Box>
             </Box>
 
-
-
-
             <Features/>
+            <Footer/>
         </>
     )
 }

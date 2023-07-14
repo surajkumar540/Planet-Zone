@@ -4,6 +4,7 @@ import Products from '../Products/Products';
 import { useSelector } from 'react-redux';
 import { fetchSingleProductApi } from '../../api/devApi';
 import { useParams } from 'react-router-dom';
+import Footer from '../Footer/Footer';
 
 const ShowProducts = () => {
   const {pid}=useParams()
@@ -35,7 +36,8 @@ const ShowProducts = () => {
     <>
     {/* send single products state/props in show product comp */}
     <ShowProduct obj={singleProduct}/> 
-    <Products products={products}/>
+    <Products heading="Similar Products" title="New products at your point"  products={products}/>
+    <Footer/>
     </>
   )
 }

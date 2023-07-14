@@ -1,3 +1,7 @@
+export function getUserId(){
+    return localStorage.getItem("userId")
+}
+
 export function getToken(){
     return localStorage.getItem("token")
 }

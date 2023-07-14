@@ -1,5 +1,8 @@
 import React,{useEffect, useState} from "react";
 import { Box, TextField, Typography,FormControl,InputLabel,MenuItem,Select,Button } from "@mui/material";
+import { getUserId } from "../../utils/functions";
+import { addSingleProduct } from "../../api/devApi";
+import { useNavigate } from "react-router-dom";
 
 const AddProduct = () => {
   const [name,setName]=useState("")
@@ -12,6 +15,7 @@ const AddProduct = () => {
   const [totalPrice,setTotalPrice]=useState("")
   const [image,setImage]=useState("")
   const [description,setDescription]=useState("")
+  const navigate=useNavigate()
 
   const handleCalculation=()=>{
     let total=price-((price*discount)/100)+((price*gst)/100);
@@ -25,21 +29,29 @@ const AddProduct = () => {
     }
   },[price,discount,gst])
 
-  const handleSubmit=async()=>{
+  const handleSubmit=async(e)=>{
+    e.preventDefault()
     try{
       const apiBody={
-        "User":"64a26434296c59d1a9ee9b0f",
-        "name":"I mac",
-        "brand":"Apple",
-        "category":"Mobiles",
-        "countInStock":4,
-        "price":120000,
-        "discount":2,
-        "gst":1,
-        "totalPrice":11642,
-        "image":"https://th.bing.com/th/id/OIP.2yUWfMTP0yPt_vk6VcClawHaEK?pid=ImgDet&rs=1",
+        "User":getUserId(),
+        "name":name,
+        "brand":brand,
+        "category":category,
+        "countInStock":countInStock,
+        "price":price,
+        "discount":discount,
+        "gst":gst,
+        "totalPrice":totalPrice,
+        "image":image,
         "description":"68.58cm/27-inch (diagonal) 5120-by-2880 Retina 5K display 3.1GHz 6-core 10th-generation Intel Core i5 AMD Radeon Pro 5300 graphics Ultrafast SSD storage Two Thunderbolt 3 (USB-C) ports Four USB-A ports Gigabit Ethernet port"
-    }
+      }
+
+      const response=await addSingleProduct(apiBody);
+      if(response.status)
+      {
+        navigate("/dashboard")
+      }
+
     }catch(error)
     {
 
@@ -55,6 +67,8 @@ const AddProduct = () => {
       </Box>
 
       <Box >
+        <form onSubmit={handleSubmit}>
+
         
         <Box mb="1.2rem" sx={{display:'flex',justifyContent:'space-between'}}>
           <TextField sx={{flex:0.49}} type="text" label="Name" name="name" value={name} onChange={(e)=>setName(e.target.value)}/>
@@ -73,7 +87,7 @@ const AddProduct = () => {
               onChange={(e)=>setCategory(e.target.value)}
             >
               <MenuItem value={'Bottle'}>Bottle</MenuItem>
-              <MenuItem value={'Bag'}>Bottle</MenuItem>
+              <MenuItem value={'Bag'}>Bag</MenuItem>
               <MenuItem value={'Shoes'}>Shoes</MenuItem>
               <MenuItem value={'Clothes'}>Clothes</MenuItem>
               <MenuItem value={'Matress'}>Matress</MenuItem>
@@ -105,9 +119,9 @@ const AddProduct = () => {
         </Box>
 
         <Box marginBottom={'0rem'}>
-          <Button variant="contained">Add Product</Button>
+          <Button variant="contained" type="submit">Add Product</Button>
         </Box>
-
+        </form>
       </Box>
     </Box>
   );

@@ -92,12 +92,12 @@ function AdminHeader(props) {
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center'}}>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/'}>
+              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/dashboard'}>
                 Home
               </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/'}>
-                Mail
+              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/addProduct'}>
+                Product
               </Button>
  
             

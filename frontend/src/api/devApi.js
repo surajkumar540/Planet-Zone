@@ -110,6 +110,15 @@ export const fetchSingleProductApi = async (pid) => {
 }
 
 
+export const addSingleProduct = async (body) => {
+    const response = await axios.post(`/api/product`,body,headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
 export const deleteSingleProduct = async (pid) => {
     const response = await axios.delete(`/api/product/${pid}`, headerData);
     if (!response.statusText === "OK") {

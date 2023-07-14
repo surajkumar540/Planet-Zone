@@ -60,6 +60,7 @@ const Login = () => {
       if(response.status)
       {
         localStorage.setItem("token",response.token)
+        localStorage.setItem("userId",response.userId);
         if(response.isAdmin)
         {
           localStorage.setItem("admin",response.isAdmin);

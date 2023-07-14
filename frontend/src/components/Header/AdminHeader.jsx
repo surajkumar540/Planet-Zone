@@ -43,7 +43,7 @@ function AdminHeader(props) {
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
-
+ 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
@@ -68,7 +68,8 @@ function AdminHeader(props) {
     <Box sx={{ display: 'flex' }}>
       <AppBar component="nav" sx={{
         boxShadow:location.pathname!=='/'&&"rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
-        bgcolor:(pageTheme[location.pathname] || "#3CB815"),
+        bgcolor:(pageTheme[location.pathname] || "#6984B5"),
+        // backgroundImage: "linear-gradient(315deg, #b1bfd8 0%, #6782b4 74%)"
         }}>
         <Toolbar>
           <IconButton

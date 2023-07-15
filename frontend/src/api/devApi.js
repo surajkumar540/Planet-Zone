@@ -118,6 +118,14 @@ export const addSingleProduct = async (body) => {
     return response.data
 }
 
+export const updateSingleProduct = async (body) => {
+    const response = await axios.put(`/api/product`,body,headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
 
 export const deleteSingleProduct = async (pid) => {
     const response = await axios.delete(`/api/product/${pid}`, headerData);

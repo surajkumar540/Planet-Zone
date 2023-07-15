@@ -1,8 +1,15 @@
 import { Typography, Grid, Box, Avatar, CardMedia, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteSingleProduct } from "../../api/devApi";
+import { useNavigate } from "react-router-dom";
 
 const ProductRow = ({obj,sno,refetch}) => {
+  
+  const navigate=useNavigate()
+  const handleNavigate=()=>{
+    navigate(`/editProduct/${obj?._id}`)
+  }
+
   const handleDeleteProduct=async(pid)=>{
     try{
       const response=await deleteSingleProduct(pid);
@@ -18,12 +25,15 @@ const ProductRow = ({obj,sno,refetch}) => {
 
   return (
     <Box marginX={'2rem'} marginY={'1rem'}>
-    <Grid container sx={{bgcolor:'whitesmoke',paddingY:'.8rem',borderRadius:"10px",textAlign:'center'}}>
-      <Grid item xs={1} alignSelf={"center"}>
+    <Grid container sx={{bgcolor:'whitesmoke',paddingY:'.8rem',borderRadius:"10px",textAlign:'center',cursor:"pointer"}}>
+
+      <Grid item xs={1} alignSelf={"center"} onClick={handleNavigate}>
       <Typography>{sno}</Typography>
       </Grid>
 
-      <Grid item xs={1} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+      
+
+      <Grid item xs={1} display={"flex"} justifyContent={"center"} alignItems={"center"} onClick={handleNavigate}>
 
         <CardMedia
           component="img"
@@ -35,17 +45,17 @@ const ProductRow = ({obj,sno,refetch}) => {
       </Grid>
 
 
-      <Grid item xs={3} alignSelf={"center"}>
+      <Grid item xs={3} alignSelf={"center"} onClick={handleNavigate}>
         <Typography>{obj?.name}</Typography>
       </Grid>
 
 
-      <Grid item xs={2} alignSelf={"center"}>
+      <Grid item xs={2} alignSelf={"center"} onClick={handleNavigate}>
         <Typography>{obj?.brand}</Typography>
       </Grid>
       
      
-      <Grid item xs={2} alignSelf={"center"}>
+      <Grid item xs={2} alignSelf={"center"} onClick={handleNavigate}>
         <Typography>
             {obj?.category}
         </Typography>
@@ -57,7 +67,7 @@ const ProductRow = ({obj,sno,refetch}) => {
         </Typography>
       </Grid>
   
-        <Grid item xs={1} alignSelf={"center"}>
+        <Grid item xs={1} alignSelf={"center"} >
           <IconButton sx={{color:"red"}} size="small" onClick={()=>handleDeleteProduct(obj?._id)}>
             <DeleteIcon/>
           </IconButton>

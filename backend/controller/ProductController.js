@@ -53,8 +53,6 @@ const addNewProduct=async(req,res)=>{
         }
     
         const product=await Product.create(productBody);
-        console.log(product)
-        
         res.status(200).json({
             message:"Product created successfully",
             status:true
@@ -74,7 +72,16 @@ const addNewProduct=async(req,res)=>{
 const updateSingleProduct=async(req,res)=>{
     try{
         const user = req.userId;
-        const {_id,countInStock,price,discount,gst,totalPrice,description}=req.body;
+        const {_id,countInStock,price,discount,gst,totalPrice,image,description}=req.body;
+
+        if(!_id||!countInStock||!price||!discount||!gst||!totalPrice||!image||!description)
+        {
+            res.status(409).json({
+                message:"Something is missing",
+                status:false
+            })
+            return;
+        }
 
         const adminUser=await User.findOne({_id:user});
         if(!adminUser?.isAdmin)
@@ -86,13 +93,12 @@ const updateSingleProduct=async(req,res)=>{
             return;
         }
     
-        // const product=await Product.findOneAndUpdate({_id:_id},{countInStock,price,discount,gst,totalPrice,description});
-        const product=await Product.findOne({_id:_id});
+        const product=await Product.findOneAndUpdate({_id:_id},{countInStock:countInStock,price:price,discount:discount,gst:gst,totalPrice:totalPrice,image:image,description:description});
 
         console.log(product)
 
         res.status(200).json({
-            message:"Enter",
+            message:"Product Updated successfully",
             status:true
         })
     }catch(error)

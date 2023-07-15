@@ -26,9 +26,11 @@ import AddProduct from "./components/Admin/AddProduct";
 import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
 import Error from "./components/Tools/Error";
+import EditProduct from "./components/Admin/EditProduct";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
+  const loginStatus = useSelector((state) => state?.user?.status);
   const dispatch = useDispatch();
   const [loading,setLoading]=useState(true);
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ function App() {
     "Authorization"
   ] = `Bearer ${localStorage.getItem("token")}`;
 
-  if(loading)
+  if(loading || loginStatus==='loading')
   {
     return(
       <Loader/>
@@ -94,6 +96,7 @@ function App() {
         <Routes>
           <Route path="/dashboard" element={<AdminHome />} />
           <Route path="/addProduct" element={<AddProduct />} />
+          <Route path="/editProduct/:pid" element={<EditProduct />} />
           <Route path="*" element={<Error />} />
         </Routes>
       ) : (
@@ -107,7 +110,6 @@ function App() {
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/shipping" element={<ShippingPage />} />
           <Route path="/order" element={<OrderDetailes />} />
-          <Route path="*" element={<Error />} />
         </Routes>
       )}
     </>

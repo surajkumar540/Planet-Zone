@@ -11,5 +11,7 @@ router.route('/product').post(authToken,productController.addNewProduct)
 
 router.route('/product/:productId').delete(authToken,productController.deleteSingleProduct)
 
+router.route('/product').put(authToken,productController.updateSingleProduct);
+
 
 module.exports=router;

@@ -54,19 +54,45 @@ const addNewProduct=async(req,res)=>{
     
         const product=await Product.create(productBody);
         console.log(product)
-        // if(product)
-        // {
-        //     res.status(409).json({
-        //         message:"Product already exist",
-        //         status:false
-        //     })
-        //     return;
-        // }
-
-        // await Product.findOneAndRemove({_id:productId});
         
         res.status(200).json({
             message:"Product created successfully",
+            status:true
+        })
+    }catch(error)
+    {
+        console.log(error)
+        res.status(400).json({
+            message:"Bad request",
+            status:false
+        });
+    }
+}
+
+
+
+const updateSingleProduct=async(req,res)=>{
+    try{
+        const user = req.userId;
+        const {_id,countInStock,price,discount,gst,totalPrice,description}=req.body;
+
+        const adminUser=await User.findOne({_id:user});
+        if(!adminUser?.isAdmin)
+        {
+            res.status(401).json({
+                message:"Unauthorized User",
+                status:false
+            })
+            return;
+        }
+    
+        // const product=await Product.findOneAndUpdate({_id:_id},{countInStock,price,discount,gst,totalPrice,description});
+        const product=await Product.findOne({_id:_id});
+
+        console.log(product)
+
+        res.status(200).json({
+            message:"Enter",
             status:true
         })
     }catch(error)
@@ -126,5 +152,6 @@ module.exports={
     allProductsController,
     singleProductController,
     addNewProduct,
-    deleteSingleProduct
+    deleteSingleProduct,
+    updateSingleProduct
 }

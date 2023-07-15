@@ -64,6 +64,16 @@ const loginController = async (req, res) => {
 };
 
 
+
+
+
+
+
+
+
+
+
+
 const signupController = async (req, res) => {
   try {
     const { firstName,lastName, email, password, confirmPassword } = req.body;
@@ -163,6 +173,16 @@ const signupController = async (req, res) => {
 };
 
 
+
+
+
+
+
+
+
+
+
+
 // For token verification
 const tokenController = async (req, res) => {
   try {
@@ -200,6 +220,17 @@ const tokenController = async (req, res) => {
       });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Otp send to verify email
@@ -259,6 +290,17 @@ const otpController = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Otp sent for forget password
@@ -365,6 +407,18 @@ const forgetOtpController = async (req, res) => {
 };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 // Make new password
 const changePasswordController = async (req, res) => {
   try {
@@ -453,6 +507,14 @@ const changePasswordController = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
 //Get details of User Profile
 const getProfileController = async (req, res) => {
   try {
@@ -497,6 +559,16 @@ const getProfileController = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
 //Set details of User Profile
 const setProfileController = async (req, res) => {
   try {
@@ -538,6 +610,12 @@ const setProfileController = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
 
 module.exports = {
   loginController,

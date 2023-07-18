@@ -15,7 +15,7 @@ import { Container, Paper, Divider } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
-import { paymentInit,paymentSuccess } from "../api/devApi";
+import { createOrderApi, paymentInit,paymentSuccess } from "../api/devApi";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../redux/reducers/cartSlice";
 
@@ -23,6 +23,8 @@ const PaymentMethod = () => {
   const navigate=useNavigate()
   const dispatch = useDispatch();
   const price=useSelector((state)=>state.order.price)
+  const cart=useSelector((state)=>state?.cart?.data)
+  const shipping=useSelector((state)=>state?.order?.shipping)
   const [selectedOption, setSelectedOption] = useState("");
 
   const handleOptionChange = (event) => {
@@ -80,8 +82,14 @@ const PaymentMethod = () => {
             const response=await paymentSuccess(data)
             if(response.status)
             {
+              const apiData={ 
+                cart:cart, 
+                shippingAddress:shipping, 
+                // paymentMethod:response.data?response.data:selectedOption
+              }
+              const order=await createOrderApi(apiData)
               dispatch(clearCart())
-              navigate("/cart")
+              navigate("/order")
             }
           }catch(error)
           {
@@ -113,7 +121,7 @@ const PaymentMethod = () => {
     <>
       <Progress currentStep={1} />
 
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{paddingBottom:'4rem'}}>
         <Paper elevation={3} sx={{ padding: 3 }}>
           <form onSubmit={handleSubmit}>
             <Box mt={2}>

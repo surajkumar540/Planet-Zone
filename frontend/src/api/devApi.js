@@ -183,11 +183,14 @@ export const paymentSuccess = async (obj) => {
     return response.data
 }
 
+
+
 // ----------------------order details
-export const orderDetailesApi = async () => {
-    const response = await axios.post(`/api/createOrder`, headerData);
+export const createOrderApi = async (obj) => {
+    const response = await axios.post(`/api/createOrder`,obj, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
     return response.data
 }
+

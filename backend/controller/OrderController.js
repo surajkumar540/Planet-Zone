@@ -121,16 +121,19 @@ const createOrderController = async (req, res) => {
       console.log(item);
       return item;
     });
+
     console.log(user);
+    
     const response = await Order.create({
       User: user,
       orderItems: cartArr,
       shippingAddress: shippingAddress,
-      paymentMethod: paymentMethod,
+      // paymentMethod: paymentMethod,
     });
 
     console.log(response, "order db ka");
     res.send(req.body);
+  
   } catch (error) {
     console.log(error);
     res.status(400).json({

@@ -40,6 +40,18 @@ const orderSchema=mongoose.Schema({
         }
     ],
     shippingAddress:{
+        fullName:{
+            type:String,
+            required:true
+        },
+        phoneNo:{
+            type:Number,
+            required:true
+        },
+        state:{
+            type:String,
+            required:true
+        },
         address:{
             type:String,
             required:true
@@ -48,54 +60,54 @@ const orderSchema=mongoose.Schema({
             type:String,
             required:true
         },
-        postalCode:{
+        pinCode:{
             type:Number,
             required:true
         },
-        country:{
+        landMark:{
             type:String,
             required:true
         }
     },
 
-    paymentMethod:{
-        payment:{
-            type:String,
-            required:true
-        },
-        taxPrice:{
-            type:Number,
-            required:true,
-            default:0.0
-        },
-        shippingPrice:{
-            type:Number,
-            required:true, 
-            default:0.0
-        },
-        totalPrice:{
-            type:Number,
-            required:true,
-            default:0.0
-        },
-        isPaid:{
-            type:Boolean,
-            required:true,
-            default:false
-        },
-        paidAt:{
-            type:Date
-        },
-        isDelivered:{
-            type:Boolean,
-            required:true,
-            default:false
-        },
-        deliveredAt:{
-            type:Date
-        }
+    // paymentMethod:{
+    //     payment:{
+    //         type:String,
+    //         required:true
+    //     },
+    //     taxPrice:{
+    //         type:Number,
+    //         required:true,
+    //         default:0.0
+    //     },
+    //     shippingPrice:{
+    //         type:Number,
+    //         required:true, 
+    //         default:0.0
+    //     },
+    //     totalPrice:{
+    //         type:Number,
+    //         required:true,
+    //         default:0.0
+    //     },
+    //     isPaid:{
+    //         type:Boolean,
+    //         required:true,
+    //         default:false
+    //     },
+    //     paidAt:{
+    //         type:Date
+    //     },
+    //     isDelivered:{
+    //         type:Boolean,
+    //         required:true,
+    //         default:false
+    //     },
+    //     deliveredAt:{
+    //         type:Date
+    //     }
     
-    }
+    // }
     
 },{timestamps:true});
 

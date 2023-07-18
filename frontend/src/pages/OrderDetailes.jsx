@@ -6,7 +6,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { useSelector } from 'react-redux';
-// import { orderDetailesApi } from '../api/devApi';
+import { createOrderApi } from '../api/devApi';
 
 const steps = [
     'Shipping Address',
@@ -25,13 +25,13 @@ const OrderDetailes = () => {
         e.preventDefault();
         // Handle shipping form submission
 
-        // const dummy = {
-        //     name: 'suraj',
-        //     age: '12'
-        // }
+        const dummy = {
+            name: 'suraj',
+            age: '12'
+        }
 
-        // const res = await orderDetailesApi(dummy);
-        // console.log(res, "dhh")
+        const res = await createOrderApi(dummy);
+        console.log(res, "dhh")
     };
 
 

@@ -125,6 +125,7 @@ const createOrderController = async (req, res) => {
 
     res.status(200).json({
       message:"Order created successfully",
+      orderId:response._id,
       status:true
     })
   

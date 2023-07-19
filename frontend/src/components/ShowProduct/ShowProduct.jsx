@@ -37,7 +37,7 @@ const ShowProduct = ({obj}) => {
                 <Box flex='0.6' display={'flex'} flexDirection={'column'} justifyContent={'space-evenly'}>                
                     <Typography fontSize={'1rem'}>{obj?.brand} ({obj?.category})</Typography>
                     <Typography fontSize={'1.5rem'}>{obj?.name}</Typography>
-                    <Typography fontSize={'28px'}>₹{Math.floor(obj?.totalPrice)} <Typography as='del' fontSize='1rem' sx={{color:"grey",fontWeight:400}}>₹1234</Typography> <Typography as='span' fontSize='1rem' color='#388E3C'>{`${obj?.discount}% off`}</Typography> </Typography>
+                    <Typography fontSize={'28px'}>₹{Math.floor(obj?.totalPrice)} <Typography as='del' fontSize='1rem' sx={{color:"grey",fontWeight:400}}>{obj?.price&&`₹${obj?.price}`}</Typography> <Typography as='span' fontSize='1rem' color='#388E3C'>{obj?.discount&&`${obj?.discount}% off`}</Typography> </Typography>
                     <Box py='1rem' display={'flex'} alignItems={'center'}>
                         <Box>
                         <FormControl fullWidth  size="small" sx={{ m: 1, minWidth: 60 }}>

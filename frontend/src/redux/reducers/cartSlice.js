@@ -81,6 +81,9 @@ export const addToCartAsync = (getObj) => {
                 rating:product.rating,
                 price: product.price,
                 qty: (getObj.qty||1),
+                gst: product.gst,
+                discount: product.discount,
+                totalPrice: product.totalPrice,
                 };
         
                 dispatch(addToCart(newObj))

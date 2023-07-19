@@ -29,6 +29,18 @@ const orderSchema=mongoose.Schema({
                 type:Number,
                 required:true
             },
+            gst:{
+                type:Number,
+                required:true
+            },
+            discount:{
+                type:Number,
+                required:true
+            },
+            totalPrice:{
+                type:Number,
+                required:true
+            },
             brand:{
                 type:String,
                 required:true

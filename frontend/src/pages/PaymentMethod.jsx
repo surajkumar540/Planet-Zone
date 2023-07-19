@@ -90,9 +90,11 @@ const PaymentMethod = () => {
                 paymentId:response?.data?._id
               }
               const order=await createOrderApi(apiData)
-              console.log(order)
-              dispatch(clearCart())
-              navigate("/order")
+              if(order.status)
+              {
+                navigate(`/order/${order?.orderId}`)
+                dispatch(clearCart())
+              }
             }
           }catch(error)
           {
@@ -101,8 +103,8 @@ const PaymentMethod = () => {
         },
         prefill: {
           name: "Suraj",
-          email: "jaibhandari04@gmail.com",
-          contact: "8975642135",
+          email: "suraj23@gmail.com",
+          contact: "1285887788",
         },
         notes: {
           address: "Planet Corporate Office",

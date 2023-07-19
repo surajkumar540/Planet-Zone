@@ -194,3 +194,12 @@ export const createOrderApi = async (obj) => {
     return response.data
 }
 
+
+export const getAllorders = async () => {
+    const response = await axios.get(`/api/orders`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+

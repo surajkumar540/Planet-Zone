@@ -1,7 +1,8 @@
-const Order = require("../models/OrderModel");
 const Razorpay = require("razorpay");
 const Payment = require("../models/PaymentModel");
+const Order = require("../models/OrderModel");
 
+// First we init payment to generate order id
 const paymentInitController = async (req, res) => {
   try {
     const { amount } = req.body;
@@ -59,9 +60,7 @@ const paymentInitController = async (req, res) => {
 
 
 
-
-
-
+// Then if payment is successful then this will store payment details to payment collection
 const paymentSuccessController = async (req, res) => {
   try {
     const {orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature}=req.body;
@@ -108,10 +107,7 @@ const paymentSuccessController = async (req, res) => {
 
 
 
-
-
-
-
+// If payment details store in payment table then it will store cart,shipping,payment details in order collection
 const createOrderController = async (req, res) => {
   try {
     const user = req.userId;
@@ -119,9 +115,6 @@ const createOrderController = async (req, res) => {
 
 
     const paymentObj=await Payment.find({_id:paymentId});
-    console.log(paymentObj[0],"check")
-
-    console.log(user);
     
     const response = await Order.create({
       User: user,
@@ -130,8 +123,10 @@ const createOrderController = async (req, res) => {
       payment: paymentObj&&paymentObj[0],
     });
 
-    // console.log(response, "order db ka");
-    res.send(req.body);
+    res.status(200).json({
+      message:"Order created successfully",
+      status:true
+    })
   
   } catch (error) {
     console.log(error);
@@ -142,4 +137,47 @@ const createOrderController = async (req, res) => {
   }
 };
 
-module.exports = { paymentInitController,paymentSuccessController ,createOrderController };
+
+
+
+
+//Get any order full details
+const getAllOrdersController=async(req,res)=>{
+  try{
+    const userId=req.userId;
+    const allOrders=await Order.find({User:userId});
+    
+    res.status(200).json({
+      data:allOrders,
+      status:true
+    })
+  }catch(error)
+  {
+    console.log(error)
+    res.send("Problem")
+  }
+}
+
+
+
+
+//Get any order full details
+const getSingleOrderController=async(req,res)=>{
+  try{
+    // const userId=req.userId;
+    const orderId=req.params.orderId;
+
+    const orderObj=await Order.findOne({_id:orderId});
+    
+    res.status(200).json({
+      data:orderObj,
+      status:true
+    })
+  }catch(error)
+  {
+    console.log(error)
+    res.send("Problem")
+  }
+}
+
+module.exports = { paymentInitController,paymentSuccessController ,createOrderController,getAllOrdersController,getSingleOrderController };

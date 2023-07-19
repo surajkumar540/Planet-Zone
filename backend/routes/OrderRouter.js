@@ -8,4 +8,8 @@ router.route("/paymentSuccess").post(orderController.paymentSuccessController);
 
 router.route('/createOrder').post(orderController.createOrderController)
 
+router.route('/orders').get(orderController.getAllOrdersController)
+
+router.route('/order/:orderId').get(orderController.getSingleOrderController)
+
 module.exports = router;

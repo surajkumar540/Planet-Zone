@@ -16,7 +16,7 @@ import Profile from "./pages/Profile";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllProducts } from "./redux/reducers/productSlice";
 import ShippingPage from "./pages/ShippingPage";
-import OrderDetailes from "./pages/OrderDetailes";
+import OrderDetails from "./pages/OrderDetails";
 import { tokenVerificationAsync } from "./redux/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
 import { getToken,getAdmin } from "./utils/functions";
@@ -109,7 +109,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/shipping" element={<ShippingPage />} />
-          <Route path="/order" element={<OrderDetailes />} />
+          <Route path="/order/:orderId" element={<OrderDetails />} />
         </Routes>
       )}
     </>

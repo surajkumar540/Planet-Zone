@@ -7,6 +7,7 @@ import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { useSelector } from 'react-redux';
 import { createOrderApi } from '../api/devApi';
+import { useParams } from 'react-router-dom';
 
 const steps = [
     'Shipping Address',
@@ -14,12 +15,9 @@ const steps = [
     'Order Detailes',
 ];
 
-
-
-
-
-const OrderDetailes = () => {
-
+const OrderDetails = () => {
+    const {orderId}=useParams();
+    console.log(orderId,"chedck id")
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -220,7 +218,6 @@ const OrderDetailes = () => {
                         </Paper>
                     </Container>
 
-                    <Button type='submit'>sumbit</Button>
                     {/* </Grid> */}
                 </Grid>
             </form >
@@ -230,4 +227,4 @@ const OrderDetailes = () => {
     );
 };
 
-export default OrderDetailes;
+export default OrderDetails;

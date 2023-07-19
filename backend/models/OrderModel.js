@@ -8,7 +8,7 @@ const orderSchema=mongoose.Schema({
     },
     orderItems:[
         {
-            Product:{
+            _id:{
                 type:mongoose.Schema.Types.ObjectId,
                 required:true,
                 ref:"Product"
@@ -70,44 +70,89 @@ const orderSchema=mongoose.Schema({
         }
     },
 
-    // paymentMethod:{
-    //     payment:{
-    //         type:String,
-    //         required:true
+    // {
+    //     summary: {
+    //       orderCreationId: 'order_MFVblcMTVnT7DS',
+    //       razorpayPaymentId: 'pay_MFVbuSFDxUeJat',
+    //       razorpayOrderId: 'order_MFVblcMTVnT7DS',
+    //       razorpaySignature: 'eacc3e7b6680cd383677a768b184a7f5aa5b4757a32cd4c3393c317fed93e6dc'
     //     },
-    //     taxPrice:{
-    //         type:Number,
-    //         required:true,
-    //         default:0.0
-    //     },
-    //     shippingPrice:{
-    //         type:Number,
-    //         required:true, 
-    //         default:0.0
-    //     },
-    //     totalPrice:{
-    //         type:Number,
-    //         required:true,
-    //         default:0.0
-    //     },
-    //     isPaid:{
-    //         type:Boolean,
-    //         required:true,
-    //         default:false
-    //     },
-    //     paidAt:{
-    //         type:Date
-    //     },
-    //     isDelivered:{
-    //         type:Boolean,
-    //         required:true,
-    //         default:false
-    //     },
-    //     deliveredAt:{
-    //         type:Date
-    //     }
-    
-    // }
+    //     _id: 'order_MFVblcMTVnT7DS',
+    //     entity: 'order',
+    //     amount: 1500,
+    //     amount_paid: 1500,
+    //     amount_due: 1500,
+    //     currency: 'INR',
+    //     attempts: 0,
+    //     receipt: 'txn_1689736719855',
+    //     offer_id: null,
+    //     status: 'created',
+    //     created_at: 1689736720,
+    //     createdAt: 2023-07-19T03:18:40.405Z,
+    //     updatedAt: 2023-07-19T03:19:00.573Z,
+    //     __v: 0
+    //   }
+
+    payment:{
+        _id:{
+            type:String,
+            default:null
+        },
+        entity:{
+            type:String,
+            default:""
+        },
+        amount:{
+            type:Number, 
+            default:0
+        },
+        amount_paid:{
+            type:Number,
+            default:0
+        },
+        amount_due:{
+            type:Number,
+            default:0
+        },
+        currency:{
+            type:String,
+            default:""
+        },
+        attempts:{
+            type:Number,
+            default:0
+        },
+        offer_id:{
+            type:String,
+            default:""
+        },
+        status:{
+            type:String,
+            default:""
+        },
+        created_at:{
+            type:Number,
+            default:0
+        },
+        summary:{
+            orderCreationId:{
+                type:String,
+                default:""
+            },
+            razorpayPaymentId:{
+                type:String,
+                default:""
+            },
+            razorpayOrderId:{
+                type:String,
+                default:""
+            },
+            razorpaySignature:{
+                type:String,
+                default:""
+            },
+        }
+    }
     
 },{timestamps:true});
 

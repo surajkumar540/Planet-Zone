@@ -54,6 +54,7 @@ const PaymentMethod = () => {
   
       // creating a new order
       const result = await paymentInit({amount:price})
+      console.log(result,"payment init")
   
       if (!result) {
         alert("Server error. Are you online?");
@@ -80,14 +81,16 @@ const PaymentMethod = () => {
           };
           try{
             const response=await paymentSuccess(data)
+            console.log(response,"payment success")
             if(response.status)
             {
               const apiData={ 
                 cart:cart, 
                 shippingAddress:shipping, 
-                // paymentMethod:response.data?response.data:selectedOption
+                paymentId:response?.data?._id
               }
               const order=await createOrderApi(apiData)
+              console.log(order)
               dispatch(clearCart())
               navigate("/order")
             }
@@ -97,9 +100,9 @@ const PaymentMethod = () => {
           }
         },
         prefill: {
-          name: "Jai",
-          email: "jai.singh@gmail.com",
-          contact: "9667201750",
+          name: "Suraj",
+          email: "jaibhandari04@gmail.com",
+          contact: "8975642135",
         },
         notes: {
           address: "Planet Corporate Office",

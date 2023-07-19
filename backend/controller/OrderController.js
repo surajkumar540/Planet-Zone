@@ -83,8 +83,10 @@ const paymentSuccessController = async (req, res) => {
         }) 
     }
 
-    console.log(paymentObj,"my obj")
-    const updatedPaymentObj=await Payment.findOneAndUpdate({_id:orderCreationId},{summary:{orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature},amount_paid:paymentObj[0]?.amount})
+    const updatedPaymentObj=await Payment.findOneAndUpdate({_id:orderCreationId},{
+      summary:{orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature},
+      amount_paid:paymentObj[0]?.amount
+    })
 
     if(!updatedPaymentObj)
     {
@@ -95,7 +97,7 @@ const paymentSuccessController = async (req, res) => {
     }
 
     res.status(200).json({
-      date:updatedPaymentObj,
+      data:updatedPaymentObj,
       status: true,
     });
   } catch (error) {
@@ -113,25 +115,22 @@ const paymentSuccessController = async (req, res) => {
 const createOrderController = async (req, res) => {
   try {
     const user = req.userId;
-    const { cart, shippingAddress, paymentMethod } = req.body;
+    const { cart, shippingAddress,paymentId } = req.body;
 
-    const cartArr = cart.map((item) => {
-      item.Product = item._id;
-      delete item._id;
-      console.log(item);
-      return item;
-    });
+
+    const paymentObj=await Payment.find({_id:paymentId});
+    console.log(paymentObj[0],"check")
 
     console.log(user);
     
     const response = await Order.create({
       User: user,
-      orderItems: cartArr,
+      orderItems: cart,
       shippingAddress: shippingAddress,
-      // paymentMethod: paymentMethod,
+      payment: paymentObj&&paymentObj[0],
     });
 
-    console.log(response, "order db ka");
+    // console.log(response, "order db ka");
     res.send(req.body);
   
   } catch (error) {

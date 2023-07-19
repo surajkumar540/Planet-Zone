@@ -26,6 +26,7 @@ import AddProduct from "./components/Admin/AddProduct";
 import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
 import Error from "./components/Tools/Error";
+import AllOrderDetailes from "./components/AllOrderDetailes/AllOrderDetailes";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
@@ -37,28 +38,28 @@ function App() {
     let path = location.pathname;
     const token = getToken();
     const admin=getAdmin();
-    if (token) {
+    // if (token) {
       
-      if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'))
-      {
-        navigate("/dashboard")
-      }
-      else if(path === "/login" ||path === "/signup") 
-      {
-        navigate("/");
-      } else {
-        navigate(path);
-      }
+    //   if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'))
+    //   {
+    //     navigate("/dashboard")
+    //   }
+    //   else if(path === "/login" ||path === "/signup") 
+    //   {
+    //     navigate("/");
+    //   } else {
+    //     navigate(path);
+    //   }
 
-    } 
-    else {
-      if (path === "/login" ||path === "/signup") 
-      {
-        navigate(path);
-      } else {
-        navigate("/");
-      }
-    }
+    // } 
+    // else {
+    //   if (path === "/login" ||path === "/signup") 
+    //   {
+    //     navigate(path);
+    //   } else {
+    //     navigate("/");
+    //   }
+    // }
     setLoading(false)
   };
 
@@ -107,6 +108,7 @@ function App() {
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/shipping" element={<ShippingPage />} />
           <Route path="/order" element={<OrderDetailes />} />
+          <Route path="/allOrder" element={<AllOrderDetailes />} />
           <Route path="*" element={<Error />} />
         </Routes>
       )}

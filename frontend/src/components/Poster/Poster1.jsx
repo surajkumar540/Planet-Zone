@@ -18,7 +18,7 @@ const Poster1 = () => {
                         <Typography pl={{sm:'.6rem'}} fontSize={{sm:'.8rem',md:'1.3rem'}} color='#694f4f'>Pocket friendly products everywhere</Typography>
                     </Box>
                     <Box ml={{sm:'.5rem'}}>
-                        <Button variant='contained' size='small' sx={{borderRadius:'50px',bgcolor:'#3CB815',textTransform:"capitalize"}} onClick={()=>navigate("/dashboard")}>Order Now</Button>
+                        <Button variant='contained' size='small' sx={{borderRadius:'50px',bgcolor:'#3CB815',textTransform:"capitalize"}}>Order Now</Button>
                     </Box>
                 </Box>
             </Box>
@@ -28,7 +28,7 @@ const Poster1 = () => {
         <Box flex={{sm:0.5,md:0.55}}>
             <CardMedia
             sx={{ height:'100%' }}
-            image={Bag}
+            image={'https://th.bing.com/th/id/OIP.qQvtHTahefOgUokixorkWwHaE8?pid=ImgDet&rs=1'}
             title="green iguana"
             />
         </Box>

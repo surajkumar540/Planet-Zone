@@ -164,10 +164,10 @@ const getAllOrdersController=async(req,res)=>{
 //Get any order full details
 const getSingleOrderController=async(req,res)=>{
   try{
-    // const userId=req.userId;
     const orderId=req.params.orderId;
 
     const orderObj=await Order.findOne({_id:orderId});
+    delete orderObj.User;
     
     res.status(200).json({
       data:orderObj,

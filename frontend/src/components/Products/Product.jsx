@@ -31,8 +31,8 @@ const Product = ({obj}) => {
 
         <Box flex={0.68} boxSizing={'border-box'} p={'.5rem'}>
             <CardMedia
-            sx={{ height: '100%',borderRadius:'10px' }}
-            image={Bag}
+            sx={{ height: '100%',borderRadius:'10px',objectFit:'cover'}}
+            image={obj?.image}
             title="green iguana"
             />
         </Box>
@@ -47,7 +47,7 @@ const Product = ({obj}) => {
 
                 <Box display={'flex'}>
                     
-                    <Box flex={0.6}>
+                    <Box>
                         <Box display={'flex'}>
                             <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
                             <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
@@ -56,7 +56,8 @@ const Product = ({obj}) => {
                             <StarOutlineIcon sx={{color:'#ffc107'}} fontSize='small'/>
                         </Box>
                         <Box>
-                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>$ {obj?.price||'78'}</Typography>
+                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>₹{Math.floor(obj?.totalPrice)} <Typography as='del' fontSize='1rem' sx={{color:"grey",fontWeight:400}}>{obj?.price&&`₹${obj?.price}`}</Typography> <Typography as='span' fontSize='1rem' color='#388E3C'>{`${obj?.discount}% off`}</Typography> 
+                            </Typography>
                         </Box>
                     </Box>
 

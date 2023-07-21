@@ -30,6 +30,7 @@ import EditProduct from "./components/Admin/EditProduct";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
+  const isUserLogged = useSelector((state) => state?.user?.isUserLogged);
   const loginStatus = useSelector((state) => state?.user?.status);
   const dispatch = useDispatch();
   const [loading,setLoading]=useState(true);
@@ -90,6 +91,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/otp" element={<OtpVerify />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/order/:orderId" element={<OrderDetails />} />
       </Routes>
 
       {isAdminLogged ? (
@@ -101,6 +103,7 @@ function App() {
         </Routes>
       ) : (
         <Routes>
+          <Route path="/shipping" element={<ShippingPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/product/:pid" element={<ShowProducts />} />
           <Route path="/cart" element={<Cart />} />
@@ -108,8 +111,6 @@ function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/contact" element={<ContactUs />} />
-          <Route path="/shipping" element={<ShippingPage />} />
-          <Route path="/order/:orderId" element={<OrderDetails />} />
         </Routes>
       )}
     </>

@@ -52,7 +52,7 @@ const SingleCartProduct = ({ obj }) => {
       <Box flex={0.2} boxSizing={"border-box"} p="0.5rem" onClick={showProductFun}>
         <CardMedia
           sx={{ height: "100%", width: "100%", borderRadius: "10px" }}
-          image={Bag}
+          image={obj?.image}
           title="green iguana"
         />
       </Box>
@@ -73,7 +73,7 @@ const SingleCartProduct = ({ obj }) => {
         <Box flex={0.2} display={"flex"} alignItems={'center'} onClick={showProductFun}>
             
             <Typography fontWeight={600} fontSize={"1.1rem"} mr='1rem'>
-                ₹{obj.price*obj.qty}
+                ₹{Math.floor(obj.totalPrice*obj.qty)}
             </Typography>
 
           <Typography fontSize={".8rem"} color="#388e3c">

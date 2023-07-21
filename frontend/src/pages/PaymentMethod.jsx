@@ -22,10 +22,10 @@ import { clearCart } from "../redux/reducers/cartSlice";
 const PaymentMethod = () => {
   const navigate=useNavigate()
   const dispatch = useDispatch();
-  const price=useSelector((state)=>state.order.price)
+  const price=useSelector((state)=>state?.order?.price)
   const cart=useSelector((state)=>state?.cart?.data)
   const shipping=useSelector((state)=>state?.order?.shipping)
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState("RazorPay");
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -53,7 +53,7 @@ const PaymentMethod = () => {
       }
   
       // creating a new order
-      const result = await paymentInit({amount:price})
+      const result = await paymentInit({amount:Math.floor(price)})
       console.log(result,"payment init")
   
       if (!result) {

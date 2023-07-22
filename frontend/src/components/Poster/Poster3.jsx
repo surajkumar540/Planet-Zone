@@ -10,13 +10,13 @@ const Poster3 = () => {
                 <Box display='flex' height={{xs:'50vh',sm:'60vh'}}>
                     <Box flex='0.5' display={{xs:'none',sm:'block'}}>
                     <CardMedia
-                        sx={{ height: '100%',borderRadius:'10px' }}
-                        image={b}
+                        sx={{ height: '100%',objectFit:"cover" }}
+                        image={'https://wallpapercave.com/wp/wp2599594.jpg'}
                         title="green iguana"
                         />
                     </Box>
 
-                    <Box bgcolor='#3CB815' flex={{xs:'1',sm:'0.5'}} display='flex' justifyContent={'center'}>
+                    <Box bgcolor='#F0BC59' flex={{xs:'1',sm:'0.5'}} display='flex' justifyContent={'center'}>
                         <Box display='flex' width={'85%'} flexDirection='column'  justifyContent='center' >
 
                             <Typography display='flex' justifyContent='start' fontFamily='sans-serif' fontWeight='700' fontSize={{xs:'1.4rem',sm:'1.8rem',md:"40px"}} color='white' paddingBottom="10px">All About Organic</Typography>

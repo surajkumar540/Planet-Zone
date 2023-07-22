@@ -16,7 +16,7 @@ import Profile from "./pages/Profile";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllProducts } from "./redux/reducers/productSlice";
 import ShippingPage from "./pages/ShippingPage";
-import OrderDetailes from "./pages/OrderDetailes";
+import OrderDetails from "./pages/OrderDetails";
 import { tokenVerificationAsync } from "./redux/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
 import { getToken,getAdmin } from "./utils/functions";
@@ -26,9 +26,12 @@ import AddProduct from "./components/Admin/AddProduct";
 import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
 import Error from "./components/Tools/Error";
+import EditProduct from "./components/Admin/EditProduct";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
+  const isUserLogged = useSelector((state) => state?.user?.isUserLogged);
+  const loginStatus = useSelector((state) => state?.user?.status);
   const dispatch = useDispatch();
   const [loading,setLoading]=useState(true);
   const navigate = useNavigate();
@@ -72,7 +75,7 @@ function App() {
     "Authorization"
   ] = `Bearer ${localStorage.getItem("token")}`;
 
-  if(loading)
+  if(loading || loginStatus==='loading')
   {
     return(
       <Loader/>
@@ -88,16 +91,19 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/otp" element={<OtpVerify />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/order/:orderId" element={<OrderDetails />} />
       </Routes>
 
       {isAdminLogged ? (
         <Routes>
           <Route path="/dashboard" element={<AdminHome />} />
           <Route path="/addProduct" element={<AddProduct />} />
+          <Route path="/editProduct/:pid" element={<EditProduct />} />
           <Route path="*" element={<Error />} />
         </Routes>
       ) : (
         <Routes>
+          <Route path="/shipping" element={<ShippingPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/product/:pid" element={<ShowProducts />} />
           <Route path="/cart" element={<Cart />} />
@@ -105,9 +111,6 @@ function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/contact" element={<ContactUs />} />
-          <Route path="/shipping" element={<ShippingPage />} />
-          <Route path="/order" element={<OrderDetailes />} />
-          <Route path="*" element={<Error />} />
         </Routes>
       )}
     </>

@@ -14,7 +14,6 @@ import { setPrice, shippingAddress } from '../redux/reducers/orderSlice';
 const steps = [
   'Shipping Address',
   'Payment',
-  'Order Detailes',
 ];
 const ShippingPage = () => {
 

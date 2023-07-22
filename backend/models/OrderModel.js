@@ -8,7 +8,7 @@ const orderSchema=mongoose.Schema({
     },
     orderItems:[
         {
-            Product:{
+            _id:{
                 type:mongoose.Schema.Types.ObjectId,
                 required:true,
                 ref:"Product"
@@ -29,6 +29,18 @@ const orderSchema=mongoose.Schema({
                 type:Number,
                 required:true
             },
+            gst:{
+                type:Number,
+                required:true
+            },
+            discount:{
+                type:Number,
+                required:true
+            },
+            totalPrice:{
+                type:Number,
+                required:true
+            },
             brand:{
                 type:String,
                 required:true
@@ -40,6 +52,18 @@ const orderSchema=mongoose.Schema({
         }
     ],
     shippingAddress:{
+        fullName:{
+            type:String,
+            required:true
+        },
+        phoneNo:{
+            type:Number,
+            required:true
+        },
+        state:{
+            type:String,
+            required:true
+        },
         address:{
             type:String,
             required:true
@@ -48,53 +72,98 @@ const orderSchema=mongoose.Schema({
             type:String,
             required:true
         },
-        postalCode:{
+        pinCode:{
             type:Number,
             required:true
         },
-        country:{
+        landMark:{
             type:String,
             required:true
         }
     },
 
-    paymentMethod:{
-        payment:{
+    // {
+    //     summary: {
+    //       orderCreationId: 'order_MFVblcMTVnT7DS',
+    //       razorpayPaymentId: 'pay_MFVbuSFDxUeJat',
+    //       razorpayOrderId: 'order_MFVblcMTVnT7DS',
+    //       razorpaySignature: 'eacc3e7b6680cd383677a768b184a7f5aa5b4757a32cd4c3393c317fed93e6dc'
+    //     },
+    //     _id: 'order_MFVblcMTVnT7DS',
+    //     entity: 'order',
+    //     amount: 1500,
+    //     amount_paid: 1500,
+    //     amount_due: 1500,
+    //     currency: 'INR',
+    //     attempts: 0,
+    //     receipt: 'txn_1689736719855',
+    //     offer_id: null,
+    //     status: 'created',
+    //     created_at: 1689736720,
+    //     createdAt: 2023-07-19T03:18:40.405Z,
+    //     updatedAt: 2023-07-19T03:19:00.573Z,
+    //     __v: 0
+    //   }
+
+    payment:{
+        _id:{
             type:String,
-            required:true
+            default:null
         },
-        taxPrice:{
+        entity:{
+            type:String,
+            default:""
+        },
+        amount:{
+            type:Number, 
+            default:0
+        },
+        amount_paid:{
             type:Number,
-            required:true,
-            default:0.0
+            default:0
         },
-        shippingPrice:{
+        amount_due:{
             type:Number,
-            required:true, 
-            default:0.0
+            default:0
         },
-        totalPrice:{
+        currency:{
+            type:String,
+            default:""
+        },
+        attempts:{
             type:Number,
-            required:true,
-            default:0.0
+            default:0
         },
-        isPaid:{
-            type:Boolean,
-            required:true,
-            default:false
+        offer_id:{
+            type:String,
+            default:""
         },
-        paidAt:{
-            type:Date
+        status:{
+            type:String,
+            default:""
         },
-        isDelivered:{
-            type:Boolean,
-            required:true,
-            default:false
+        created_at:{
+            type:Number,
+            default:0
         },
-        deliveredAt:{
-            type:Date
+        summary:{
+            orderCreationId:{
+                type:String,
+                default:""
+            },
+            razorpayPaymentId:{
+                type:String,
+                default:""
+            },
+            razorpayOrderId:{
+                type:String,
+                default:""
+            },
+            razorpaySignature:{
+                type:String,
+                default:""
+            },
         }
-    
     }
     
 },{timestamps:true});

@@ -41,7 +41,7 @@ const AddProduct = () => {
         "price":price,
         "discount":discount,
         "gst":gst,
-        "totalPrice":totalPrice,
+        "totalPrice":Math.floor(totalPrice),
         "image":image,
         "description":"68.58cm/27-inch (diagonal) 5120-by-2880 Retina 5K display 3.1GHz 6-core 10th-generation Intel Core i5 AMD Radeon Pro 5300 graphics Ultrafast SSD storage Two Thunderbolt 3 (USB-C) ports Four USB-A ports Gigabit Ethernet port"
       }
@@ -86,7 +86,7 @@ const AddProduct = () => {
               value={category} 
               onChange={(e)=>setCategory(e.target.value)}
             >
-              <MenuItem value={'Bottle'}>Bottle</MenuItem>
+              <MenuItem value={'Bottle'}>Electronics</MenuItem>
               <MenuItem value={'Bag'}>Bag</MenuItem>
               <MenuItem value={'Shoes'}>Shoes</MenuItem>
               <MenuItem value={'Clothes'}>Clothes</MenuItem>

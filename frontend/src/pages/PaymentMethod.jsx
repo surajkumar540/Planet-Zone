@@ -15,15 +15,17 @@ import { Container, Paper, Divider } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
-import { paymentInit,paymentSuccess } from "../api/devApi";
+import { createOrderApi, paymentInit,paymentSuccess } from "../api/devApi";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../redux/reducers/cartSlice";
 
 const PaymentMethod = () => {
   const navigate=useNavigate()
   const dispatch = useDispatch();
-  const price=useSelector((state)=>state.order.price)
-  const [selectedOption, setSelectedOption] = useState("");
+  const price=useSelector((state)=>state?.order?.price)
+  const cart=useSelector((state)=>state?.cart?.data)
+  const shipping=useSelector((state)=>state?.order?.shipping)
+  const [selectedOption, setSelectedOption] = useState("RazorPay");
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -51,7 +53,8 @@ const PaymentMethod = () => {
       }
   
       // creating a new order
-      const result = await paymentInit({amount:price})
+      const result = await paymentInit({amount:Math.floor(price)})
+      console.log(result,"payment init")
   
       if (!result) {
         alert("Server error. Are you online?");
@@ -78,10 +81,20 @@ const PaymentMethod = () => {
           };
           try{
             const response=await paymentSuccess(data)
+            console.log(response,"payment success")
             if(response.status)
             {
-              dispatch(clearCart())
-              navigate("/cart")
+              const apiData={ 
+                cart:cart, 
+                shippingAddress:shipping, 
+                paymentId:response?.data?._id
+              }
+              const order=await createOrderApi(apiData)
+              if(order.status)
+              {
+                navigate(`/order/${order?.orderId}`)
+                dispatch(clearCart())
+              }
             }
           }catch(error)
           {
@@ -89,9 +102,9 @@ const PaymentMethod = () => {
           }
         },
         prefill: {
-          name: "Jai",
-          email: "jai.singh@gmail.com",
-          contact: "9667201750",
+          name: "Suraj",
+          email: "suraj23@gmail.com",
+          contact: "1285887788",
         },
         notes: {
           address: "Planet Corporate Office",
@@ -113,7 +126,7 @@ const PaymentMethod = () => {
     <>
       <Progress currentStep={1} />
 
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{paddingBottom:'4rem'}}>
         <Paper elevation={3} sx={{ padding: 3 }}>
           <form onSubmit={handleSubmit}>
             <Box mt={2}>

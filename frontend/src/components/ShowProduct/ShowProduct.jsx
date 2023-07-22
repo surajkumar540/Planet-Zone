@@ -1,43 +1,74 @@
-import React from 'react';
-import { Box,CardMedia,Typography, Button } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box,CardMedia,Typography, Button,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { addToCartAsync } from '../../redux/reducers/cartSlice';
+import { useNavigate } from 'react-router-dom';
 
-const ShowProduct = () => {
+const ShowProduct = ({obj}) => {
+    const dispatch=useDispatch()
+    const navigate=useNavigate()
+    const [qty,setQty]=useState(0);
+
+    const handleCart=()=>{
+        const dummy={
+            id:obj?._id,
+            qty:qty
+        }
+        dispatch(addToCartAsync(dummy))
+        navigate("/cart")
+    }
+
+    useEffect(()=>{
+        setQty(1)
+    },[obj])
+
   return (
     <>
         <Box display={'flex'} height={'80vh'}>
             <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'flex-end'}>
                 <CardMedia
                     sx={{ height: '95%',width:'90%',borderRadius:'20px' }}
-                    image="https://images.pexels.com/photos/2850487/pexels-photo-2850487.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                    image={obj?.image||"https://images.pexels.com/photos/2850487/pexels-photo-2850487.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
                     title="green iguana"
                 />
             </Box>
             <Box flex={0.6} display={'flex'} flexDirection={'column'} boxSizing={'border-box'} p='2rem'  justifyContent={'space-around'}>
 
                 <Box flex='0.6' display={'flex'} flexDirection={'column'} justifyContent={'space-evenly'}>                
-                    <Typography fontSize={'1rem'}>Adidas</Typography>
-                    <Typography fontSize={'1.5rem'}>Men's T Shirt</Typography>
-                    <Typography fontSize={'28px'}>₹ 239</Typography>
+                    <Typography fontSize={'1rem'}>{obj?.brand} ({obj?.category})</Typography>
+                    <Typography fontSize={'1.5rem'}>{obj?.name}</Typography>
+                    <Typography fontSize={'28px'}>₹{Math.floor(obj?.totalPrice)} <Typography as='del' fontSize='1rem' sx={{color:"grey",fontWeight:400}}>{obj?.price&&`₹${obj?.price}`}</Typography> <Typography as='span' fontSize='1rem' color='#388E3C'>{obj?.discount&&`${obj?.discount}% off`}</Typography> </Typography>
                     <Box py='1rem' display={'flex'} alignItems={'center'}>
                         <Box>
-                            <Typography>Sizes</Typography>
-                        </Box>
-                        <Box display={'flex'} width={'30%'} justifyContent={'space-evenly'} >
-                        <Button variant='outlined' sx={{color:"black",fontWeight:'500',fontSize:'1rem',borderColor:'grey'}}>S</Button>
-                        <Button variant='outlined' sx={{color:"black",fontWeight:'500',fontSize:'1rem',borderColor:'grey'}}>M</Button>
-                        <Button variant='outlined' sx={{color:"black",fontWeight:'500',fontSize:'1rem',borderColor:'grey'}}>L</Button>
+                        <FormControl fullWidth  size="small" sx={{ m: 1, minWidth: 60 }}>
+                        <InputLabel id="demo-simple-select-label">Qty</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={qty}
+                            label="Age"
+                            onChange={(e)=>setQty(e.target.value)}
+                        >
+                            {
+                                [...Array(obj?.countInStock).keys()].map((item)=>{
+                                    return <MenuItem key={item} value={item+1}>{item+1}</MenuItem>
+                                })
+                            }
+                           
+                        </Select>
+                        </FormControl>
                         </Box>
                     </Box>
                     <Box fontSize={'1.5rem'}>
-                        <Button variant='contained' sx={{bgcolor:"#009688",marginRight:'1rem'}}>Add to Cart</Button>
-                        <Button variant='contained' sx={{bgcolor:"darkorange"}}>Buy Now</Button>
+                        <Button variant='contained' sx={{bgcolor:"coral",marginRight:'1rem'}} onClick={handleCart}>Add to Cart</Button>
+                        <Button variant='contained' sx={{bgcolor:"#3CB815"}}>Buy Now</Button>
                     </Box>
                     
                 </Box>
 
                 <Box flex='0.38'>
-                    <Typography variant='h5'>Products Details</Typography>
-                    <Typography py='1rem'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo voluptates rerum, recusandae mollitia quo blanditiis porro unde. Ab a labore, at facilis libero animi dolorem? Vitae mollitia natus minima obcaecati. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi nesciunt odit id harum magni quis labore velit expedita fuga quo earum molestiae eos porro quibusdam, voluptate at cum eaque. Vitae! Lorem ipsum dolor sit amet consectetur, adipisicing elit. Aliqui ro minus necessitatibus error reiciendis dolore minima expedita, laboriosam accusantium saepe eos recusandae debitis a! Nostrum doloribus eum commodi asperiores voluptate.</Typography>
+                    <Typography variant='h5'>Description</Typography>
+                    <Typography py='1rem'>{obj?.description}</Typography>
                 </Box>
             </Box>
         </Box>

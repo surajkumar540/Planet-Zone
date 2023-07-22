@@ -4,7 +4,6 @@ const products= [
         "image": "jalksdf",
         "brand": "Adidas",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 49,
         "rating": 3,
@@ -16,11 +15,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Apple",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 59,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 3,
         "numReviews":12
       },
       {
@@ -28,11 +26,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Samsung",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 54,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 5,
         "numReviews":12
       },
       {
@@ -40,11 +37,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Intel",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 35,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 2,
         "numReviews":12
       }
       ,
@@ -53,11 +49,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Sony",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 4,
         "numReviews":12
       },
       {
@@ -65,11 +60,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Sony",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 7,
         "numReviews":12
       },
       {
@@ -77,11 +71,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Sony",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 5,
         "numReviews":12
       },
       {
@@ -89,11 +82,10 @@ const products= [
         "image": "jalksdf",
         "brand": "Sony",
         "category": "smartphones",
-        "rating": 4.69,
         "description": "An apple mobile which is nothing like apple",
         "price": 99,
         "rating": 3,
-        "countInStock": 9,
+        "countInStock": 1,
         "numReviews":12
       }
   ]

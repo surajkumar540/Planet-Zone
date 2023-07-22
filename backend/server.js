@@ -1,34 +1,24 @@
 const express=require("express");
-const products=require("./data/product") // Static product json data
 const connectDb=require("./config/config") 
 const dotenv=require("dotenv");
-dotenv.config();
+const productRouter=require('./routes/ProductRouter');
+const userRouter=require('./routes/UserRouter')
+const shippingRouter=require("./routes/ShippingRouter")
+const authToken=require("./middlewares/authToken")
+const orderRouter = require("./routes/OrderRouter");
+const contactRouter = require("./routes/ContactRouter");
+const main=require('./config/mail')
 const PORT=4000;
+dotenv.config();
 
-// connectDb()//Connecting to mongo db database
+connectDb()//Connecting to mongo db database
 const app=express(); // To make server from express use only one time at server file
-
-app.get("/",(req,res)=>{
-    res.send("<h5>Hello boi</h5>")
-})
-
-app.get("/products",(req,res)=>{
-    res.status(200).json({
-        data:products,
-        status:true
-    })
-})
-
-app.get("/products/:price",(req,res)=>{
-    const product=products.find((item)=>
-    {
-        return item.price===Number(req.params.price)
-    });
-    res.status(200).json({
-        data:product,
-        status:true
-    })
-})
+app.use(express.json())
+app.use(userRouter);
+app.use(productRouter);
+app.use(contactRouter);
+app.use(authToken,shippingRouter);
+app.use(authToken,orderRouter);
 
 app.listen(process.env.PORT||PORT,()=>{
     console.log(`${process.env.NODE_ENV} Server is working on ${process.env.PORT} `);

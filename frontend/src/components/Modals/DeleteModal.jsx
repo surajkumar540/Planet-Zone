@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
-import { Link } from 'react-router-dom';
 
 const style = {
     position: 'absolute',
@@ -18,14 +17,14 @@ const style = {
     p: 4,
 };
 
-export default function ForgetModal() {
+export default function DeleteModal() {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
     return (
         <Box>
-            <Typography mt={'.3rem'} textAlign={'center'} color={'red'} sx={{cursor:'pointer'}} onClick={handleOpen}>Forgot Password ?</Typography>
+            <Button variant='contained'  onClick={handleOpen} >Delete</Button>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -33,18 +32,15 @@ export default function ForgetModal() {
                 aria-describedby="modal-modal-description"
             >
                 <Box sx={style}>
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
-                        Forget Password
+                    <Typography fontSize="17px">
+                       Are you sure want to delete all mails ?
                     </Typography>
 
-                    <Box marginY={2} >
-                        <TextField type='email'  label="your@example.com" variant="outlined" fullWidth />
-                    </Box>
 
-                    <Box textAlign='center'>
-                        <Link to="/otp">
-                        <Button variant='contained' >Send Otp</Button>
-                        </Link>
+                    <Box pt={2}  display="flex" justifyContent="center" gap={2} >
+                        <Button variant='outlined' onClick={handleClose}>Cancel</Button>
+                        <Button variant='contained' onClick={handleClose} > Delete</Button>
+                        
                     </Box>
 
                 </Box>

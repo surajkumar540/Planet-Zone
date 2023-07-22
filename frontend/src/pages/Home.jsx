@@ -1,35 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import Header from "../components/Header/Header";
+import React, { useEffect } from 'react';
 import Poster1 from '../components/Poster/Poster1';
 import Products from "../components/Products/Products"
-import { getAllProducts } from '../api/devApi';
 import Poster2 from '../components/Poster/Poster2';
 import Poster3 from '../components/Poster/Poster3';
+import { useSelector } from 'react-redux';
+import Loader from '../components/Tools/Loader';
 import Footer from '../components/Footer/Footer';
 
 const Home = () => {
-  const [products,setProducts]=useState([])
+  const {data:products,status,message}=useSelector((state)=>state?.products)
 
-  const fetchAllProducts=async()=>{
-    try{
-      const response=await getAllProducts();
-      setProducts(response.data);
-    }catch(error)
-    { 
-      console.log(error)
-    }
+  if(status==='loading')
+  {
+    return <Loader/>
   }
-
-  useEffect(()=>{
-    fetchAllProducts()
-  },[])
 
   return (
     <>
-      <Header/>
       <Poster1/>
-      <Products products={products}/>
-      {/* <Poster3/> */}
+      <Products products={products.slice(0,8)}/>
+      <Poster3/>
+      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products}/>
       {/* <Poster2/> */}
       <Footer/>
     </>

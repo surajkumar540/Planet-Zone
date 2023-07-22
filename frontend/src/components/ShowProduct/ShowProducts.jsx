@@ -1,31 +1,42 @@
-import React,{useState,useEffect} from 'react';
-import Header from '../Header/Header';
+import React,{useEffect, useState} from 'react';
 import ShowProduct from './ShowProduct';
-import { getAllProducts } from '../../api/devApi';
 import Products from '../Products/Products';
+import { useSelector } from 'react-redux';
+import { fetchSingleProductApi } from '../../api/devApi';
+import { useParams } from 'react-router-dom';
 import Footer from '../Footer/Footer';
 
 const ShowProducts = () => {
-  const [products,setProducts]=useState([])
+  const {pid}=useParams()
+  const {data:products}=useSelector((state)=>state?.products);
+  const [singleProduct,setSingleProduct]=useState({})
 
-  const fetchAllProducts=async()=>{
+  const fetchSingleProduct=async()=>{
     try{
-      const response=await getAllProducts();
-      setProducts(response.data);
-    }catch(error)
-    { 
-      console.log(error)
+      const response=await fetchSingleProductApi(pid);
+      if(response.status)
+      {
+        setSingleProduct(response.data);
+      }
+    }catch(err)
+    {
+      console.log(err)
     }
   }
 
   useEffect(()=>{
-    fetchAllProducts()
-  },[])
+    fetchSingleProduct()
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // Optional: Add smooth scrolling animation
+    });
+  },[pid])
+
   return (
     <>
-    <Header/>
-    <ShowProduct/>
-    <Products products={products}/>
+    {/* send single products state/props in show product comp */}
+    <ShowProduct obj={singleProduct}/> 
+    <Products heading="Similar Products" title="New products at your point" products={products}/>
     <Footer/>
     </>
   )

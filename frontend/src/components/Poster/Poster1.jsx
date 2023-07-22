@@ -1,36 +1,34 @@
 import React from 'react';
 import { Box,CardMedia, Typography,Button} from '@mui/material';
 import Bag from "../../assets/Home/bag.jpg"
+import { useNavigate } from 'react-router-dom';
 
 const Poster1 = () => {
+    const navigate=useNavigate()
   return (
-    <Box sx={{height:'80vh',display:'flex'}}>
+    <Box sx={{height:{xs:'50vh',sm:'80vh'},display:'flex'}}>
         
-        <Box bgcolor={'beige'} sx={{flex:0.45,display:'flex',alignItems:'center '}}>
+        <Box bgcolor={'beige'} width={'100%'} sx={{flex:{sm:0.5,md:0.45},display:'flex',alignItems:'center '}}>
             <Box width={'100%'} display={'flex'} flexDirection={'column'} justifyContent={'flex-end'} alignItems={'center'}>
                 <Box width={'80%'} height={'80%'}>
-                    <Box 
-                    // color='#995732'
-                    // color='#735e52'
-                    color='#795548'
-                    >
-                        <Typography fontSize={'5rem'} fontWeight={600} lineHeight={'120%'}>The <br/> Sunday Sale</Typography>     
+                    <Box color='#795548'>
+                        <Typography variant='h3' fontSize={{sm:'3rem',md:'5rem'}} fontWeight={600} lineHeight={'120%'}>The <br/> Sunday Sale</Typography>     
                     </Box>
                     <Box mb='1rem'>
-                        <Typography pl='.6rem' fontSize={'1.3rem'} color='#694f4f'>Pocket friendly products everywhere</Typography>
+                        <Typography pl={{sm:'.6rem'}} fontSize={{sm:'.8rem',md:'1.3rem'}} color='#694f4f'>Pocket friendly products everywhere</Typography>
                     </Box>
-                    <Box ml='.5rem'>
-                        <Button variant='contained' sx={{borderRadius:'50px',bgcolor:'#009688'}}>Order Now</Button>
+                    <Box ml={{sm:'.5rem'}}>
+                        <Button variant='contained' size='small' sx={{borderRadius:'50px',bgcolor:'#3CB815',textTransform:"capitalize"}}>Order Now</Button>
                     </Box>
                 </Box>
             </Box>
         </Box>
 
 
-        <Box bgcolor={'grey'} flex={0.55}>
+        <Box flex={{sm:0.5,md:0.55}}>
             <CardMedia
             sx={{ height:'100%' }}
-            image={Bag}
+            image={'https://th.bing.com/th/id/OIP.qQvtHTahefOgUokixorkWwHaE8?pid=ImgDet&rs=1'}
             title="green iguana"
             />
         </Box>

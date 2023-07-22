@@ -13,11 +13,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import AccountMenu from '../Tools/AccountMenu';
-import Badge from '@mui/material/Badge';
+import { Link,useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setLoggedOut } from '../../redux/reducers/userSlice';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
@@ -35,14 +33,19 @@ const pageTheme={
 }
 
 function AdminHeader(props) {
+  const dispatch=useDispatch()
+  const navigate=useNavigate()
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigate=useNavigate();
-  const cartItems=useSelector((state)=>state?.cart?.data)
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
+
+  const handleLogout=()=>{
+    dispatch(setLoggedOut());
+    navigate("/login")
+  }
  
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
@@ -99,11 +102,11 @@ function AdminHeader(props) {
               <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/addProduct'}>
                 Product
               </Button>
- 
+
+              <Button sx={{ color: 'white',textTransform:'capitalize' }} onClick={handleLogout}>
+                Logout
+              </Button>
             
-            
-            
-   
             
           </Box>
         </Toolbar>

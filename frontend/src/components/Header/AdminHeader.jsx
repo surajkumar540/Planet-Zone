@@ -103,10 +103,14 @@ function AdminHeader(props) {
                 Product
               </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} onClick={handleLogout}>
-                Logout
+              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/contactEmail'}>
+                Emails
               </Button>
+ 
             
+            
+            
+   
             
           </Box>
         </Toolbar>

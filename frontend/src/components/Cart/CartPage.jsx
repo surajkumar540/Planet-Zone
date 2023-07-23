@@ -3,14 +3,20 @@ import { Box, Button, CardMedia, Typography } from '@mui/material';
 import SingleCartProduct from './SingleCartProduct';
 import CartTable from "./CartTable"
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 const CartProducts = ({ products }) => {
-
+  const isUserLogged=useSelector((state)=>state?.user?.isUserLogged)
   const navigate = useNavigate();
 
   const handleSubmit = ()=>{
-    navigate("/shipping")
+    if(isUserLogged)
+    {
+      navigate("/shipping")
+    }else{
+      navigate("/login")
+    }
   }
 
   return (

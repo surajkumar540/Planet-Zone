@@ -1,7 +1,8 @@
-const Order = require("../models/OrderModel");
 const Razorpay = require("razorpay");
 const Payment = require("../models/PaymentModel");
+const Order = require("../models/OrderModel");
 
+// First we init payment to generate order id
 const paymentInitController = async (req, res) => {
   try {
     const { amount } = req.body;
@@ -59,9 +60,7 @@ const paymentInitController = async (req, res) => {
 
 
 
-
-
-
+// Then if payment is successful then this will store payment details to payment collection
 const paymentSuccessController = async (req, res) => {
   try {
     const {orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature}=req.body;
@@ -83,8 +82,10 @@ const paymentSuccessController = async (req, res) => {
         }) 
     }
 
-    console.log(paymentObj,"my obj")
-    const updatedPaymentObj=await Payment.findOneAndUpdate({_id:orderCreationId},{summary:{orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature},amount_paid:paymentObj[0]?.amount})
+    const updatedPaymentObj=await Payment.findOneAndUpdate({_id:orderCreationId},{
+      summary:{orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature},
+      amount_paid:paymentObj[0]?.amount
+    })
 
     if(!updatedPaymentObj)
     {
@@ -95,7 +96,7 @@ const paymentSuccessController = async (req, res) => {
     }
 
     res.status(200).json({
-      date:updatedPaymentObj,
+      data:updatedPaymentObj,
       status: true,
     });
   } catch (error) {
@@ -106,31 +107,28 @@ const paymentSuccessController = async (req, res) => {
 
 
 
-
-
-
-
+// If payment details store in payment table then it will store cart,shipping,payment details in order collection
 const createOrderController = async (req, res) => {
   try {
     const user = req.userId;
-    const { cart, shippingAddress, paymentMethod } = req.body;
+    const { cart, shippingAddress,paymentId } = req.body;
 
-    const cartArr = cart.map((item) => {
-      item.Product = item._id;
-      delete item._id;
-      console.log(item);
-      return item;
-    });
-    console.log(user);
+
+    const paymentObj=await Payment.find({_id:paymentId});
+    
     const response = await Order.create({
       User: user,
-      orderItems: cartArr,
+      orderItems: cart,
       shippingAddress: shippingAddress,
-      paymentMethod: paymentMethod,
+      payment: paymentObj&&paymentObj[0],
     });
 
-    console.log(response, "order db ka");
-    res.send(req.body);
+    res.status(200).json({
+      message:"Order created successfully",
+      orderId:response._id,
+      status:true
+    })
+  
   } catch (error) {
     console.log(error);
     res.status(400).json({
@@ -140,4 +138,47 @@ const createOrderController = async (req, res) => {
   }
 };
 
-module.exports = { paymentInitController,paymentSuccessController ,createOrderController };
+
+
+
+
+//Get any order full details
+const getAllOrdersController=async(req,res)=>{
+  try{
+    const userId=req.userId;
+    const allOrders=await Order.find({User:userId});
+    
+    res.status(200).json({
+      data:allOrders,
+      status:true
+    })
+  }catch(error)
+  {
+    console.log(error)
+    res.send("Problem")
+  }
+}
+
+
+
+
+//Get any order full details
+const getSingleOrderController=async(req,res)=>{
+  try{
+    const orderId=req.params.orderId;
+
+    const orderObj=await Order.findOne({_id:orderId});
+    delete orderObj.User;
+    
+    res.status(200).json({
+      data:orderObj,
+      status:true
+    })
+  }catch(error)
+  {
+    console.log(error)
+    res.send("Problem")
+  }
+}
+
+module.exports = { paymentInitController,paymentSuccessController ,createOrderController,getAllOrdersController,getSingleOrderController };

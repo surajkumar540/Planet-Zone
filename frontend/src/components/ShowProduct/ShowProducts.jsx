@@ -36,7 +36,7 @@ const ShowProducts = () => {
     <>
     {/* send single products state/props in show product comp */}
     <ShowProduct obj={singleProduct}/> 
-    <Products heading="Similar Products" title="New products at your point"  products={products}/>
+    <Products heading="Similar Products" title="New products at your point" products={products}/>
     <Footer/>
     </>
   )

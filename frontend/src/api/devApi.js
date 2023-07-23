@@ -117,6 +117,14 @@ export const addSingleProduct = async (body) => {
     return response.data
 }
 
+export const updateSingleProduct = async (body) => {
+    const response = await axios.put(`/api/product`,body,headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
 
 export const deleteSingleProduct = async (pid) => {
     const response = await axios.delete(`/api/product/${pid}`, headerData);
@@ -184,11 +192,32 @@ export const paymentSuccess = async (obj) => {
     return response.data
 }
 
+
+
 // ----------------------order details
-export const orderDetailesApi = async () => {
-    const response = await axios.post(`/api/createOrder`, headerData);
+export const createOrderApi = async (obj) => {
+    const response = await axios.post(`/api/createOrder`,obj, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
     return response.data
 }
+
+
+export const getAllOrders = async () => {
+    const response = await axios.get(`/api/orders`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
+export const getSingleOrder = async (orderId) => {
+    const response = await axios.get(`/api/order/${orderId}`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+

@@ -7,7 +7,6 @@ import StepLabel from '@mui/material/StepLabel';
 const steps = [
   'Select Shipping address',
   'Choose Payment Method',
-  'Create Order',
 ];
 
 export default function Progress({currentStep}) {

@@ -38,9 +38,8 @@ export default function DeleteModal() {
 
 
                     <Box pt={2}  display="flex" justifyContent="center" gap={2} >
-                        <Button variant='outlined' onClick={handleClose}>Cancel</Button>
-                        <Button variant='contained' onClick={handleClose} > Delete</Button>
-                        
+                        <Button variant='outlined' sx={{width:"100%"}}  onClick={handleClose}>Cancel</Button>
+                        <Button variant='contained' sx={{width:"100%"}} onClick={handleClose}> Delete</Button>
                     </Box>
 
                 </Box>

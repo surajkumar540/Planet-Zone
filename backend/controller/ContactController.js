@@ -1,5 +1,6 @@
 
 const ContactUs = require("../models/ContactUsModal");
+const User=require("../models/UserModel")
 
 const createContactController = async (req, res) => {
 
@@ -51,4 +52,29 @@ const createContactController = async (req, res) => {
     }
 }
 
-module.exports = { createContactController };
+
+
+const getContactUs=async(req,res)=>{
+   
+    
+    try{
+        const result=await ContactUs.find()
+        
+        res.status(200).json({
+            data:result,
+            status:true
+        })
+    }catch(error)
+    {
+        res.status(500).json({
+            message:"Something is wrong",
+            status:false
+        })
+    }
+}
+
+
+module.exports={
+    createContactController,
+    getContactUs
+}

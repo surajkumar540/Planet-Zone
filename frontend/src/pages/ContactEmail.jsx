@@ -1,5 +1,5 @@
 import * as React from 'react';
-
+import { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Header from "../components/Header/Header";
@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { getContactUs } from '../api/devApi';
 
 
 export default function ContactEmail() {
@@ -24,61 +25,43 @@ export default function ContactEmail() {
     }));
 
 
-    const dummyData = [
-        {
-            name: "Suraj kumar",
-            email: "surajgautam56878@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type."
-        },
-        {
-            name: "Jai kumar",
-            email: "priya@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
-        }, {
-            name: "Pranay kumar",
-            email: "jai@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
-        }, {
-            name: "Priya kumar",
-            email: "surajgautam56878@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
-        }, {
-            name: "Raki kumar",
-            email: "rakiggdsy8@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
-        }, {
-            name: "Criuspus kumar",
-            email: "crsiuhhsbpos8@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
-        }, {
-            name: "Satyam kumar",
-            email: "satyam8@gmail.com",
-            city: "Haider pur delhi 110088",
-            message:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type.n"
+   
+
+    const [formValues, setFormValues] = useState()
+
+
+    const fetchContactUsData = async () => {
+
+        try {
+    
+          const response = await getContactUs();
+          console.log(response);
+          setFormValues(response);
         }
-    ]
+        catch (error) {
+          console.log(error);
+        }
+      }
+    
+    
+      useEffect(() => {
+        fetchContactUsData();
+      }, [])
 
 
 
     return (
         <>
-            <Header />
 
-            <Box bgcolor='lightgray' minHeight="88vh" p={1}>
+            <Box bgcolor='#C4D7B2' minHeight={"87vh"}  p={1}>
 
                 <Box display="flex" justifyContent="space-between">
                     <Box display="flex" justifyContent="start">
-                        <Typography fontSize="30px" fontWeight="bold" pl={2} >Contacts Mail</Typography>
+                        <Typography fontSize="30px" fontWeight="bold" color="#17594A" pl={2} >Contacts Mail</Typography>
                         <EmailOutlinedIcon />
                     </Box>
                     {
-                        dummyData.length >= 1 &&
+                        formValues?.data?.length >= 1 &&
                         <Box mr={2}>
                             <DeleteModal />
                         </Box>
@@ -88,9 +71,9 @@ export default function ContactEmail() {
 
                 <Grid container spacing={2} columns={12} p={2}>
                     {
-                        dummyData.map((item) => {
+                        formValues?.data?.map((item) => {
                             return (
-                                <Grid item  xs={3.9}  bgcolor="white" borderRadius="10px" m={"0.3rem"}>
+                                <Grid item  xs={3.9}  bgcolor="white" minHeight="130px" borderRadius="10px" m={"0.3rem"}>
                                     <Box display="flex" alignItems="center" justifyContent="space-between">
                                         <Box display="flex" alignItems="center">
                                         <Avatar alt={item.name} sx={{height:60, width:60 }} src="/static/images/avatar/1.jpg" />

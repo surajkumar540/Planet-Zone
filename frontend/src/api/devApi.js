@@ -136,6 +136,15 @@ export const contactUsApi = async (obj) => {
     return response.data
 }
 
+export const getContactUs = async () => {
+    const response = await axios.get(`/api/contactUs`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
+
 
 //-------------------- get shipping address
 

@@ -10,9 +10,11 @@ const contactRouter = require("./routes/ContactRouter");
 const main=require('./config/mail')
 const PORT=4000;
 dotenv.config();
+const cors=require("cors");
 
 connectDb()//Connecting to mongo db database
 const app=express(); // To make server from express use only one time at server file
+app.use(cors())
 app.use(express.json())
 app.use(userRouter);
 app.use(productRouter);

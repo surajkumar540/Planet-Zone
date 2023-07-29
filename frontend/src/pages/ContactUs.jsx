@@ -20,13 +20,12 @@ const ContactUs = () => {
         try{
             const obj={name,email,city,message}
             const response=await contactUsApi(obj)
-            if(response.status)
-            {
-                setName("")
-                setEmail("")
-                setCity("")
-                setMessage("")
-            }
+    
+            setName("")
+            setEmail("")
+            setCity("")
+            setMessage("")
+            
         }catch(error)
         {
             console.log(error)

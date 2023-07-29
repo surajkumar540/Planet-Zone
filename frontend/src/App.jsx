@@ -26,6 +26,8 @@ import AddProduct from "./components/Admin/AddProduct";
 import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
 import Error from "./components/Tools/Error";
+import AllOrderDetailes from "./components/AllOrderDetailes/AllOrderDetailes";
+import ContactEmail from "./pages/ContactEmail";
 import EditProduct from "./components/Admin/EditProduct";
 
 function App() {
@@ -42,16 +44,16 @@ function App() {
     const admin=getAdmin();
     if (token) {
       
-      if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'))
-      {
-        navigate("/dashboard")
-      }
-      else if(path === "/login" ||path === "/signup") 
-      {
-        navigate("/");
-      } else {
-        navigate(path);
-      }
+      // if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'  ))
+      // {
+      //   navigate("/dashboard")
+      // }
+      // else if(path === "/login" ||path === "/signup") 
+      // {
+      //   navigate("/");
+      // } else {
+      //   navigate(path);
+      // }
 
     } 
     else {
@@ -99,6 +101,7 @@ function App() {
           <Route path="/dashboard" element={<AdminHome />} />
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/editProduct/:pid" element={<EditProduct />} />
+          <Route path="/contactEmail" element={<ContactEmail />} />
           <Route path="*" element={<Error />} />
         </Routes>
       ) : (

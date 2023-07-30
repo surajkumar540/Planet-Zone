@@ -12,9 +12,10 @@ const style = {
     transform: 'translate(-50%, -50%)',
     width: 300,
     bgcolor: 'background.paper',
-    borderRadius: '10px',
+    borderRadius: '5px',
     boxShadow: 24,
     p: 4,
+    textAlign:"center"
 };
 
 export default function DeleteModal() {
@@ -24,7 +25,7 @@ export default function DeleteModal() {
 
     return (
         <Box>
-            <Button variant='contained'  onClick={handleOpen} >Delete</Button>
+            <Button sx={{textTransform:'capitalize'}} variant='contained' color='error' onClick={handleOpen} >Delete All</Button>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -38,8 +39,8 @@ export default function DeleteModal() {
 
 
                     <Box pt={2}  display="flex" justifyContent="center" gap={2} >
-                        <Button variant='outlined' sx={{width:"100%"}}  onClick={handleClose}>Cancel</Button>
-                        <Button variant='contained' sx={{width:"100%"}} onClick={handleClose}> Delete</Button>
+                        <Button sx={{textTransform:'capitalize',width:'50%'}} variant='outlined' onClick={handleClose}>Cancel</Button>
+                        <Button sx={{textTransform:'capitalize',width:'50%'}} variant='contained' color='error' onClick={handleClose}> Delete</Button>
                     </Box>
 
                 </Box>

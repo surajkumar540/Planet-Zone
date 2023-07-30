@@ -53,11 +53,11 @@ export default function ContactEmail() {
     return (
         <>
 
-            <Box bgcolor='#C4D7B2' minHeight={"87vh"}  p={1}>
+            <Box bgcolor='#FFF0DC' minHeight={"87vh"}  p={1}>
 
                 <Box display="flex" justifyContent="space-between">
                     <Box display="flex" justifyContent="start">
-                        <Typography fontSize="30px" fontWeight="bold" color="#17594A" pl={2} >Contacts Mail</Typography>
+                        <Typography fontSize="30px" fontWeight="bold" pl={2} pb={4}>Contacts Mail</Typography>
                         <EmailOutlinedIcon />
                     </Box>
                     {

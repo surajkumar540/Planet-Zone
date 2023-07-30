@@ -42,11 +42,12 @@ const AdminHome = () => {
         </Box>
       }
 
-
-      {/* Table heading */}
       {
         products.length > 0 && <ProductHeading />
       }
+
+      <Box maxHeight={'72vh'} overflow={'auto'}>
+
 
       {
         products?.map((item, index) => {
@@ -55,6 +56,7 @@ const AdminHome = () => {
           </Box>
         })
       }
+      </Box>
     </>
   )
 }

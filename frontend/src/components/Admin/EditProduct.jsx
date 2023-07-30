@@ -149,7 +149,7 @@ const EditProduct = () => {
                     </Box>
 
                     <Box marginBottom={'0rem'}>
-                        <Button variant="contained" type="submit">Add Product</Button>
+                        <Button variant="contained" type="submit" disabled={!edit}>Update</Button>
                     </Box>
                 </form>
             </Box>

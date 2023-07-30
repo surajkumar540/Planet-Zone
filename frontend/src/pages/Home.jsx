@@ -6,6 +6,7 @@ import Poster3 from '../components/Poster/Poster3';
 import { useSelector } from 'react-redux';
 import Loader from '../components/Tools/Loader';
 import Footer from '../components/Footer/Footer';
+import { getClothes } from '../utils/functions';
 
 const Home = () => {
   const {data:products,status,message}=useSelector((state)=>state?.products)
@@ -15,12 +16,17 @@ const Home = () => {
     return <Loader/>
   }
 
+
   return (
     <>
       <Poster1/>
-      <Products products={products.slice(0,8)}/>
-      <Poster3/>
-      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products}/>
+      <Products products={products.slice(0,products.length>8?8:4).reverse()}/>
+      {/* <Poster3/> */}
+
+      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={getClothes(products)}/>
+      
+      
+      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products }/>
       {/* <Poster2/> */}
       <Footer/>
     </>

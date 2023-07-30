@@ -4,9 +4,11 @@ import Product from './Product';
 import ProdFilterModal from '../Modals/ProdFilterModal';
 
 const Products = ({products,heading,title}) => {
-
-  return (
-    <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'} mb='5rem'>
+  
+  if(products.length>0)
+  {
+    return (
+      <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'} mb='5rem'>
         <Box textAlign={'center'} my={4}>
             <Typography fontSize={'3rem'}>{heading||"Featured Products"}</Typography>
             <Typography>{title||"Summer brakes products at your point"}</Typography>
@@ -25,6 +27,7 @@ const Products = ({products,heading,title}) => {
         </Box>
     </Box>
   )
+  }
 }
 
 export default Products

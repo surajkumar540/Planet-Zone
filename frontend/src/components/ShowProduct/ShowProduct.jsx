@@ -27,7 +27,7 @@ const ShowProduct = ({obj}) => {
         <Box display={'flex'} height={'80vh'}>
             <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'flex-end'}>
                 <CardMedia
-                    sx={{ height: '95%',width:'90%',borderRadius:'20px' }}
+                    sx={{ height: '95%',width:'90%',borderRadius:'20px',objectFit:"contain" }}
                     image={obj?.image||"https://images.pexels.com/photos/2850487/pexels-photo-2850487.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
                     title="green iguana"
                 />

@@ -86,13 +86,13 @@ const AddProduct = () => {
               value={category} 
               onChange={(e)=>setCategory(e.target.value)}
             >
-              <MenuItem value={'Bottle'}>Electronics</MenuItem>
-              <MenuItem value={'Bag'}>Bag</MenuItem>
-              <MenuItem value={'Shoes'}>Shoes</MenuItem>
+              <MenuItem value={'Electronics'}>Electronics</MenuItem>
+              <MenuItem value={'Accessories'}>Accessories</MenuItem>
+              <MenuItem value={'Food'}>Food</MenuItem>
               <MenuItem value={'Clothes'}>Clothes</MenuItem>
-              <MenuItem value={'Matress'}>Matress</MenuItem>
-              <MenuItem value={'Wallet'}>Wallet</MenuItem>
-              <MenuItem value={'Chair'}>Chair</MenuItem>
+              <MenuItem value={'Home'}>Home</MenuItem>
+              <MenuItem value={'Furniture'}>Furniture</MenuItem>
+              <MenuItem value={'Appliances'}> Appliances</MenuItem>
               <MenuItem value={'Toys'}>Toys</MenuItem>
             </Select>
           </FormControl>

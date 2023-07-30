@@ -27,6 +27,7 @@ import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
 import Error from "./components/Tools/Error";
 import AllOrderDetailes from "./components/AllOrderDetailes/AllOrderDetailes";
+import Categories from "./pages/Categories";
 import ContactEmail from "./pages/ContactEmail";
 import EditProduct from "./components/Admin/EditProduct";
 
@@ -44,20 +45,20 @@ function App() {
     const admin=getAdmin();
     if (token) {
       
-      // if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'  ))
-      // {
-      //   navigate("/dashboard")
-      // }
-      // else if(path === "/login" ||path === "/signup") 
-      // {
-      //   navigate("/");
-      // } else {
-      //   navigate(path);
-      // }
+      if(admin && (path==='/'||path === "/cart"||path === "/about"||path==='/profile'||path==='/contact'||path==="/shipping"||path==='/order'||path==='/payment'||path.slice(0,9)==='/product/'  ))
+      {
+        navigate("/dashboard")
+      }
+      else if(path === "/login" ||path === "/signup") 
+      {
+        navigate("/");
+      } else {
+        navigate(path);
+      }
 
     } 
     else {
-      if (path === "/login" ||path === "/signup") 
+      if (path === "/login" ||path === "/signup"||path === "/shop"||path === "/about"||path === "/contact"||path === "/cart") 
       {
         navigate(path);
       } else {
@@ -108,6 +109,7 @@ function App() {
         <Routes>
           <Route path="/shipping" element={<ShippingPage />} />
           <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Categories />} />
           <Route path="/product/:pid" element={<ShowProducts />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment" element={<PaymentMethod />} />

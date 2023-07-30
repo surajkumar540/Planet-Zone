@@ -97,7 +97,7 @@ function Header(props) {
                 Home
               </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/'}>
+              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/shop'}>
                 Shop
               </Button>
 

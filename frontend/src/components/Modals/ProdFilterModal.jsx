@@ -24,26 +24,15 @@ const style = {
 
 };
 
-export default function ProdFilterModal() {
+export default function ProdFilterModal({category,setCategory,brandList,brand,setBrand}) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
 
-
-    const [brand, setBrand] = React.useState('');
-    const [prodType, setProdType] = React.useState('');
-    const [price, setPrice] = React.useState('');
-
-    const handleChange = (event) => {
-        setBrand(event.target.value);
-        setPrice(event.target.value);
-        setProdType(event.target.value);
-    };
-
     return (
         <Box>
-            <Button variant="contained" onClick={handleOpen}>Filter</Button>
+            <Button variant="contained" sx={{ textTransform: 'capitalize' }} onClick={handleOpen}>Filter</Button>
             <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"
@@ -59,11 +48,11 @@ export default function ProdFilterModal() {
             >
                 <Fade in={open}>
                     <Box sx={style}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                        <Typography id="transition-modal-title" variant="h6" component="h2">
-                            Filter
-                        </Typography>
-                        <TuneIcon/>
+                        <Box display="flex" alignItems="center" gap={1} mb='1rem'>
+                            <Typography id="transition-modal-title" variant="h6" component="h2">
+                                Filter
+                            </Typography>
+                            <TuneIcon />
                         </Box>
                         <Box sx={{ minWidth: 120 }} pt={1}>
                             <FormControl fullWidth>
@@ -71,17 +60,24 @@ export default function ProdFilterModal() {
                                 <Select
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
-                                    value={prodType}
                                     label="Product Type"
-                                    onChange={handleChange}
+                                    value={category}
+                                    onChange={(e)=>setCategory(e.target.value)}
                                 >
-                                    <MenuItem value={10}>Clothes</MenuItem>
-                                    <MenuItem value={20}>Shoes</MenuItem>
-                                    <MenuItem value={30}>Plant</MenuItem>
+                                    <MenuItem value={'Electronics'}>Electronics</MenuItem>
+                                    <MenuItem value={'Accessories'}>Accessories</MenuItem>
+                                    <MenuItem value={'Food'}>Food</MenuItem>
+                                    <MenuItem value={'Clothes'}>Clothes</MenuItem>
+                                    <MenuItem value={'Home'}>Home</MenuItem>
+                                    <MenuItem value={'Furniture'}>Furniture</MenuItem>
+                                    <MenuItem value={'Appliances'}> Appliances</MenuItem>
+                                    <MenuItem value={'Toys'}>Toys</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
-                        <Box sx={{ minWidth: 120 }} pt={2}>
+
+                        {
+                            category&&<Box sx={{ minWidth: 120 }} pt={2}>
                             <FormControl fullWidth>
                                 <InputLabel id="demo-simple-select-label">Brand</InputLabel>
                                 <Select
@@ -89,15 +85,20 @@ export default function ProdFilterModal() {
                                     id="demo-simple-select"
                                     value={brand}
                                     label="Brand"
-                                    onChange={handleChange}
+                                    onChange={(e)=>setBrand(e.target.value)}
                                 >
-                                    <MenuItem value={1}>Nike</MenuItem>
-                                    <MenuItem value={2}>Sony</MenuItem>
-                                    <MenuItem value={3}>Apple</MenuItem>
+                                    
+                                    {
+                                        brandList?.map((item)=>{
+                                            return <MenuItem value={item}>{item}</MenuItem>
+                                        })
+                                    }
                                 </Select>
                             </FormControl>
                         </Box>
-                        <Box sx={{ minWidth: 120 }} pt={2}>
+                        }
+
+                        {/* <Box sx={{ minWidth: 120 }} pt={2}>
                             <FormControl fullWidth>
                                 <InputLabel id="demo-simple-select-label">Price</InputLabel>
                                 <Select
@@ -112,7 +113,7 @@ export default function ProdFilterModal() {
                                     <MenuItem value={3000}>3000</MenuItem>
                                 </Select>
                             </FormControl>
-                        </Box>
+                        </Box> */}
                         <Box pt={2} width="100%" display="flex" justifyContent="right">
                             <Button variant="contained" onClick={handleClose}>Apply</Button>
                         </Box>

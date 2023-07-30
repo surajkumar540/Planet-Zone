@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import Product from './Product';
-import ProdFilterModal from '../Modals/ProdFilterModal';
+
 
 const Products = ({products,heading,title}) => {
   
@@ -14,9 +14,7 @@ const Products = ({products,heading,title}) => {
             <Typography>{title||"Summer brakes products at your point"}</Typography>
         </Box>
 
-        <Box display="flex" justifyContent={'right'} mr={5} width="100%" >
-          <ProdFilterModal/>
-        </Box>
+       
         <Box display={'flex'}  p={2} gap={12} flexWrap={'wrap'} width={'85%'}>
           {
             products?.map((item,index)=>{

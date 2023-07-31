@@ -8,7 +8,7 @@ const Banner = ({title,text}) => {
                 {/* <img src="https://img.freepik.com/free-vector/people-waving-hand-illustration-concept_52683-29825.jpg?w=1060&t=st=1687100224~exp=1687100824~hmac=030323c8c0355d4bd4ed868cbbb901bf54d6c621cd19a329da29b2b6c69cfc85" /> */}
                 <Box className="overlay">
                     <h1 className="text">{title||'#Cart'}</h1>
-                    <h4 className="text-t2">{text||'Add Your coupen code & SAVE upto 70%'}</h4>
+                    <h4 className="text-t2">{text||'Place order to your all cart items'}</h4>
                 </Box>
             </Box>
         </>

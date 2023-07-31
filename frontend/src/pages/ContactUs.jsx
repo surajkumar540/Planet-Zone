@@ -73,19 +73,33 @@ const ContactUs = () => {
                 <Box display='flex' flex='0.3' flexDirection="column" justifyContent='center' alignItems='start' gap={4}>
 
                     <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
-                        <Avatar alt="Travis Howard" src="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMjgtMzY2LXRvbmctMDhfMS5qcGc.jpg" sx={{ width: 65, height: 65 }} />
+                        <Avatar alt="Jai" src="https://media.licdn.com/dms/image/D4D03AQFWmgwlOhT3JA/profile-displayphoto-shrink_400_400/0/1687007524112?e=1696464000&v=beta&t=2dP9mDfwLlf3y7OMOAx-ORWamk-G-ffxNdJLMtjIFuM" sx={{ width: 65, height: 65 }} />
                         <Box>
-                            <Typography fontWeight='bold' fontSize={'1.1rem'}>John Doe</Typography>
-                            <Typography fontSize="12px" color="#A6A6A6" >Senior Developer Manager</Typography>
+                            <Typography fontWeight='bold' fontSize={'1.1rem'}>Jai Singh</Typography>
+                            <Typography fontSize="12px" color="#A6A6A6" >Frontend Developer</Typography>
                             <Typography fontSize="12px">
-                                Phone: +234567890
+                                Phone: +91 9667201750
                             </Typography>
                             <Typography fontSize="12px">
-                                Email: contact@example.com
+                                Email: jai.singh.corporate@gmail.com
                             </Typography>
                         </Box>
                     </Box>
 
+                    <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
+                        <Avatar alt="Suraj" src="https://media.licdn.com/dms/image/D4D03AQF48TaiZ9esPw/profile-displayphoto-shrink_400_400/0/1687546094231?e=1696464000&v=beta&t=48xXOZh030Hnu40tLrWeUOjUoq8fRMZKiPpQsg1nWwA" sx={{ width: 65, height: 65 }} />
+                        <Box>
+                            <Typography fontWeight='bold' fontSize={'1.1rem'}>Suraj Kumar</Typography>
+                            <Typography fontSize="12px" color="#A6A6A6" >Frontend Developer</Typography>
+                            <Typography fontSize="12px">
+                                Phone: +91 9560234568
+                            </Typography>
+                            <Typography fontSize="12px">
+                                Email: surajgautam56878@gmail.com
+                            </Typography>
+                        </Box>
+                    </Box>
+{/* 
                     <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
                         <Avatar alt="Travis Howard" src="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMjgtMzY2LXRvbmctMDhfMS5qcGc.jpg" sx={{ width: 65, height: 65 }} />
                         <Box>
@@ -98,21 +112,7 @@ const ContactUs = () => {
                                 Email: contact@example.com
                             </Typography>
                         </Box>
-                    </Box>
-
-                    <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
-                        <Avatar alt="Travis Howard" src="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMjgtMzY2LXRvbmctMDhfMS5qcGc.jpg" sx={{ width: 65, height: 65 }} />
-                        <Box>
-                            <Typography fontWeight='bold' fontSize={'1.1rem'}>John Doe</Typography>
-                            <Typography fontSize="12px" color="#A6A6A6" >Senior Developer Manager</Typography>
-                            <Typography fontSize="12px">
-                                Phone: +234567890
-                            </Typography>
-                            <Typography fontSize="12px">
-                                Email: contact@example.com
-                            </Typography>
-                        </Box>
-                    </Box>
+                    </Box> */}
 
 
                     

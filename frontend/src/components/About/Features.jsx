@@ -4,7 +4,7 @@ import CardMedia from "@mui/material/CardMedia";
 
 const Features = () => {
     return (
-        <Box my='4rem'>
+        <Box mt='1rem' mb='4rem'>
             <Box display='flex' justifyContent={'space-evenly'} alignItems={'center'}>
                 
                 <Box diplay='flex' justifyContent="center" alignItems='center' sx={{ textAlign: 'center', bgcolor: 'white' }} paddingY={1} borderRadius="6px" >

@@ -65,19 +65,19 @@ const Footer = () => {
         </Box>
         
         <Box mt='2rem'  textAlign={{xs:'center',sm:'left'}}>
-          <IconButton sx={{color:'white'}} onClick={()=>navigate("https://www.facebook.com/")}>
+          <IconButton sx={{color:'white'}} onClick={()=>window.open('https://www.facebook.com/', '_blank')}>
             <FacebookIcon/>
           </IconButton>
-          <IconButton  sx={{color:'white'}} onClick={()=>navigate("https://twitter.com/home")}>
+          <IconButton  sx={{color:'white'}} onClick={()=>window.open('https://twitter.com/home', '_blank')}>
             <TwitterIcon/>
           </IconButton>
-          <IconButton  sx={{color:'white'}} onClick={()=>navigate("https://www.instagram.com/")}>
+          <IconButton  sx={{color:'white'}} onClick={()=>window.open('https://www.instagram.com/', '_blank')}>
             <InstagramIcon/>
           </IconButton>
-          <IconButton  sx={{color:'white'}} onClick={()=>navigate("https://www.youtube.com/")}>
+          <IconButton  sx={{color:'white'}} onClick={()=>window.open('https://www.youtube.com/', '_blank')}>
             <YouTubeIcon/>
           </IconButton>
-          <IconButton  sx={{color:'white'}} onClick={()=>navigate("https://web.whatsapp.com/")}>
+          <IconButton  sx={{color:'white'}} onClick={()=>window.open('https://web.whatsapp.com/', '_blank')}>
             <WhatsAppIcon/>
           </IconButton>
         </Box>

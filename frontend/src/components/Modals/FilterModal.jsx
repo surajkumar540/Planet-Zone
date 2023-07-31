@@ -14,12 +14,12 @@ import TuneIcon from '@mui/icons-material/Tune';
 
 const style = {
     position: 'absolute',
-    top: '10%',
+    top: '16%',
     right: '2%',
     width: 400,
     bgcolor: 'background.paper',
     boxShadow: 2,
-    p: 4,
+    p: 3,
     borderRadius: "5px"
 
 };
@@ -50,7 +50,7 @@ export default function FilterModal({category,setCategory}) {
                     <Box sx={style}>
                         <Box display="flex" alignItems="center" gap={1} mb='1rem'>
                             <TuneIcon />
-                            <Typography id="transition-modal-title" variant="h6" component="h3">
+                            <Typography id="transition-modal-title" fontSize={'20px'}>
                                 Filter
                             </Typography>
                         </Box>

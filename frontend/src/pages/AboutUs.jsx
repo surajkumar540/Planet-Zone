@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Box, Typography, CardMedia } from '@mui/material'
-import Features from "../components/About/Features";
+import Features from "../components/Tools/Features";
 import Banner from '../components/Tools/Banner';
 import Footer from '../components/Footer/Footer';
 
 const AboutUs = () => {
+
     return (
         <>
             <Banner title='#About Us' text='Know us better and connect with us' />

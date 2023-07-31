@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box,CardMedia, Typography,Button} from '@mui/material';
-import Bag from "../../assets/Home/bag.jpg"
 import { useNavigate } from 'react-router-dom';
 
 const Poster1 = () => {
@@ -12,7 +11,7 @@ const Poster1 = () => {
             <Box width={'100%'} display={'flex'} flexDirection={'column'} justifyContent={'flex-end'} alignItems={'center'}>
                 <Box width={'80%'} height={'80%'}>
                     <Box color='#795548'>
-                        <Typography variant='h3' fontSize={{sm:'3rem',md:'5rem'}} fontWeight={600} lineHeight={'120%'}>The <br/> Sunday Sale</Typography>     
+                        <Typography variant='h3' fontSize={{sm:'3rem',md:'5rem'}} fontWeight={600} lineHeight={'120%'}>The <br/> Monsoon Sale</Typography>     
                     </Box>
                     <Box mb='1rem'>
                         <Typography pl={{sm:'.6rem'}} fontSize={{sm:'.8rem',md:'1.3rem'}} color='#694f4f'>Pocket friendly products everywhere</Typography>

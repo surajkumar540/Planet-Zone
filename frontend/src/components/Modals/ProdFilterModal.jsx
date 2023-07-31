@@ -24,7 +24,7 @@ const style = {
 
 };
 
-export default function ProdFilterModal({category,setCategory,brandList,brand,setBrand}) {
+export default function ProdFilterModal({category,setCategory}) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -32,7 +32,7 @@ export default function ProdFilterModal({category,setCategory,brandList,brand,se
 
     return (
         <Box>
-            <Button variant="contained" sx={{ textTransform: 'capitalize' }} onClick={handleOpen}>Filter</Button>
+            <Button variant="contained" sx={{ textTransform: 'capitalize' }} onMouseEnter={handleOpen}>Filter</Button>
             <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"
@@ -62,8 +62,9 @@ export default function ProdFilterModal({category,setCategory,brandList,brand,se
                                     id="demo-simple-select"
                                     label="Product Type"
                                     value={category}
-                                    onChange={(e)=>setCategory(e.target.value)}
+                                    onChange={(e)=>{setCategory(e.target.value);handleClose()}}
                                 >
+                                    <MenuItem value={'All'}>All</MenuItem>
                                     <MenuItem value={'Electronics'}>Electronics</MenuItem>
                                     <MenuItem value={'Accessories'}>Accessories</MenuItem>
                                     <MenuItem value={'Food'}>Food</MenuItem>
@@ -76,7 +77,7 @@ export default function ProdFilterModal({category,setCategory,brandList,brand,se
                             </FormControl>
                         </Box>
 
-                        {
+                        {/* {
                             category&&<Box sx={{ minWidth: 120 }} pt={2}>
                             <FormControl fullWidth>
                                 <InputLabel id="demo-simple-select-label">Brand</InputLabel>
@@ -96,7 +97,7 @@ export default function ProdFilterModal({category,setCategory,brandList,brand,se
                                 </Select>
                             </FormControl>
                         </Box>
-                        }
+                        } */}
 
                         {/* <Box sx={{ minWidth: 120 }} pt={2}>
                             <FormControl fullWidth>
@@ -114,9 +115,9 @@ export default function ProdFilterModal({category,setCategory,brandList,brand,se
                                 </Select>
                             </FormControl>
                         </Box> */}
-                        <Box pt={2} width="100%" display="flex" justifyContent="right">
+                        {/* <Box pt={2} width="100%" display="flex" justifyContent="right">
                             <Button variant="contained" onClick={handleClose}>Apply</Button>
-                        </Box>
+                        </Box> */}
                     </Box>
                 </Fade>
             </Modal>

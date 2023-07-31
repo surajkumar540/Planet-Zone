@@ -6,12 +6,11 @@ import { getClothes } from '../utils/functions';
 import { Box,Typography } from '@mui/material';
 import ProdFilterModal from "../components/Modals/ProdFilterModal"
 import Product from '../components/Products/Product';
+import { getAllProducts } from '../api/devApi';
 
 const Categories = () => {
-    const { data, status } = useSelector((state) => state?.products)
-
-    const [products,setProducts]=useState(data);
-    const [categoryProducts,setCategoryProducts]=useState([])
+    const [products,setProducts]=useState([]);
+    const [productConstant,setProductConstant]=useState([])
     const [category,setCategory]=useState("")
     const [brandList,setBrandList]=useState([])
     const [brand,setBrand]=useState("")
@@ -21,47 +20,47 @@ const Categories = () => {
     }
 
     const filterTypeFunction=()=>{
-        let brandArr=[]
-        setBrand("")
-        setBrandList("")
-        const resultArr=data?.filter((item)=>{
+        const resultArr=productConstant?.filter((item)=>{
             if(item?.category===category)
             {
-                brandArr.push(item?.brand);
                 return true
             }
         })
         setProducts(resultArr)
-        setCategoryProducts(resultArr)
-        setBrandList(brandArr)
     }
 
-    const filterBrandFunction=()=>{
-        const resultArr=categoryProducts?.filter((item)=>{
-            return item?.brand===brand
-        })
-        setProducts(resultArr)
+
+    const fetchAllProducts=async()=>{
+        try{
+            const response=await getAllProducts()
+            setProducts(response?.data)
+            setProductConstant(response?.data)
+        }catch(error)
+        {
+            console.log(error)
+        }
     }
 
     useEffect(()=>{
-        if(category&&brand)
+        if(category==='All')
         {
-            filterBrandFunction()
+            setProducts(productConstant)
         }
-        else if(category)
+        else
         {
             filterTypeFunction()
         }
-        else if(!brand)
-        {
-            setProducts(data)
-        }
-    },[category,brand])
+    },[category])
+
+    useEffect(()=>{
+        fetchAllProducts()
+    },[])
 
     return (
         <>
             <Box textAlign={'center'} my={2}>
                 <Typography fontSize={'3rem'}>{"All Products"}</Typography>
+                <Typography>{"Search products at your convenience"}</Typography>
             </Box>
 
 

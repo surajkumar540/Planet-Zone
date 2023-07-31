@@ -9,7 +9,7 @@ import Footer from '../components/Footer/Footer';
 import { getClothes } from '../utils/functions';
 
 const Home = () => {
-  const {data:products,status,message}=useSelector((state)=>state?.products)
+  const {data:products,status}=useSelector((state)=>state?.products)
 
   if(status==='loading')
   {

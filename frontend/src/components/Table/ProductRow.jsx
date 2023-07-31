@@ -1,4 +1,4 @@
-import { Typography, Grid, Box, Avatar, CardMedia, IconButton } from "@mui/material";
+import { Typography, Grid, Box, CardMedia, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteSingleProduct } from "../../api/devApi";
 import { useNavigate } from "react-router-dom";

@@ -14,17 +14,18 @@ const ContactUs = () => {
     const [city,setCity]=useState("");
     const [message,setMessage]=useState("");
 
-
     const handleSendMail=async(e)=>{
         e.preventDefault()
         try{
             const obj={name,email,city,message}
             const response=await contactUsApi(obj)
-    
-            setName("")
-            setEmail("")
-            setCity("")
-            setMessage("")
+            if(response.status)
+            {
+                setName("")
+                setEmail("")
+                setCity("")
+                setMessage("")
+            }
             
         }catch(error)
         {
@@ -52,15 +53,15 @@ const ContactUs = () => {
                     </Box>
 
                     <Box mb='1rem'>
-                    <TextField size='small' type="email" fullWidth label="E-mail" name="email" onChange={(e)=>setEmail(e.target.value)}/>
+                    <TextField size='small' type="email" fullWidth label="E-mail" name="email" value={email}  onChange={(e)=>setEmail(e.target.value)}/>
                     </Box>
                     
                     <Box mb='1rem'>
-                    <TextField size='small' type="text" fullWidth label="City" name="city" onChange={(e)=>setCity(e.target.value)}/>
+                    <TextField size='small' type="text" fullWidth label="City" name="city" value={city}  onChange={(e)=>setCity(e.target.value)}/>
                     </Box>
                     
                     <Box mb='1rem'>
-                    <TextField multiline rows={5} fullWidth label="Your Message" name="message" onChange={(e)=>setMessage(e.target.value)}/>
+                    <TextField multiline rows={5} fullWidth label="Your Message" name="message" value={message}  onChange={(e)=>setMessage(e.target.value)}/>
                     </Box>
                     
                     <Button variant="contained" sx={{width:'100px'}} type="submit">

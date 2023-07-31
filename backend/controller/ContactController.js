@@ -38,7 +38,7 @@ const createContactController = async (req, res) => {
         });
 
         res.status(200).json({
-            message: "message send succussfully",
+            message: "Message send succussfully",
             status: true
         });
 

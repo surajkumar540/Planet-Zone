@@ -153,7 +153,7 @@ export const getContactUs = async () => {
 }
 
 export const deleteMail = async (emailId) => {
-    const response = await axios.delete(`/api/contact/${emailId}`, headerData);
+    const response = await axios.delete(`/api/contactUs/${emailId}`, headerData);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }

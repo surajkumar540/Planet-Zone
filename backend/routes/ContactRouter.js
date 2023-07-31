@@ -8,6 +8,8 @@ router.route('/contactUs').post(contactController.createContactController)
 
 router.route('/contactUs').get(authToken,contactController.getContactUs)
 
-router.route('/contact/:emailId').delete(authToken,contactController.deleteContactEmail)
+router.route('/contactUs/:emailId').delete(authToken,contactController.deleteContactEmail)
+
+router.route('/contact/deleteAll').delete(authToken,contactController.deleteAllMails)
 
 module.exports = router;

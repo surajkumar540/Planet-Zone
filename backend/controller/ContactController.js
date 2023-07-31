@@ -122,8 +122,39 @@ const deleteContactEmail=async(req,res)=>{
 }
 
 
+const deleteAllMails=async(req,res)=>{ 
+    
+    try{
+        const user=req.userId;
+        const adminUser=await User.findOne({_id:user});
+        if(!adminUser.isAdmin)
+        {
+            res.status(401).json({
+                message:"Unauthorized User",
+                status:false
+            })
+            return;
+        }
+        
+        await ContactUs.deleteMany({})
+                
+        res.status(200).json({
+            message:"All messages deleted",
+            status:true
+        })
+    }catch(error)
+    {
+        res.status(500).json({
+            message:"Something is wrong ds",
+            status:false
+        })
+    }
+}
+
+
 module.exports={
     createContactController,
     getContactUs,
-    deleteContactEmail
+    deleteContactEmail,
+    deleteAllMails
 }

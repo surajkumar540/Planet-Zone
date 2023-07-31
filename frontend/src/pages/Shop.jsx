@@ -1,19 +1,16 @@
 import React, { useEffect,useState } from 'react';
-import { useSelector } from 'react-redux';
 import Loader from '../components/Tools/Loader';
 import Footer from '../components/Footer/Footer';
-import { getClothes } from '../utils/functions';
-import { Box,Typography } from '@mui/material';
-import ProdFilterModal from "../components/Modals/ProdFilterModal"
+import { Box,Typography,CardMedia } from '@mui/material';
+import FilterModal from "../components/Modals/FilterModal"
 import Product from '../components/Products/Product';
 import { getAllProducts } from '../api/devApi';
+import blankHome from "../assets/Images/admin_empty.webp"
 
 const Categories = () => {
-    const [products,setProducts]=useState([]);
     const [productConstant,setProductConstant]=useState([])
-    const [category,setCategory]=useState("")
-    const [brandList,setBrandList]=useState([])
-    const [brand,setBrand]=useState("")
+    const [products,setProducts]=useState([]);
+    const [category,setCategory]=useState("All")
 
     if (status === 'loading') {
         return <Loader />
@@ -65,10 +62,22 @@ const Categories = () => {
 
 
             <Box display="flex" justifyContent={'right'} pr='2rem' my={2}>
-                <ProdFilterModal category={category} setCategory={setCategory} brandList={brandList} brand={brand} setBrand={setBrand}/>
+                <FilterModal category={category} setCategory={setCategory}/>
             </Box>
 
             <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'} mb='5rem'>
+
+            {products.length===0&&
+            <Box display={'flex'} justifyContent={'center'} flexDirection={'columnn'} alignContent={'center'}>
+                    <Box>
+                        <CardMedia
+                            sx={{ height: 440, width: 440 }}
+                            image={blankHome}
+                            title="green iguana"
+                        />
+                        <Typography textAlign={'center'} fontWeight={500} fontSize={'22px'}>{`No ${category} Products Found`}</Typography>
+                    </Box>
+                </Box>}
 
                 <Box display={'flex'} p={2} gap={12} flexWrap={'wrap'} width={'85%'}>
                     {

@@ -24,7 +24,7 @@ const style = {
 
 };
 
-export default function ProdFilterModal({category,setCategory}) {
+export default function FilterModal({category,setCategory}) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -49,10 +49,10 @@ export default function ProdFilterModal({category,setCategory}) {
                 <Fade in={open}>
                     <Box sx={style}>
                         <Box display="flex" alignItems="center" gap={1} mb='1rem'>
-                            <Typography id="transition-modal-title" variant="h6" component="h2">
+                            <TuneIcon />
+                            <Typography id="transition-modal-title" variant="h6" component="h3">
                                 Filter
                             </Typography>
-                            <TuneIcon />
                         </Box>
                         <Box sx={{ minWidth: 120 }} pt={1}>
                             <FormControl fullWidth>

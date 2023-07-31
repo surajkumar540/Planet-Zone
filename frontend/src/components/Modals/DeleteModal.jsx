@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
+import { deleteAllMails } from '../../api/devApi';
 
 const style = {
     position: 'absolute',
@@ -18,10 +19,23 @@ const style = {
     textAlign:"center"
 };
 
-export default function DeleteModal() {
+export default function DeleteModal({fetchAllMails=false}) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const deleteAllMailsFun=async()=>{
+        try{
+            const response=await deleteAllMails()
+            if(fetchAllMails)
+            {
+                fetchAllMails()
+            }
+        }catch(error)
+        {
+            console.log(error)
+        }
+    }
 
     return (
         <Box>
@@ -40,7 +54,7 @@ export default function DeleteModal() {
 
                     <Box pt={2}  display="flex" justifyContent="center" gap={2} >
                         <Button sx={{textTransform:'capitalize',width:'50%'}} variant='outlined' onClick={handleClose}>Cancel</Button>
-                        <Button sx={{textTransform:'capitalize',width:'50%'}} variant='contained' color='error' onClick={handleClose}> Delete</Button>
+                        <Button sx={{textTransform:'capitalize',width:'50%'}} variant='contained' color='error' onClick={()=>{deleteAllMailsFun();handleClose()}}> Delete</Button>
                     </Box>
 
                 </Box>

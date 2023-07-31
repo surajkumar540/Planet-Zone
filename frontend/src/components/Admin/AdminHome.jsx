@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import AdminHeader from '../Header/AdminHeader'
 import ProductRow from '../Table/ProductRow'
 import ProductHeading from '../Table/ProductHeading'
-import AddProductButton from '../Table/AddProductButton'
 import { getAllProducts } from '../../api/devApi'
-import { Box, CardMedia, Typography } from "@mui/material";
+import { Box, CardMedia, Typography, Button } from "@mui/material";
 import blankHome from "../../assets/Images/admin_empty.webp"
+import { useNavigate } from 'react-router-dom'
 
 const AdminHome = () => {
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
 
   const fetchProducts = async () => {
@@ -25,9 +25,11 @@ const AdminHome = () => {
 
   return (
     <>
-      <AddProductButton />
+      <Box marginX={'2rem'} marginY={'1rem'} display={'flex'} justifyContent={'space-between'}>
+        <Typography fontSize={'30px'}>All Products</Typography>
+        <Button variant='contained' sx={{ textTransform: 'capitalize' }} onClick={() => navigate("/addProduct")}>Add Product</Button>
+      </Box>
 
-      {/* Blank image */}
       {
         products.length === 0 &&
         <Box display={'flex'} justifyContent={'center'} flexDirection={'columnn'} alignContent={'center'}>
@@ -47,15 +49,13 @@ const AdminHome = () => {
       }
 
       <Box maxHeight={'72vh'} overflow={'auto'}>
-
-
-      {
-        products?.map((item, index) => {
-          return <Box key={index}>
-            <ProductRow obj={item} sno={index + 1} refetch={fetchProducts} />
-          </Box>
-        })
-      }
+        {
+          products?.map((item, index) => {
+            return <Box key={index}>
+              <ProductRow obj={item} sno={index + 1} refetch={fetchProducts} />
+            </Box>
+          })
+        }
       </Box>
     </>
   )

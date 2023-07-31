@@ -160,6 +160,14 @@ export const deleteMail = async (emailId) => {
     return response.data
 }
 
+export const deleteAllMails = async () => {
+    const response = await axios.delete(`/api/contact/deleteAll`, headerData);
+    if (!response.statusText === "OK") {
+        throw new Error("Something is wrong.");
+    }
+    return response.data
+}
+
 
 
 //-------------------- get shipping address

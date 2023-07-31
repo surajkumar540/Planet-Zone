@@ -18,7 +18,7 @@ app.use(cors())
 app.use(express.json())
 app.use("/api",userRouter);
 app.use("/api",productRouter);
-app.use("/api",authToken,contactRouter);
+app.use("/api",contactRouter);
 app.use("/api",authToken,shippingRouter);
 app.use("/api",authToken,orderRouter);
 

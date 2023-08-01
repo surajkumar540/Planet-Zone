@@ -43,7 +43,7 @@ const Orders = () => {
             }
 
 
-            {orders.length>0&&<Box display="flex" gap={3} position={'relative'} alignItems={'flex-start'}>
+            {orders.length > 0 && <Box display="flex" gap={3} position={'relative'} alignItems={'flex-start'}>
 
                 <Box flex={0.4} sx={{ position: 'sticky', top: '5rem', left: '1%', height: '100%' }}>
                     <CardMedia
@@ -61,7 +61,15 @@ const Orders = () => {
                     {
                         orders.map((item, index) => {
                             return <Box key={index}>
-                                <SingleOrder orderId={item?._id} name={item?.orderItems[0]?.name} image={item?.orderItems[0]?.image} address={item?.shippingAddress?.address} price={item?.payment?.amount_paid / 100} totalItems={item?.orderItems?.length - 1} onlinePayment={item?.payment?.summary?.razorpaySignature} />
+                                <SingleOrder orderId={item?._id} 
+                                name={item?.orderItems[0]?.name} 
+                                image={item?.orderItems[0]?.image} 
+                                address={item?.shippingAddress?.address} 
+                                totalItems={item?.orderItems?.length - 1} 
+                                onlinePayment={item?.onlinePayment} 
+                                allProducts={item.orderItems}
+                                price={item?.onlinePayment&&(item?.payment?.amount_paid / 100)} 
+                                />
                             </Box>
                         })
 
@@ -77,8 +85,19 @@ const Orders = () => {
 export default Orders;
 
 
-const SingleOrder = ({ orderId, name, address, price, image, totalItems, onlinePayment = false }) => {
+const SingleOrder = ({ orderId, name, address, price, image, totalItems, onlinePayment = false,allProducts }) => {
     const navigate = useNavigate()
+    const [cashPrice,setCashPrice]=useState(0);
+
+    const findPrice=()=>{
+        const amount=allProducts.reduce((acc,item)=>{
+            return acc+item.totalPrice;
+        },0)
+        setCashPrice(amount)
+    }
+    useEffect(()=>{
+        findPrice()
+    },[])
     return (
         <Box onClick={() => navigate(`/order/${orderId}`)} display="flex" bgcolor="white" p={1} borderRadius="8px" boxShadow="rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset" sx={{ cursor: "pointer" }}>
             <Box flex={0.2} >
@@ -88,10 +107,12 @@ const SingleOrder = ({ orderId, name, address, price, image, totalItems, onlineP
                 <Typography>{name}
                     <Typography component={'span'} fontWeight={600}>{totalItems > 0 && (` + ${totalItems} item`)}</Typography>
                 </Typography>
-                <Typography > ₹ {price}</Typography>
+                <Typography > ₹ {onlinePayment?price:cashPrice}
+                    
+                </Typography>
                 <Box display="flex" gap={"2px"} alignItems={'center'}>
                     {
-                        onlinePayment ? <Typography color='dodgerblue'>Razorpay</Typography> : <Typography color='greenyellow'>Home Delivery</Typography>
+                        onlinePayment ? <Typography color='dodgerblue' fontWeight={600}>Razorpay</Typography> : <Typography color='green' fontWeight={600}>Home Delivery</Typography>
                     }
 
 

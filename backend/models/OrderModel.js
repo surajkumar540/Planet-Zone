@@ -6,6 +6,7 @@ const orderSchema=mongoose.Schema({
         required:true,
         ref:"User"
     },
+
     orderItems:[
         {
             _id:{
@@ -51,6 +52,7 @@ const orderSchema=mongoose.Schema({
             }
         }
     ],
+    
     shippingAddress:{
         fullName:{
             type:String,
@@ -81,30 +83,7 @@ const orderSchema=mongoose.Schema({
             required:true
         }
     },
-
-    // {
-    //     summary: {
-    //       orderCreationId: 'order_MFVblcMTVnT7DS',
-    //       razorpayPaymentId: 'pay_MFVbuSFDxUeJat',
-    //       razorpayOrderId: 'order_MFVblcMTVnT7DS',
-    //       razorpaySignature: 'eacc3e7b6680cd383677a768b184a7f5aa5b4757a32cd4c3393c317fed93e6dc'
-    //     },
-    //     _id: 'order_MFVblcMTVnT7DS',
-    //     entity: 'order',
-    //     amount: 1500,
-    //     amount_paid: 1500,
-    //     amount_due: 1500,
-    //     currency: 'INR',
-    //     attempts: 0,
-    //     receipt: 'txn_1689736719855',
-    //     offer_id: null,
-    //     status: 'created',
-    //     created_at: 1689736720,
-    //     createdAt: 2023-07-19T03:18:40.405Z,
-    //     updatedAt: 2023-07-19T03:19:00.573Z,
-    //     __v: 0
-    //   }
-
+    
     payment:{
         _id:{
             type:String,
@@ -164,6 +143,10 @@ const orderSchema=mongoose.Schema({
                 default:""
             },
         }
+    },
+    onlinePayment:{
+        type:Boolean,
+        default:false
     }
     
 },{timestamps:true});

@@ -3,6 +3,7 @@ const Payment = require("../models/PaymentModel");
 const Order = require("../models/OrderModel");
 
 // First we init payment to generate order id
+//Order id razorpay ki taraf se generate karne ke liye 
 const paymentInitController = async (req, res) => {
   try {
     const { amount } = req.body;
@@ -60,43 +61,41 @@ const paymentInitController = async (req, res) => {
 
 
 
-// Then if payment is successful then this will store payment details to payment collection
+// Then if payment is successful then this will store payment details to payment collection/document
 const paymentSuccessController = async (req, res) => {
+
   try {
-    const {orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature}=req.body;
+    const { orderCreationId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
 
-    if(!orderCreationId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature)
-    {
-        res.status(409).json({
-            message:"All fields are required",
-            status:false
-        })
+    if (!orderCreationId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+      res.status(409).json({
+        message: "All fields are required",
+        status: false
+      })
     }
 
-    const paymentObj=await Payment.find({_id:orderCreationId})
-    if(!paymentObj)
-    {
-        res.status(401).json({
-            message:"Unauthorize access",
-            status:false
-        }) 
+    const paymentObj = await Payment.find({ _id: orderCreationId })
+    if (!paymentObj) {
+      res.status(401).json({
+        message: "Unauthorize access",
+        status: false
+      })
     }
 
-    const updatedPaymentObj=await Payment.findOneAndUpdate({_id:orderCreationId},{
-      summary:{orderCreationId,razorpayPaymentId,razorpayOrderId,razorpaySignature},
-      amount_paid:paymentObj[0]?.amount
+    const updatedPaymentObj = await Payment.findOneAndUpdate({ _id: orderCreationId }, {
+      summary: { orderCreationId, razorpayPaymentId, razorpayOrderId, razorpaySignature },
+      amount_paid: paymentObj[0]?.amount
     })
 
-    if(!updatedPaymentObj)
-    {
-        res.status(404).json({
-            message:"Something went wrong",
-            status:false
-        }) 
+    if (!updatedPaymentObj) {
+      res.status(404).json({
+        message: "Something went wrong",
+        status: false
+      })
     }
 
     res.status(200).json({
-      data:updatedPaymentObj,
+      data: updatedPaymentObj,
       status: true,
     });
   } catch (error) {
@@ -111,26 +110,37 @@ const paymentSuccessController = async (req, res) => {
 const createOrderController = async (req, res) => {
   try {
     const user = req.userId;
-    const { cart, shippingAddress,paymentId } = req.body;
+    const { cart, shippingAddress, paymentId, onlinePayment } = req.body;
 
+    let response;
+    if (onlinePayment) {
+      const paymentObj = await Payment.find({ _id: paymentId });
+      response = await Order.create({
+        User: user,
+        orderItems: cart,
+        shippingAddress: shippingAddress,
+        payment: paymentObj && paymentObj[0],
+        onlinePayment: true
+      });
+    } else {
+      response = await Order.create({
+        User: user,
+        orderItems: cart,
+        shippingAddress: shippingAddress,
+        onlinePayment: false
+      });
 
-    const paymentObj=await Payment.find({_id:paymentId});
-    
-    const response = await Order.create({
-      User: user,
-      orderItems: cart,
-      shippingAddress: shippingAddress,
-      payment: paymentObj&&paymentObj[0],
-    });
+    }
+
 
     res.status(200).json({
-      message:"Order created successfully",
-      orderId:response._id,
-      status:true
+      message: "Order created successfully",
+      orderId: response._id,
+      status: true
     })
-  
+
   } catch (error) {
-    console.log(error);
+    console.log(error)
     res.status(400).json({
       message: "Bad request",
       status: false,
@@ -143,17 +153,16 @@ const createOrderController = async (req, res) => {
 
 
 //Get any order full details
-const getAllOrdersController=async(req,res)=>{
-  try{
-    const userId=req.userId;
-    const allOrders=await Order.find({User:userId});
-    
+const getAllOrdersController = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const allOrders = await Order.find({ User: userId });
+
     res.status(200).json({
-      data:allOrders,
-      status:true
+      data: allOrders,
+      status: true
     })
-  }catch(error)
-  {
+  } catch (error) {
     console.log(error)
     res.send("Problem")
   }
@@ -163,22 +172,21 @@ const getAllOrdersController=async(req,res)=>{
 
 
 //Get any order full details
-const getSingleOrderController=async(req,res)=>{
-  try{
-    const orderId=req.params.orderId;
+const getSingleOrderController = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
 
-    const orderObj=await Order.findOne({_id:orderId});
+    const orderObj = await Order.findOne({ _id: orderId });
     delete orderObj.User;
-    
+
     res.status(200).json({
-      data:orderObj,
-      status:true
+      data: orderObj,
+      status: true
     })
-  }catch(error)
-  {
+  } catch (error) {
     console.log(error)
     res.send("Problem")
   }
 }
 
-module.exports = { paymentInitController,paymentSuccessController ,createOrderController,getAllOrdersController,getSingleOrderController };
+module.exports = { paymentInitController, paymentSuccessController, createOrderController, getAllOrdersController, getSingleOrderController };

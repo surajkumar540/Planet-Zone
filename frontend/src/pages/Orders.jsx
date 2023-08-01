@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, Grid, Box } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
-import { getContactUs } from '../../api/devApi';
+import { getContactUs } from '../api/devApi';
 
-const AllOrderDetailes = () => {
+const Orders = () => {
 
    
 
@@ -13,7 +13,7 @@ const AllOrderDetailes = () => {
             <Box px={13}  bgcolor="#F5F5F5"  >
              
              <Box py={3}>
-                <Typography fontSize="30px">Your Order Detailes</Typography>
+                <Typography fontSize="30px">Your Order Details</Typography>
              </Box>
              
             
@@ -75,4 +75,4 @@ const AllOrderDetailes = () => {
     );
 };
 
-export default AllOrderDetailes;
+export default Orders;

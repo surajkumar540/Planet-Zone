@@ -109,6 +109,10 @@ function Header(props) {
                 Contact
               </Button>
 
+              {isUserLogged&&<Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/orders'}>
+                Orders
+              </Button>}
+
               <Button sx={{ color:'white',textTransform:'capitalize',mr:'.5rem'}} component={Link} to={'/cart'} size='small'>
               <Badge
                 anchorOrigin={{

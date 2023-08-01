@@ -26,7 +26,7 @@ import AddProduct from "./components/Admin/AddProduct";
 import AdminHeader from "./components/Header/AdminHeader";
 import Loader from "./components/Tools/Loader";
 import Error from "./components/Tools/Error";
-import AllOrderDetailes from "./components/AllOrderDetailes/AllOrderDetailes";
+import Orders from "./pages/Orders";
 import Shop from "./pages/Shop";
 import ContactEmail from "./pages/ContactEmail";
 import EditProduct from "./components/Admin/EditProduct";
@@ -111,6 +111,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:pid" element={<ShowProducts />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/payment" element={<PaymentMethod />} />
           <Route path="/about" element={<AboutUs />} />

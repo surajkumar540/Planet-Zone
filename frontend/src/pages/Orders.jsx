@@ -3,6 +3,7 @@ import { CardMedia, Typography, Box } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import { getAllOrders } from '../api/devApi';
 import { useNavigate } from 'react-router-dom';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 
 const Orders = () => {
     const [orders, setOrders] = useState([])
@@ -45,7 +46,7 @@ const Orders = () => {
                     {
                         orders.map((item, index) => {
                             return <Box key={index}>
-                                <SingleOrder orderId={item?._id} name={item?.orderItems[0]?.name} image={item?.orderItems[0]?.image} address={item?.shippingAddress?.address} price={item?.payment?.amount_paid/100} totalItems={item?.orderItems?.length-1}/>
+                                <SingleOrder orderId={item?._id} name={item?.orderItems[0]?.name} image={item?.orderItems[0]?.image} address={item?.shippingAddress?.address} price={item?.payment?.amount_paid/100} totalItems={item?.orderItems?.length-1} onlinePayment={item?.payment?.summary?.razorpaySignature}/>
                             </Box>
                         })
 
@@ -61,7 +62,7 @@ const Orders = () => {
 export default Orders;
 
 
-const SingleOrder = ({ orderId,name,address,price,image,totalItems }) => {
+const SingleOrder = ({ orderId,name,address,price,image,totalItems,onlinePayment=false }) => {
     const navigate=useNavigate()
     return (
         <Box onClick={()=>navigate(`/order/${orderId}`)} display="flex" bgcolor="white" p={1} borderRadius="8px" boxShadow="rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset" sx={{cursor:"pointer"}}>
@@ -73,9 +74,16 @@ const SingleOrder = ({ orderId,name,address,price,image,totalItems }) => {
                     <Typography component={'span'} fontWeight={600}>{totalItems>0 &&(` + ${totalItems} item`)}</Typography>
                 </Typography>
                 <Typography > ₹ {price}</Typography>
-                <Box display="flex" gap={"2px"} textAlign="center">
-                    <HomeIcon sx={{ fontSize: '22px' }} color="primary" />
-                    <Typography >Home Delivery</Typography>
+                <Box display="flex" gap={"2px"} alignItems={'center'}>
+                    {/* {
+                         onlinePayment?<CreditCardIcon sx={{ fontSize: '22px',color:'blue' }} />:<HomeIcon sx={{ fontSize: '22px' }} />
+                    } */}
+                    
+                    {
+                        onlinePayment?<Typography color='dodgerblue'>Razorpay</Typography>:<Typography color='greenyellow'>Home Delivery</Typography>
+                    }
+                    
+                    
                 </Box>
                 <Typography fontSize={'17px'}>{address}</Typography>
             </Box>

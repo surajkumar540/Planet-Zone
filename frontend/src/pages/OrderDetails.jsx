@@ -76,6 +76,7 @@ const OrderDetails = () => {
             <form>
                 <Grid container marginY={2}>
 
+
                     <Container maxWidth="lg" >
                         <Paper elevation={3} sx={{ padding: 3 }}  >
                             <form onSubmit={handleSubmit}>
@@ -155,7 +156,7 @@ const OrderDetails = () => {
 
                                     <Box display="flex"  >
                                         <Typography fontWeight={"bold"} flex='0.3' >Amount :</Typography>
-                                        <Typography flex='0.6'  > ₹ {payment?.amount/100}</Typography>
+                                        <Typography flex='0.6'  > ₹ {onlinePayment?payment?.amount/100:products.total}</Typography>
                                     </Box>
 
                                     <Box display="flex"  >

@@ -65,14 +65,14 @@ export default function FilterModal({category,setCategory}) {
                                     onChange={(e)=>{setCategory(e.target.value);handleClose()}}
                                 >
                                     <MenuItem value={'All'}>All</MenuItem>
-                                    <MenuItem value={'Electronics'}>Electronics</MenuItem>
                                     <MenuItem value={'Accessories'}>Accessories</MenuItem>
-                                    <MenuItem value={'Food'}>Food</MenuItem>
                                     <MenuItem value={'Clothes'}>Clothes</MenuItem>
                                     <MenuItem value={'Home'}>Home</MenuItem>
                                     <MenuItem value={'Furniture'}>Furniture</MenuItem>
-                                    <MenuItem value={'Appliances'}> Appliances</MenuItem>
                                     <MenuItem value={'Toys'}>Toys</MenuItem>
+                                    {/* <MenuItem value={'Food'}>Food</MenuItem> */}
+                                    {/* <MenuItem value={'Electronics'}>Electronics</MenuItem> */}
+                                    {/* <MenuItem value={'Appliances'}> Appliances</MenuItem> */}
                                 </Select>
                             </FormControl>
                         </Box>

@@ -116,14 +116,14 @@ const EditProduct = () => {
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                             >
-                                <MenuItem value={'Electronics'}>Electronics</MenuItem>
                                 <MenuItem value={'Accessories'}>Accessories</MenuItem>
-                                <MenuItem value={'Food'}>Food</MenuItem>
                                 <MenuItem value={'Clothes'}>Clothes</MenuItem>
                                 <MenuItem value={'Home'}>Home</MenuItem>
                                 <MenuItem value={'Furniture'}>Furniture</MenuItem>
-                                <MenuItem value={'Appliances'}> Appliances</MenuItem>
                                 <MenuItem value={'Toys'}>Toys</MenuItem>
+                                {/* <MenuItem value={'Electronics'}>Electronics</MenuItem> */}
+                                {/* <MenuItem value={'Appliances'}> Appliances</MenuItem> */}
+                                {/* <MenuItem value={'Food'}>Food</MenuItem> */}
                             </Select>
                         </FormControl>
                         <TextField sx={{ flex: 0.49 }} disabled={edit === false ? true : false} type="number" label="Stock count" name="countInStock" value={countInStock} onChange={(e) => setCountInStock(e.target.value)} />

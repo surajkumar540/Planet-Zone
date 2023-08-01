@@ -48,7 +48,8 @@ const CartProducts = ({ products }) => {
         }
       </Box>
 
-      {products.length === 0 && <Box display={'flex'} justifyContent={'center'}>
+      {
+      products.length === 0 && <Box display={'flex'} justifyContent={'center'}>
         <img src="https://mir-s3-cdn-cf.behance.net/projects/404/95974e121862329.Y3JvcCw5MjIsNzIxLDAsMTM5.png" />
       </Box>
       }

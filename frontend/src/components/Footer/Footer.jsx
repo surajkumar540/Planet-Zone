@@ -25,7 +25,7 @@ const Footer = () => {
   }
 
   return (
-    <Box bgcolor={'#25303F'} position={'relative'} sx={{cursor:"pointer"}}>
+    <Box bgcolor={'#2D4356'} position={'relative'} sx={{cursor:"pointer"}}>
       <Box display={'flex'} boxSizing={'border-box'} py='3rem' px='1rem' justifyContent={'space-evenly'} flexDirection={{xs:'column',sm:'row'}}>
 
       <Box flex='0.25' color='#7D8EA7' display={'flex'} alignItems={'center'} flexDirection={'column'} textAlign={{xs:'center',sm:'left'}}>
@@ -58,10 +58,10 @@ const Footer = () => {
           <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Address : </Typography>5143 Delhi Tilak Market 110042</Typography>
         </Box>
         <Box>
-          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Phone : </Typography>(+91) 1454548, (+91) 154545865</Typography>
+          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Phone : </Typography>(+91) 9667201750</Typography>
         </Box>
         <Box>
-          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Hours : </Typography>10:00 - 15:00 Mon - Sat</Typography>
+          <Typography sx={footerText}><Typography component={'span'} fontWeight={600}>Mail : </Typography>jai.singh.corporate@gmail.com</Typography>
         </Box>
         
         <Box mt='2rem'  textAlign={{xs:'center',sm:'left'}}>

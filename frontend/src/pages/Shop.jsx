@@ -12,9 +12,6 @@ const Categories = () => {
     const [products,setProducts]=useState([]);
     const [category,setCategory]=useState("All")
 
-    if (status === 'loading') {
-        return <Loader />
-    }
 
     const filterTypeFunction=()=>{
         const resultArr=productConstant?.filter((item)=>{
@@ -52,6 +49,11 @@ const Categories = () => {
     useEffect(()=>{
         fetchAllProducts()
     },[])
+
+    
+    // if (status === 'loading') {
+    //     return <Loader />
+    // }
 
     return (
         <>

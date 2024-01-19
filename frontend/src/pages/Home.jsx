@@ -20,10 +20,10 @@ const Home = () => {
   return (
     <>
       <Poster1/>
-      <Products products={products.slice(0,products.length>8?8:4).reverse()}/>
+      <Products products={products.slice(0,4).reverse()}/>
       {/* <Poster3/> */}
 
-      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={getClothes(products)}/>
+      {/* <Products heading="Winter Sales" title="Monsoon products at your point" products={getClothes(products)}/> */}
       
       
       <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products }/>

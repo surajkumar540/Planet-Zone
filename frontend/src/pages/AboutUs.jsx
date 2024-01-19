@@ -13,7 +13,6 @@ const AboutUs = () => {
 
             <Box display='flex' height='80vh' justifyContent='center'>
                 <Box flex={0.5} display='flex' justifyContent="center" alignItems='center'
-                // bgcolor={'pink'}
                 >
                     <CardMedia
                         sx={{ width: 650 }}

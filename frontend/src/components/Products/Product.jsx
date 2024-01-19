@@ -25,8 +25,8 @@ const Product = ({obj}) => {
 
   return (
     <Box onClick={()=>navigate(`/product/${_id}`)} 
-    sx={{height:'20rem',width:'15rem', bgcolor:'white', borderRadius:'10px', display:'flex', flexDirection:'column',boxShadow:'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px', cursor:'pointer', zIndex:'0',
-    '&:hover': {transform: 'scale(1.01)',transition:'0.5s ease-in-out'}
+    sx={{height:'20rem',width:'15rem', bgcolor:'#F7FFE5', borderRadius:'10px', display:'flex', flexDirection:'column', cursor:'pointer', zIndex:'0',padding:'2px',
+    '&:hover': {transform: 'scale(1.01)',transition:'0.6s ease-in-out'}
     }} >
 
         <Box flex={0.68} boxSizing={'border-box'} p={'.5rem'}>

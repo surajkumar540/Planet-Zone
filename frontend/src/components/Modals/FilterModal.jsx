@@ -16,11 +16,11 @@ const style = {
     position: 'absolute',
     top: '16%',
     right: '2%',
-    width: 400,
+    width: 200,
     bgcolor: 'background.paper',
     boxShadow: 2,
     p: 3,
-    borderRadius: "5px"
+    borderRadius: "10px"
 
 };
 
@@ -42,19 +42,19 @@ export default function FilterModal({category,setCategory}) {
                 slots={{ backdrop: Backdrop }}
                 slotProps={{
                     backdrop: {
-                        timeout: 500,
+                        timeout: 300,
                     },
                 }}
             >
                 <Fade in={open}>
                     <Box sx={style}>
-                        <Box display="flex" alignItems="center" gap={1} mb='1rem'>
+                        {/* <Box display="flex" alignItems="center" gap={1} mb='1rem'>
                             <TuneIcon />
                             <Typography id="transition-modal-title" fontSize={'20px'}>
                                 Filter
                             </Typography>
-                        </Box>
-                        <Box sx={{ minWidth: 120 }} pt={1}>
+                        </Box> */}
+                        <Box sx={{ minWidth: 120 }}>
                             <FormControl fullWidth>
                                 <InputLabel id="demo-simple-select-label">Product Type</InputLabel>
                                 <Select

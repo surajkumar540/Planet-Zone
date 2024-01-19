@@ -7,7 +7,7 @@ const Poster2 = () => {
     const styles = {
         background: `url(${OrganicImg}) no-repeat center center fixed`,
         backgroundSize: "cover",
-        height: "100vh",
+        height: "50vh",
         width: "100%",
     };
     return (

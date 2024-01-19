@@ -23,11 +23,11 @@ const drawerWidth = 240;
 const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
 
 const pageTheme={
-  "/":"#3CB815",
-  "/about":"#3CB815",
-  "/cart":"#3CB815",
+  "/":"#2D4356",
+  "/about":"#161A30",
+  "/cart":"#163020",
   "/profile":"#3CB815",
-  "/contact":"#3CB815",
+  "/contact":"#596FB7",
   "/login":"#38A0F0",
   "/signup":"#058F71",
   "/otp":"#F7300D",

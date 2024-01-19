@@ -18,7 +18,6 @@ const createContactController = async (req, res) => {
 
         const existingUser = await ContactUs.findOne({ email: email });
 
-        console.log(existingUser, "exist")
         //Check if user already send 
         if (existingUser) {
             res.status(409).json({
@@ -100,7 +99,6 @@ const deleteContactEmail=async(req,res)=>{
         const emailObj=await ContactUs.findOneAndRemove({_id:emailId})
         if(emailObj)
         {            
-            console.log(emailObj)
             res.status(200).json({
                 message:"Message deleted successfully",
                 status:true

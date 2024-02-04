@@ -20,26 +20,26 @@ import AccountMenu from '../Tools/AccountMenu';
 import Badge from '@mui/material/Badge';
 
 const drawerWidth = 240;
-const navItems = ['Home', 'Shop','About', 'Contact',"Cart"];
+const navItems = ['Home', 'Shop', 'About', 'Contact', "Cart"];
 
-const pageTheme={
-  "/":"#2D4356",
-  "/about":"#161A30",
-  "/cart":"#163020",
-  "/profile":"#3CB815",
-  "/contact":"#596FB7",
-  "/login":"#38A0F0",
-  "/signup":"#058F71",
-  "/otp":"#F7300D",
-  "/change-password":"#FF9900",
+const pageTheme = {
+  "/": "#8949C2",
+  "/about": "#8949C2",
+  "/cart": "#8949C2",
+  "/profile": "#8949C2",
+  "/contact": "#8949C2",
+  "/login": "#38A0F0",
+  "/signup": "#058F71",
+  "/otp": "#F7300D",
+  "/change-password": "#FF9900",
 }
 
 function Header(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigate=useNavigate();
-  const isUserLogged=useSelector((state)=>state?.user?.isUserLogged);
-  const cartItems=useSelector((state)=>state?.cart?.data)
+  const navigate = useNavigate();
+  const isUserLogged = useSelector((state) => state?.user?.isUserLogged);
+  const cartItems = useSelector((state) => state?.cart?.data)
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -48,14 +48,14 @@ function Header(props) {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-      Planet
+        Planet
       </Typography>
       <Divider />
       <List>
         {navItems.map((item) => (
           <ListItem key={item} disablePadding>
             <ListItemButton sx={{ textAlign: 'center' }}>
-              <ListItemText primary={item}/>
+              <ListItemText primary={item} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -68,9 +68,9 @@ function Header(props) {
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar component="nav" sx={{
-        boxShadow:location.pathname!=='/'&&"rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
-        bgcolor:(pageTheme[location.pathname] || "#3CB815"),
-        }}>
+        boxShadow: "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+        bgcolor: (pageTheme[location.pathname] || "linear-gradient(to right bottom, #396afc,#2948ff)"),
+      }}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -83,37 +83,40 @@ function Header(props) {
           </IconButton>
           <Typography
             variant="h6"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block'
-            ,color:"white",
-            textDecoration:'none'
-          } }}
-          component={Link} to={'/'}
+            sx={{
+              flexGrow: 1, display: {
+                xs: 'none', sm: 'block'
+                , color: "white",
+                textDecoration: 'none'
+              }
+            }}
+            component={Link} to={'/'}
           >
             Planet
           </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'flex' },alignItems:'center'}}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center' }}>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/'}>
-                Home
-              </Button>
+            <Button sx={{ color: 'white', textTransform: 'capitalize' }} component={Link} to={'/'}>
+              Home
+            </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/shop'}>
-                Shop
-              </Button>
+            <Button sx={{ color: 'white', textTransform: 'capitalize' }} component={Link} to={'/shop'}>
+              Shop
+            </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/about'}>
-                About
-              </Button>
+            <Button sx={{ color: 'white', textTransform: 'capitalize' }} component={Link} to={'/about'}>
+              About
+            </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/contact'}>
-                Contact
-              </Button>
+            <Button sx={{ color: 'white', textTransform: 'capitalize' }} component={Link} to={'/contact'}>
+              Contact
+            </Button>
 
-              {isUserLogged&&<Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/orders'}>
-                Orders
-              </Button>}
+            {isUserLogged && <Button sx={{ color: 'white', textTransform: 'capitalize' }} component={Link} to={'/orders'}>
+              Orders
+            </Button>}
 
-              <Button sx={{ color:'white',textTransform:'capitalize',mr:'.5rem'}} component={Link} to={'/cart'} size='small'>
+            <Button sx={{ color: 'white', textTransform: 'capitalize', mr: '.5rem' }} component={Link} to={'/cart'} size='small'>
               <Badge
                 anchorOrigin={{
                   vertical: 'top',
@@ -122,23 +125,23 @@ function Header(props) {
                 badgeContent={cartItems.length}
                 color='primary'
               >
-                
-                <Typography sx={{pr:'.5rem'}}>Cart</Typography>
+
+                <Typography sx={{ pr: '.5rem' }}>Cart</Typography>
               </Badge>
-              </Button>
-            
+            </Button>
+
             {
-              isUserLogged?<AccountMenu/>:(
-            <>
-              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',color:(pageTheme[location.pathname]|| "#3CB815"),'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/login")}>Login</Button>
-              <Button variant='contained' sx={{textTransform:'capitalize',bgcolor:'white',ml:'1rem',color:(pageTheme[location.pathname]|| "#3CB815"),'&:hover': {background: "whitesmoke"}}} onClick={()=>navigate("/signup")}>Sign up</Button>
-            </>
-            )
-            
+              isUserLogged ? <AccountMenu /> : (
+                <>
+                  <Button variant='contained' sx={{ textTransform: 'capitalize', bgcolor: 'white', color: (pageTheme[location.pathname] || "#3CB815"), '&:hover': { background: "whitesmoke" } }} onClick={() => navigate("/login")}>Login</Button>
+                  <Button variant='contained' sx={{ textTransform: 'capitalize', bgcolor: 'white', ml: '1rem', color: (pageTheme[location.pathname] || "#3CB815"), '&:hover': { background: "whitesmoke" } }} onClick={() => navigate("/signup")}>Sign up</Button>
+                </>
+              )
+
             }
-            
-   
-            
+
+
+
           </Box>
         </Toolbar>
       </AppBar>
@@ -153,7 +156,7 @@ function Header(props) {
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth},
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
         >
           {drawer}

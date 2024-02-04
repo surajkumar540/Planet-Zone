@@ -36,7 +36,12 @@ const CartProducts = ({ products }) => {
 
           {
             products.length>0 &&  <Box display='flex' justifyContent="right" pr={15}>
-            <Button variant='contained' onClick={handleSubmit}>Place Order</Button>
+            <Button variant='contained' sx={{marginRight:'1rem',bgcolor:"#DB4444",px:"3rem",py:"1rem",
+                        "&:hover":{
+                            bgcolor:"#d63e3e",
+                            color:"white"
+                        }
+                    }} onClick={handleSubmit}>Place Order</Button>
             </Box>
            
           }

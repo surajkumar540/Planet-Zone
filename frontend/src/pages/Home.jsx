@@ -21,7 +21,7 @@ const Home = () => {
     <>
       <Poster1/>
       <Products products={products.slice(0,4).reverse()}/>
-      {/* <Poster3/> */}
+      <Poster3/>
 
       {/* <Products heading="Winter Sales" title="Monsoon products at your point" products={getClothes(products)}/> */}
       

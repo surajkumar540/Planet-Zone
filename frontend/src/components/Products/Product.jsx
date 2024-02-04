@@ -1,17 +1,17 @@
 import React from 'react';
-import { Box,CardMedia, Typography,IconButton } from '@mui/material';
+import { Box, CardMedia, Typography, IconButton } from '@mui/material';
 import Bag from "../../assets/Home/bag.jpg"
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarIcon from '@mui/icons-material/Star';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addToCartAsync } from '../../redux/reducers/cartSlice';
 
-const Product = ({obj}) => {
-    const {_id}=obj;
-    const navigate=useNavigate();
-    const dispatch=useDispatch()
+const Product = ({ obj }) => {
+    const { _id } = obj;
+    const navigate = useNavigate();
+    const dispatch = useDispatch()
 
     //Send item to cart 
     // const handleCart=()=>{
@@ -23,56 +23,60 @@ const Product = ({obj}) => {
     //     navigate("/cart")
     // }
 
-  return (
-    <Box onClick={()=>navigate(`/product/${_id}`)} 
-    sx={{height:'20rem',width:'15rem', bgcolor:'#F7FFE5', borderRadius:'10px', display:'flex', flexDirection:'column', cursor:'pointer', zIndex:'0',padding:'2px',
-    '&:hover': {transform: 'scale(1.01)',transition:'0.6s ease-in-out'}
-    }} >
+    return (
+        <Box onClick={() => navigate(`/product/${_id}`)}
+            sx={{
+                height: '20rem', width: '15rem' , borderRadius: '10px', display: 'flex', flexDirection: 'column', cursor: 'pointer', zIndex: '0', padding:"3px",border:"1px solid #f5f2f2",
+                '&:hover': { bgcolor: '#f5f2f2'}
+            }} >
 
-        <Box flex={0.68} boxSizing={'border-box'} p={'.5rem'}>
-            <CardMedia
-            sx={{ height: '100%',borderRadius:'10px',objectFit:'cover'}}
-            image={obj?.image}
-            title="green iguana"
-            />
-        </Box>
-        <Box flex={0.32} p={'.5rem'}>
-            <Box>
+            <Box flex={0.68} boxSizing={'border-box'}>
+                <CardMedia
+                    sx={{ height: '100%', borderRadius: '10px', objectFit: 'cover' }}
+                    image={obj?.image}
+                    title="green iguana"
+                />
+            </Box>
+            <Box flex={0.32} p={'.5rem'}>
                 <Box>
-                    <Typography fontSize={'.8rem'} color={'grey'}>{obj?.brand||'Default'}</Typography>
-                </Box>
-                <Box>
-                    <Typography>{obj?.name||"Cloth Bags"}</Typography>
-                </Box>
-
-                <Box display={'flex'}>
-                    
                     <Box>
-                        <Box display={'flex'}>
+                        <Typography fontSize={'.8rem'} color={'grey'}>{obj?.brand || 'Default'}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography>{obj?.name || "Cloth Bags"}</Typography>
+                    </Box>
+
+                    <Box display={'flex'}  width={'100%'}>
+
+                        <Box flex={0.6}>
+                            {/* <Box display={'flex'}>
                             <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
                             <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
                             <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
                             <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
                             <StarOutlineIcon sx={{color:'#ffc107'}} fontSize='small'/>
+                        </Box> */}
+                            <Box  display={'flex'} flexDirection={'column'} alignItems={'flex-start'} justifyContent={'space-evenly'}>
+                                <Typography fontSize={'1.2rem'} fontWeight={600} color={'#DB4444'}>
+                                    ₹{Math.floor(obj?.totalPrice)}{" "}
+                                    <Typography as='del' fontSize='1rem' sx={{ color: "grey", fontWeight: 400 }}>{obj?.price && `₹${obj?.price}`}</Typography>
+                                </Typography>
+                                    <Typography as='span' fontSize='1rem' color='#388E3C'>{obj?.discount && `${obj?.discount - obj?.gst}% off`}</Typography>
+                            </Box>
                         </Box>
-                        <Box>
-                            <Typography fontSize={'1.2rem'} fontWeight={600} color={'#009688'}>₹{Math.floor(obj?.totalPrice)} <Typography as='del' fontSize='1rem' sx={{color:"grey",fontWeight:400}}>{obj?.price&&`₹${obj?.price}`}</Typography> <Typography as='span' fontSize='1rem' color='#388E3C'>{obj?.discount&&`${obj?.discount-obj?.gst}% off`}</Typography> 
-                            </Typography>
+
+                        <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'center'}  zIndex={500}
+                        // onClick={handleCart}
+                        >
+                            <IconButton >
+                                <ShoppingCartOutlinedIcon sx={{ color: '#DB4444' }} />
+                            </IconButton>
                         </Box>
                     </Box>
-
-                    {/* <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'center'} bgcolor={'pink'} zIndex={500} 
-                    // onClick={handleCart}
-                    >
-                        <IconButton >
-                            <ShoppingCartOutlinedIcon sx={{ color: '#009688' }}/>
-                        </IconButton>
-                    </Box> */}
                 </Box>
             </Box>
         </Box>
-    </Box>
-  )
+    )
 }
 
 export default Product

@@ -25,7 +25,7 @@ const Footer = () => {
   }
 
   return (
-    <Box bgcolor={'#2D4356'} position={'relative'} sx={{cursor:"pointer"}}>
+    <Box bgcolor={'#001524'} position={'relative'} sx={{cursor:"pointer"}}>
       <Box display={'flex'} boxSizing={'border-box'} py='3rem' px='1rem' justifyContent={'space-evenly'} flexDirection={{xs:'column',sm:'row'}}>
 
       <Box flex='0.25' color='#7D8EA7' display={'flex'} alignItems={'center'} flexDirection={'column'} textAlign={{xs:'center',sm:'left'}}>

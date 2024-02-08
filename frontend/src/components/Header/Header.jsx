@@ -21,13 +21,14 @@ import Badge from '@mui/material/Badge';
 
 const drawerWidth = 240;
 const navItems = ['Home', 'Shop', 'About', 'Contact', "Cart"];
+const mainColor="linear-gradient(to right bottom, #396afc,#2948ff)"
 
 const pageTheme = {
-  "/": "#8949C2",
-  "/about": "#8949C2",
-  "/cart": "#8949C2",
-  "/profile": "#8949C2",
-  "/contact": "#8949C2",
+  "/": mainColor,
+  "/about": mainColor,
+  "/cart": mainColor,
+  "/profile": mainColor,
+  "/contact": mainColor,
   "/login": "#38A0F0",
   "/signup": "#058F71",
   "/otp": "#F7300D",

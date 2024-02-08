@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -134,8 +133,8 @@ function Header(props) {
             {
               isUserLogged ? <AccountMenu /> : (
                 <>
-                  <Button variant='contained' sx={{ textTransform: 'capitalize', bgcolor: 'white', color: (pageTheme[location.pathname] || "#3CB815"), '&:hover': { background: "whitesmoke" } }} onClick={() => navigate("/login")}>Login</Button>
-                  <Button variant='contained' sx={{ textTransform: 'capitalize', bgcolor: 'white', ml: '1rem', color: (pageTheme[location.pathname] || "#3CB815"), '&:hover': { background: "whitesmoke" } }} onClick={() => navigate("/signup")}>Sign up</Button>
+                  <Button variant='contained' sx={{ textTransform: 'capitalize', bgcolor: 'white', color: ("#1976D2"), '&:hover': { background: "whitesmoke" } }} onClick={() => navigate("/login")}>Login</Button>
+                  <Button variant='contained' sx={{ textTransform: 'capitalize', bgcolor: 'white', ml: '1rem', color: ("#1976D2" || "#87CEFA"), '&:hover': { background: "whitesmoke" } }} onClick={() => navigate("/signup")}>Sign up</Button>
                 </>
               )
 

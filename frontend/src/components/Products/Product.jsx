@@ -27,7 +27,7 @@ const Product = ({ obj }) => {
         <Box onClick={() => navigate(`/product/${_id}`)}
             sx={{
                 height: '20rem', width: '15rem' , borderRadius: '10px', display: 'flex', flexDirection: 'column', cursor: 'pointer', zIndex: '0', padding:"3px",border:"1px solid #f5f2f2",
-                '&:hover': { bgcolor: '#f5f2f2'}
+                '&:hover': { boxShadow:"rgba(0, 0, 0, 0.16) 0px 1px 4px",transform:"scale(1.02)",transition:"all .3s ease-in-out" }
             }} >
 
             <Box flex={0.68} boxSizing={'border-box'}>
@@ -57,7 +57,7 @@ const Product = ({ obj }) => {
                             <StarOutlineIcon sx={{color:'#ffc107'}} fontSize='small'/>
                         </Box> */}
                             <Box  display={'flex'} flexDirection={'column'} alignItems={'flex-start'} justifyContent={'space-evenly'}>
-                                <Typography fontSize={'1.2rem'} fontWeight={600} color={'#DB4444'}>
+                                <Typography fontSize={'1.2rem'} fontWeight={600} color='#388E3C'>
                                     ₹{Math.floor(obj?.totalPrice)}{" "}
                                     <Typography as='del' fontSize='1rem' sx={{ color: "grey", fontWeight: 400 }}>{obj?.price && `₹${obj?.price}`}</Typography>
                                 </Typography>
@@ -69,7 +69,7 @@ const Product = ({ obj }) => {
                         // onClick={handleCart}
                         >
                             <IconButton >
-                                <ShoppingCartOutlinedIcon sx={{ color: '#DB4444' }} />
+                                <ShoppingCartOutlinedIcon sx={{ color: '#1976D2' }} />
                             </IconButton>
                         </Box>
                     </Box>

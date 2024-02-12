@@ -6,7 +6,7 @@ const productSlice=createSlice({
     name:"products",
     initialState:{
         data:[],
-        status:"idle",
+        status:STATUSES.IDLE,
         message:""
     },
     reducers:{

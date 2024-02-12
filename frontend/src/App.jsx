@@ -33,7 +33,6 @@ import EditProduct from "./components/Admin/EditProduct";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
-  // const isUserLogged = useSelector((state) => state?.user?.isUserLogged);
   const loginStatus = useSelector((state) => state?.user?.status);
   const dispatch = useDispatch();
   const [loading,setLoading]=useState(true);

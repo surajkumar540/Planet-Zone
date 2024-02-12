@@ -16,7 +16,7 @@ const Poster3 = () => {
                         />
                     </Box>
 
-                    <Box bgcolor='#F0BC59' flex={{xs:'1',sm:'0.5'}} display='flex' justifyContent={'center'}>
+                    <Box bgcolor='#1976D2' flex={{xs:'1',sm:'0.5'}} display='flex' justifyContent={'center'}>
                         <Box display='flex' width={'85%'} flexDirection='column'  justifyContent='center' >
 
                             <Typography display='flex' justifyContent='start' fontFamily='sans-serif' fontWeight='700' fontSize={{xs:'1.4rem',sm:'1.8rem',md:"40px"}} color='white' paddingBottom="10px">All About Organic</Typography>

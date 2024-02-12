@@ -19,23 +19,39 @@ const steps = [
 const OrderDetails = () => {
     const {orderId}=useParams();
     const [shipping,setShipping]=useState({fullName:"",city:"",address:"",phoneNo:"",pinCode:"",state:""});
-    const [payment,setPayment]=useState({amount:"",orderId:"",paymentId:""});
+    const [payment,setPayment]=useState({amount:"",orderId:"",paymentId:"",onlinePayment:false});
+    const [products,setProducts]=useState({gst:"",discount:"",total:"",price:""});
+    const [onlinePayment,setOnlinePayment]=useState(false);
 
     const fetchOrder=async()=>{
-        console.log("chal raha hi")
         try{
-            const {data:{payment,shippingAddress,orderItems}}=await getSingleOrder(orderId);
+            const {data:{payment,shippingAddress,orderItems,onlinePayment}}=await getSingleOrder(orderId);
+
             const {fullName,city,address,phoneNo,pinCode,state}=shippingAddress;
             setShipping({fullName,city,address,phoneNo,pinCode,state})
-            const {amount,summary:{orderCreationId,razorpayPaymentId}}=payment;
-            setPayment({amount:amount,orderId:orderCreationId,paymentId:razorpayPaymentId})
-            // console.log(orderItems)
 
+            const {amount,summary:{orderCreationId,razorpayPaymentId,razorpaySignature}}=payment;
+            setPayment({amount:amount,orderId:orderCreationId,paymentId:razorpayPaymentId,onlinePayment:razorpaySignature?true:false})
+
+            let gst=0;
+            let discount=0;
+            let price=0;
+            let total=0;
+            orderItems.forEach((item)=>{
+                gst+=item.gst
+                discount+=item.discount
+                price+=item.price
+                total+=item.totalPrice
+            })
+            setOnlinePayment(onlinePayment);
+            setProducts({gst,discount,price,total})
+            
         }catch(error)
         {
             console.log(error)
         }
     }
+    console.log(products)
 
 
     useEffect(()=>{
@@ -59,10 +75,6 @@ const OrderDetails = () => {
         <>
             <form>
                 <Grid container marginY={2}>
-                    {/* <Grid item xs={12}>
-          <img src="https://img.freepik.com/premium-photo/shopping-cart-symbol-with-torn-paper_220873-11807.jpg?w=996" alt="Background" style={{ width: '100%', height: 'auto' }} />
-          */}
-
 
 
                     <Container maxWidth="lg" >
@@ -75,8 +87,8 @@ const OrderDetails = () => {
                                     </Typography>
                                     <Divider />
                                 </Box>
-                                <Box display='flex' justifyContent="center" alignItems="center">
-                                    <Box display="flex" flex='0.7' flexDirection='column' padding={2}>
+                                <Box display='flex' justifyContent="center" alignItems="center" >
+                                    <Box display="flex" flex='0.7' flexDirection='column' padding={2} gap={2}>
                                         <Box display="flex"  >
                                             <Typography fontWeight={"bold"} flex='0.4' >Name :</Typography>
                                             <Typography flex='0.5'>{shipping?.fullName}</Typography>
@@ -116,13 +128,10 @@ const OrderDetails = () => {
                         </Paper>
                     </Container>
 
-
-                    {/* </Grid> */}
                 </Grid>
 
                 <Grid container marginY={2}>
 
-                    {/* form */}
                     <Container maxWidth="lg" >
                         <Paper elevation={3} sx={{ padding: 3 }}  >
                             <Box mt={2}>
@@ -138,32 +147,26 @@ const OrderDetails = () => {
 
                                         <Box display='flex' flex='0.6'>
                                             <Box display="flex" justifyContent="left">
-
-                                                <img src="https://th.bing.com/th/id/OIP.jniZMUcc2sLYxt4vmhIIvgAAAA?pid=ImgDet&rs=1" width="30%" />
-
+                                                {
+                                                    onlinePayment?<img src="https://th.bing.com/th/id/OIP.jniZMUcc2sLYxt4vmhIIvgAAAA?pid=ImgDet&rs=1" width="30%" />:`Cash On Delivery`
+                                                }
                                             </Box>
                                         </Box>
                                     </Box>
 
                                     <Box display="flex"  >
-
                                         <Typography fontWeight={"bold"} flex='0.3' >Amount :</Typography>
-
-                                        <Typography flex='0.6'  > ₹ {payment?.amount}</Typography>
+                                        <Typography flex='0.6'  > ₹ {onlinePayment?payment?.amount/100:products.total}</Typography>
                                     </Box>
 
                                     <Box display="flex"  >
-
                                         <Typography fontWeight={"bold"} flex='0.3' >Order Id :</Typography>
-
-                                        <Typography flex='0.6'  >{payment?.orderId}</Typography>
+                                        <Typography flex='0.6'  >{payment?.orderId||orderId}</Typography>
                                     </Box>
 
                                     <Box display="flex" >
-
                                         <Typography fontWeight={"bold"} flex='0.3' >Payment Id :</Typography>
-
-                                        <Typography flex='0.6'  >{payment?.paymentId}</Typography>
+                                        <Typography flex='0.6'  >{payment?.paymentId||"Not available"}</Typography>
                                     </Box>
                                 </Box>
 
@@ -194,28 +197,26 @@ const OrderDetails = () => {
                                     <Box display="flex" alignItems="center" >
                                         <Typography fontWeight={"bold"} flex='0.5' >Subtotal :</Typography>
 
-                                        <Typography flex='0.5' >₹ 3899</Typography>
+                                        <Typography flex='0.5' >₹{products?.price}</Typography>
                                     </Box>
 
                                     <Box display="flex"  >
 
                                         <Typography fontWeight={"bold"} flex='0.5' >Shipping Charges :</Typography>
 
-                                        <Typography flex='0.5'  > ₹ 152</Typography>
+                                        <Typography flex='0.5'  > ₹ 0</Typography>
                                     </Box>
 
                                     <Box display="flex" >
 
                                         <Typography fontWeight={"bold"} flex='0.5' >Gst/Tax :</Typography>
-
-                                        <Typography flex='0.5'  >₹ 81</Typography>
+                                        <Typography flex='0.5' color={'red'}>{products?.gst}%</Typography>
                                     </Box>
 
                                     <Box display="flex" >
 
                                         <Typography fontWeight={"bold"} flex='0.5' >Discount :</Typography>
-
-                                        <Typography flex='0.5' color='green'>10% (₹413.98)</Typography>
+                                        <Typography flex='0.5' color='green'>{products?.discount}%</Typography>
                                     </Box>
 
                                     <Divider />
@@ -224,7 +225,7 @@ const OrderDetails = () => {
 
                                         <Typography fontWeight={"bold"} flex='0.5' >Total</Typography>
 
-                                        <Typography fontWeight={"bold"} flex='0.5' color='gray'>₹{payment.amount}</Typography>
+                                        <Typography fontWeight={"bold"} flex='0.5' color='gray'>₹{products?.total}</Typography>
                                     </Box>
                                 </Box>
 

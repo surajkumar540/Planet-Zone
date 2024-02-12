@@ -72,9 +72,9 @@ const addNewProduct=async(req,res)=>{
 const updateSingleProduct=async(req,res)=>{
     try{
         const user = req.userId;
-        const {_id,countInStock,price,discount,gst,totalPrice,image,description}=req.body;
+        const {_id,countInStock,price,category,discount,gst,totalPrice,image,description}=req.body;
 
-        if(!_id||!countInStock||!price||!discount||!gst||!totalPrice||!image||!description)
+        if(!_id||!countInStock||!price||!category||!discount||!gst||!totalPrice||!image||!description)
         {
             res.status(409).json({
                 message:"Something is missing",
@@ -93,9 +93,8 @@ const updateSingleProduct=async(req,res)=>{
             return;
         }
     
-        const product=await Product.findOneAndUpdate({_id:_id},{countInStock:countInStock,price:price,discount:discount,gst:gst,totalPrice:totalPrice,image:image,description:description});
+        const product=await Product.findOneAndUpdate({_id:_id},{countInStock:countInStock,price:price,discount:discount,gst:gst,totalPrice:totalPrice,image:image,description:description,category:category});
 
-        console.log(product)
 
         res.status(200).json({
             message:"Product Updated successfully",

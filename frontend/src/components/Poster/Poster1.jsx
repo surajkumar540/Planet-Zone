@@ -1,25 +1,25 @@
 import React from 'react';
 import { Box,CardMedia, Typography,Button} from '@mui/material';
-import Bag from "../../assets/Home/bag.jpg"
 import { useNavigate } from 'react-router-dom';
+import saleImg from "../../assets/Design/sale.jpg"
 
 const Poster1 = () => {
     const navigate=useNavigate()
   return (
     <Box sx={{height:{xs:'50vh',sm:'80vh'},display:'flex'}}>
-        
-        <Box bgcolor={'beige'} width={'100%'} sx={{flex:{sm:0.5,md:0.45},display:'flex',alignItems:'center '}}>
+        {/* background: 'linear-gradient(to right bottom, #396afc,#2948ff)' */}
+        <Box bgcolor={'beige'} width={'100%'} sx={{flex:{sm:0.5,md:0.45},display:'flex',alignItems:'center ',}}>
             <Box width={'100%'} display={'flex'} flexDirection={'column'} justifyContent={'flex-end'} alignItems={'center'}>
                 <Box width={'80%'} height={'80%'}>
                     <Box color='#795548'>
-                        <Typography variant='h3' fontSize={{sm:'3rem',md:'5rem'}} fontWeight={600} lineHeight={'120%'}>The <br/> Sunday Sale</Typography>     
+                        <Typography variant='h3' fontSize={{sm:'3rem',md:'5rem'}} fontWeight={600} lineHeight={'120%'} color={"black"}>The <br/> Monsoon Sale</Typography>     
                     </Box>
                     <Box mb='1rem'>
-                        <Typography pl={{sm:'.6rem'}} fontSize={{sm:'.8rem',md:'1.3rem'}} color='#694f4f'>Pocket friendly products everywhere</Typography>
+                        <Typography pl={{sm:'.6rem'}} fontSize={{sm:'.8rem',md:'1.3rem'}} color='black'>Pocket friendly products everywhere</Typography>
                     </Box>
-                    <Box ml={{sm:'.5rem'}}>
+                    {/* <Box ml={{sm:'.5rem'}}>
                         <Button variant='contained' size='small' sx={{borderRadius:'50px',bgcolor:'#3CB815',textTransform:"capitalize"}}>Order Now</Button>
-                    </Box>
+                    </Box> */}
                 </Box>
             </Box>
         </Box>
@@ -27,8 +27,8 @@ const Poster1 = () => {
 
         <Box flex={{sm:0.5,md:0.55}}>
             <CardMedia
-            sx={{ height:'100%' }}
-            image={'https://th.bing.com/th/id/OIP.qQvtHTahefOgUokixorkWwHaE8?pid=ImgDet&rs=1'}
+            sx={{ height:'100%',objectFit:"cover" }}
+            image={saleImg}
             title="green iguana"
             />
         </Box>

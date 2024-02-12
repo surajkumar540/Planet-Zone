@@ -24,3 +24,20 @@ export function loadScript() {
         document.body.appendChild(script);
     });
 }
+
+
+export function getClothes(products){
+    const clothesArr=products.filter((item)=>{
+        return item.category==='Clothes'
+    })
+
+    if(clothesArr.lenght>4)
+    {
+        clothesArr.slice(0,4)
+    }else if(clothesArr.length>8)
+    {
+        return clothesArr(0,8);
+    }else{
+        return []
+    }
+}

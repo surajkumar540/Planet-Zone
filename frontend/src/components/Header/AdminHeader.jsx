@@ -71,7 +71,8 @@ function AdminHeader(props) {
     <Box sx={{ display: 'flex' }}>
       <AppBar component="nav" sx={{
         boxShadow:location.pathname!=='/'&&"rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
-        bgcolor:( "#6984B5"),
+        bgcolor:( "#526D82"),
+        // background: "linear-gradient(to right, #868f96 0%, #596164 100%)"
         }}>
         <Toolbar>
           <IconButton
@@ -100,11 +101,11 @@ function AdminHeader(props) {
               </Button>
 
               <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/addProduct'}>
-                Product
+                Add product
               </Button>
 
               <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/contactEmail'}>
-                Emails
+                Mails
               </Button>
 
               <Button sx={{ color: 'white',textTransform:'capitalize' }} onClick={handleLogout}>

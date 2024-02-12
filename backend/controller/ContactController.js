@@ -18,7 +18,6 @@ const createContactController = async (req, res) => {
 
         const existingUser = await ContactUs.findOne({ email: email });
 
-        console.log(existingUser, "exist")
         //Check if user already send 
         if (existingUser) {
             res.status(409).json({
@@ -38,7 +37,7 @@ const createContactController = async (req, res) => {
         });
 
         res.status(200).json({
-            message: "message send succussfully",
+            message: "Message send succussfully",
             status: true
         });
 
@@ -54,10 +53,18 @@ const createContactController = async (req, res) => {
 
 
 
-const getContactUs=async(req,res)=>{
-   
-    
+const getContactUs=async(req,res)=>{ 
     try{
+        const user=req.userId;
+        const adminUser=await User.findOne({_id:user});
+        if(!adminUser.isAdmin)
+        {
+            res.status(401).json({
+                message:"Unauthorized User",
+                status:false
+            })
+            return;
+        }
         const result=await ContactUs.find()
         
         res.status(200).json({
@@ -74,7 +81,78 @@ const getContactUs=async(req,res)=>{
 }
 
 
+const deleteContactEmail=async(req,res)=>{ 
+    
+    try{
+        const emailId=req.params.emailId
+        const user=req.userId;
+        const adminUser=await User.findOne({_id:user});
+        if(!adminUser.isAdmin)
+        {
+            res.status(401).json({
+                message:"Unauthorized User",
+                status:false
+            })
+            return;
+        }
+        
+        const emailObj=await ContactUs.findOneAndRemove({_id:emailId})
+        if(emailObj)
+        {            
+            res.status(200).json({
+                message:"Message deleted successfully",
+                status:true
+            })
+        }else{
+
+            res.status(409).json({
+                message:"Message already deleted",
+                status:true
+            })
+        }
+    }catch(error)
+    {
+        res.status(500).json({
+            message:"Something is wrong",
+            status:false
+        })
+    }
+}
+
+
+const deleteAllMails=async(req,res)=>{ 
+    
+    try{
+        const user=req.userId;
+        const adminUser=await User.findOne({_id:user});
+        if(!adminUser.isAdmin)
+        {
+            res.status(401).json({
+                message:"Unauthorized User",
+                status:false
+            })
+            return;
+        }
+        
+        await ContactUs.deleteMany({})
+                
+        res.status(200).json({
+            message:"All messages deleted",
+            status:true
+        })
+    }catch(error)
+    {
+        res.status(500).json({
+            message:"Something is wrong ds",
+            status:false
+        })
+    }
+}
+
+
 module.exports={
     createContactController,
-    getContactUs
+    getContactUs,
+    deleteContactEmail,
+    deleteAllMails
 }

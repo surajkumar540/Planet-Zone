@@ -6,7 +6,7 @@ import CallIcon from '@mui/icons-material/Call';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const Location = () => {
-    const [location, setLocation] = useState("Shalimar Bagh")
+    const [location, setLocation] = useState("India Gate")
     const [mapLink, setMapLink] = useState("https://maps.google.com/?q=28.6129,77.2295;&output=embed");
 
     const handleChangeLocation = async (e) => {
@@ -47,17 +47,17 @@ const Location = () => {
                     <Box display='flex' justifyContent='center' flexDirection="column" paddingY={2} gap={1}>
                         <Box display='flex' gap={1.5} alignItems='center'>
                             <LocationOnOutlinedIcon sx={{ fontSize: 15 }} />
-                            <Typography sx={{ fontSize: "13px", color: 'gray' }}>6 Shalimar Street Rohini Delhi, India</Typography>
+                            <Typography sx={{ fontSize: "13px", color: 'gray' }}>India Gate, Delhi, India</Typography>
                         </Box>
 
                         <Box display='flex' gap={1.5} alignItems='center'>
                             <EmailOutlinedIcon sx={{ fontSize: 15 }} />
-                            <Typography sx={{ fontSize: "13px", color: 'gray' }}>suraj@gmail.com</Typography>
+                            <Typography sx={{ fontSize: "13px", color: 'gray' }}>jai.singh.corporate@gmail.com, surajgautam56878@gmail.com</Typography>
                         </Box>
 
                         <Box display='flex' gap={1.5} alignItems='center'>
                             <CallIcon sx={{ fontSize: 15 }} />
-                            <Typography sx={{ fontSize: "13px", color: 'gray' }}>9560323232</Typography>
+                            <Typography sx={{ fontSize: "13px", color: 'gray' }}>9667201750, 9560234568</Typography>
                         </Box>
 
                         <Box display='flex' gap={1.5} alignItems='center'>

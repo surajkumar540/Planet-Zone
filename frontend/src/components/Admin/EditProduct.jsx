@@ -23,7 +23,7 @@ const EditProduct = () => {
     const fetchProductFunction = async () => {
         try {
             const response = await fetchSingleProductApi(pid)
-            const { User,name, brand, category, countInStock, price, discount, gst, totalPrice, image, description } = response.data;
+            const { User, name, brand, category, countInStock, price, discount, gst, totalPrice, image, description } = response.data;
             setProductAdmin(User);
             setName(name)
             setBrand(brand)
@@ -51,15 +51,16 @@ const EditProduct = () => {
         e.preventDefault()
         try {
             const apiBody = {
-                "_id":pid,
-                "countInStock":countInStock,
-                "price":price,
-                "discount":discount,
-                "gst":gst,
-                "totalPrice":totalPrice,
-                "image":image,
-                "description":description
-              }
+                "_id": pid,
+                "countInStock": countInStock,
+                "price": price,
+                "category": category,
+                "discount": discount,
+                "gst": gst,
+                "totalPrice": totalPrice,
+                "image": image,
+                "description": description
+            }
 
             const response = await updateSingleProduct(apiBody);
 
@@ -90,7 +91,7 @@ const EditProduct = () => {
                     Add New Product
                 </Typography>
 
-                {productAdmin===getUserId()&&<Button variant="contained" sx={{ textTransform: 'capitalize', borderRadius: '5px' }} onClick={() => setEdit((prev) => !prev)}>Edit</Button>
+                {productAdmin === getUserId() && <Button variant="contained" sx={{ textTransform: 'capitalize', borderRadius: '5px' }} onClick={() => setEdit((prev) => !prev)}>Edit</Button>
                 }
             </Box>
 
@@ -107,7 +108,7 @@ const EditProduct = () => {
                         <FormControl sx={{ flex: 0.49 }}>
                             <InputLabel id="demo-simple-select-label">Category</InputLabel>
                             <Select
-                                disabled
+                                disabled={edit === false ? true : false}
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
                                 label="Category"
@@ -115,40 +116,40 @@ const EditProduct = () => {
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                             >
-                                <MenuItem value={'Bottle'}>Bottle</MenuItem>
-                                <MenuItem value={'Bag'}>Bag</MenuItem>
-                                <MenuItem value={'Shoes'}>Shoes</MenuItem>
+                                <MenuItem value={'Accessories'}>Accessories</MenuItem>
                                 <MenuItem value={'Clothes'}>Clothes</MenuItem>
-                                <MenuItem value={'Matress'}>Matress</MenuItem>
-                                <MenuItem value={'Wallet'}>Wallet</MenuItem>
-                                <MenuItem value={'Chair'}>Chair</MenuItem>
+                                <MenuItem value={'Home'}>Home</MenuItem>
+                                <MenuItem value={'Furniture'}>Furniture</MenuItem>
                                 <MenuItem value={'Toys'}>Toys</MenuItem>
+                                {/* <MenuItem value={'Electronics'}>Electronics</MenuItem> */}
+                                {/* <MenuItem value={'Appliances'}> Appliances</MenuItem> */}
+                                {/* <MenuItem value={'Food'}>Food</MenuItem> */}
                             </Select>
                         </FormControl>
-                        <TextField sx={{ flex: 0.49 }} disabled={edit===false?true:false} type="number" label="Stock count" name="countInStock" value={countInStock} onChange={(e) => setCountInStock(e.target.value)} />
+                        <TextField sx={{ flex: 0.49 }} disabled={edit === false ? true : false} type="number" label="Stock count" name="countInStock" value={countInStock} onChange={(e) => setCountInStock(e.target.value)} />
                     </Box>
 
                     <Box mb="1.2rem" sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <TextField sx={{ flex: 0.49 }} disabled={edit===false?true:false}  type="number" label="Price" name="price" value={price} onChange={(e) => setPrice(e.target.value)} />
-                        <TextField sx={{ flex: 0.49 }} disabled={edit===false?true:false}  type="number" label="Discount (%)" name="discount" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+                        <TextField sx={{ flex: 0.49 }} disabled={edit === false ? true : false} type="number" label="Price" name="price" value={price} onChange={(e) => setPrice(e.target.value)} />
+                        <TextField sx={{ flex: 0.49 }} disabled={edit === false ? true : false} type="number" label="Discount (%)" name="discount" value={discount} onChange={(e) => setDiscount(e.target.value)} />
                     </Box>
 
 
                     <Box mb="1.2rem" sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <TextField sx={{ flex: 0.49 }} disabled={edit===false?true:false}  type="number" label="Gst (%)" name="gst" value={gst} onChange={(e) => setGst(e.target.value)} />
+                        <TextField sx={{ flex: 0.49 }} disabled={edit === false ? true : false} type="number" label="Gst (%)" name="gst" value={gst} onChange={(e) => setGst(e.target.value)} />
                         <TextField sx={{ flex: 0.49 }} disabled type="number" label="Total Price" name="totalPrice" value={totalPrice} onChange={(e) => setTotalPrice(e.target.value)} />
                     </Box>
 
                     <Box mb="1.2rem" sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <TextField fullWidth disabled={edit===false?true:false}  type="text" label="Image Url" name="image" value={image} onChange={(e) => setImage(e.target.value)} />
+                        <TextField fullWidth disabled={edit === false ? true : false} type="text" label="Image Url" name="image" value={image} onChange={(e) => setImage(e.target.value)} />
                     </Box>
 
                     <Box mb="1.2rem" sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <TextField fullWidth disabled={edit===false?true:false}  id="outlined-multiline-static" label="Multiline" multiline rows={4} defaultValue="Default Value" name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+                        <TextField fullWidth disabled={edit === false ? true : false} id="outlined-multiline-static" label="Multiline" multiline rows={4} defaultValue="Default Value" name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </Box>
 
                     <Box marginBottom={'0rem'}>
-                        <Button variant="contained" type="submit">Add Product</Button>
+                        <Button variant="contained" type="submit" disabled={!edit}>Update</Button>
                     </Box>
                 </form>
             </Box>

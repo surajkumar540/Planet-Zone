@@ -1,4 +1,4 @@
-import { Typography, Grid, Box, Avatar, CardMedia, IconButton } from "@mui/material";
+import { Typography, Grid, Box, CardMedia, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteSingleProduct } from "../../api/devApi";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,11 @@ const ProductRow = ({obj,sno,refetch}) => {
 
   return (
     <Box marginX={'2rem'} marginY={'1rem'}>
-    <Grid container sx={{bgcolor:'whitesmoke',paddingY:'.8rem',borderRadius:"10px",textAlign:'center',cursor:"pointer"}}>
+    <Grid container sx={{background:"linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",paddingY:'.8rem',borderRadius:"10px",textAlign:'center',cursor:"pointer","&:hover": {
+    background: "linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%)",
+    transform: "scale(1.005)",
+    transition: "all 0.2s linear"
+  },}} >
 
       <Grid item xs={1} alignSelf={"center"} onClick={handleNavigate}>
       <Typography>{sno}</Typography>
@@ -61,7 +65,7 @@ const ProductRow = ({obj,sno,refetch}) => {
         </Typography>
       </Grid>
 
-      <Grid item xs={2} alignSelf={"center"}>
+      <Grid item xs={2} alignSelf={"center"} onClick={handleNavigate}>
         <Typography>
             ₹ {obj?.price}
         </Typography>

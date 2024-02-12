@@ -15,16 +15,16 @@ import { Container, Paper, Divider } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
-import { createOrderApi, paymentInit,paymentSuccess } from "../api/devApi";
+import { createOrderApi, paymentInit, paymentSuccess } from "../api/devApi";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../redux/reducers/cartSlice";
 
 const PaymentMethod = () => {
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   const dispatch = useDispatch();
-  const price=useSelector((state)=>state?.order?.price)
-  const cart=useSelector((state)=>state?.cart?.data)
-  const shipping=useSelector((state)=>state?.order?.shipping)
+  const price = useSelector((state) => state?.order?.price)
+  const cart = useSelector((state) => state?.cart?.data)
+  const shipping = useSelector((state) => state?.order?.shipping)
   const [selectedOption, setSelectedOption] = useState("RazorPay");
 
   const handleOptionChange = (event) => {
@@ -34,43 +34,59 @@ const PaymentMethod = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if(selectedOption==='RazorPay')
-    {
+    if (selectedOption === 'RazorPay') {
       displayRazorpay()
+    } else {
+      handleCashPayment()
     }
     dispatch(paymentMethod(selectedOption));
 
     // navigate("/order");
   };
 
-  const displayRazorpay=async()=>{
-    try{
+  const handleCashPayment = async () => {
+    try {
+      const apiData = {
+        cart: cart,
+        shippingAddress: shipping,
+        paymentId: {},
+        onlinePayment:false
+      }
+      const order = await createOrderApi(apiData)
+      navigate(`/order/${order?.orderId}`)
+                dispatch(clearCart())
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const displayRazorpay = async () => {
+    try {
       const res = await loadScript();
-  
+
       if (!res) {
         alert("Razorpay SDK failed to load. Are you online?");
         return;
       }
-  
+
       // creating a new order
-      const result = await paymentInit({amount:Math.floor(price)})
-      console.log(result,"payment init")
-  
+      const result = await paymentInit({ amount: Math.floor(price) })
+
       if (!result) {
         alert("Server error. Are you online?");
         return;
       }
-  
-      const {KEY_ID}=result;
+
+      const { KEY_ID } = result;
       const { amount, id: order_id, currency } = result.data;
-  
+
       const options = {
         key: KEY_ID, // Enter the Key ID generated from the Dashboard
         amount: amount.toString(),
         currency: currency,
         name: "Planet Corporation",
         description: "Test Transaction",
-        image:"https://res.cloudinary.com/practicaldev/image/fetch/s--CYyAcHOK--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_800/https://dev-to-uploads.s3.amazonaws.com/i/svo3oqttbs7joyvlfe5b.png",
+        image: "https://res.cloudinary.com/practicaldev/image/fetch/s--CYyAcHOK--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_800/https://dev-to-uploads.s3.amazonaws.com/i/svo3oqttbs7joyvlfe5b.png",
         order_id: order_id,
         handler: async function (response) {
           const data = {
@@ -79,25 +95,21 @@ const PaymentMethod = () => {
             razorpayOrderId: response.razorpay_order_id,
             razorpaySignature: response.razorpay_signature,
           };
-          try{
-            const response=await paymentSuccess(data)
-            console.log(response,"payment success")
-            if(response.status)
-            {
-              const apiData={ 
-                cart:cart, 
-                shippingAddress:shipping, 
-                paymentId:response?.data?._id
+          try {
+            const response = await paymentSuccess(data)
+            if (response.status) {
+              const apiData = {
+                cart: cart,
+                shippingAddress: shipping,
+                paymentId: response?.data?._id
               }
-              const order=await createOrderApi(apiData)
-              if(order.status)
-              {
+              const order = await createOrderApi(apiData)
+              if (order.status) {
                 navigate(`/order/${order?.orderId}`)
                 dispatch(clearCart())
               }
             }
-          }catch(error)
-          {
+          } catch (error) {
             console.log(error)
           }
         },
@@ -113,11 +125,10 @@ const PaymentMethod = () => {
           color: "salmon",
         },
       };
-  
+
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
-    }catch(error)
-    {
+    } catch (error) {
       console.log(error)
     }
   }
@@ -126,7 +137,7 @@ const PaymentMethod = () => {
     <>
       <Progress currentStep={1} />
 
-      <Container maxWidth="lg" sx={{paddingBottom:'4rem'}}>
+      <Container maxWidth="lg" sx={{ paddingBottom: '4rem' }}>
         <Paper elevation={3} sx={{ padding: 3 }}>
           <form onSubmit={handleSubmit}>
             <Box mt={2}>

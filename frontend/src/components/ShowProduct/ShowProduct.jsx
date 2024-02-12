@@ -27,7 +27,7 @@ const ShowProduct = ({obj}) => {
         <Box display={'flex'} height={'80vh'}>
             <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'flex-end'}>
                 <CardMedia
-                    sx={{ height: '95%',width:'90%',borderRadius:'20px' }}
+                    sx={{ height: '95%',width:'90%',borderRadius:'20px',objectFit:"contain" }}
                     image={obj?.image||"https://images.pexels.com/photos/2850487/pexels-photo-2850487.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
                     title="green iguana"
                 />
@@ -60,8 +60,13 @@ const ShowProduct = ({obj}) => {
                         </Box>
                     </Box>
                     <Box fontSize={'1.5rem'}>
-                        <Button variant='contained' sx={{bgcolor:"coral",marginRight:'1rem'}} onClick={handleCart}>Add to Cart</Button>
-                        <Button variant='contained' sx={{bgcolor:"#3CB815"}}>Buy Now</Button>
+                        <Button variant='contained' sx={{marginRight:'1rem',bgcolor:"#DB4444",px:"3rem",py:"1rem",
+                        "&:hover":{
+                            bgcolor:"#d63e3e",
+                            color:"white"
+                        }
+                    }} onClick={handleCart}>Add to Cart</Button>
+                        {/* <Button variant='contained' sx={{bgcolor:"#3CB815"}}>Buy Now</Button> */}
                     </Box>
                     
                 </Box>

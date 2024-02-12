@@ -86,14 +86,14 @@ const AddProduct = () => {
               value={category} 
               onChange={(e)=>setCategory(e.target.value)}
             >
-              <MenuItem value={'Bottle'}>Electronics</MenuItem>
-              <MenuItem value={'Bag'}>Bag</MenuItem>
-              <MenuItem value={'Shoes'}>Shoes</MenuItem>
+              <MenuItem value={'Accessories'}>Accessories</MenuItem>
               <MenuItem value={'Clothes'}>Clothes</MenuItem>
-              <MenuItem value={'Matress'}>Matress</MenuItem>
-              <MenuItem value={'Wallet'}>Wallet</MenuItem>
-              <MenuItem value={'Chair'}>Chair</MenuItem>
+              <MenuItem value={'Home'}>Home</MenuItem>
+              <MenuItem value={'Furniture'}>Furniture</MenuItem>
               <MenuItem value={'Toys'}>Toys</MenuItem>
+              {/* <MenuItem value={'Food'}>Food</MenuItem> */}
+              {/* <MenuItem value={'Appliances'}> Appliances</MenuItem> */}
+              {/* <MenuItem value={'Electronics'}>Electronics</MenuItem> */}
             </Select>
           </FormControl>
           <TextField sx={{flex:0.49}} type="number" label="Stock count" name="countInStock" value={countInStock} onChange={(e)=>setCountInStock(e.target.value)}/>

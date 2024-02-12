@@ -594,7 +594,6 @@ const setProfileController = async (req, res) => {
       address:address
     });
     
-    console.log(user)
     res.status(200).json({
       message:"Data updated successfully",
       status: true,

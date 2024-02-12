@@ -77,12 +77,12 @@ function App() {
     "Authorization"
   ] = `Bearer ${localStorage.getItem("token")}`;
 
-  if(loading || loginStatus==='loading')
-  {
-    return(
-      <Loader/>
-    )  
-  }
+  // if(loading || loginStatus==='loading')
+  // {
+  //   return(
+  //     <Loader/>
+  //   )  
+  // }
 
   return (
     <>

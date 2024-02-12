@@ -11,22 +11,22 @@ import { getClothes } from '../utils/functions';
 const Home = () => {
   const {data:products,status}=useSelector((state)=>state?.products)
 
-  if(status==='loading')
-  {
-    return <Loader/>
-  }
+  // if(status==='loading')
+  // {
+  //   return <Loader/>
+  // }
 
 
   return (
     <>
       <Poster1/>
-      <Products products={products.slice(0,4).reverse()}/>
+      <Products products={products.slice(0,4).reverse()} isLoading={status==='loading'?true:false}/>
       <Poster3/>
 
       {/* <Products heading="Winter Sales" title="Monsoon products at your point" products={getClothes(products)}/> */}
       
       
-      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products }/>
+      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products} isLoading={status==='loading'?true:false}/>
       {/* <Poster2/> */}
       <Footer/>
     </>

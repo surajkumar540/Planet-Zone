@@ -1,5 +1,4 @@
 import "./App.css";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -73,9 +72,6 @@ function App() {
     dispatch(fetchAllProducts());
   }, []);
 
-  axios.defaults.headers.common[
-    "Authorization"
-  ] = `Bearer ${localStorage.getItem("token")}`;
 
   if(loading || loginStatus==='loading')
   {

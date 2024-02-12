@@ -6,7 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-        '/api': `https://planet-backend-92ic.onrender.com`
+        '/api': {
+            target: 'https://planet-backend-92ic.onrender.com/api',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api/, ''),
+          },
     },
   },
+  envPrefix: 'TEST_'
 })

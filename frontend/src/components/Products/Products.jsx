@@ -18,12 +18,12 @@ const Products = ({ products, heading, title, isLoading=false }) => {
           {
             isLoading ? (
               Array(4).fill({})?.map((item, index) => {
-                return <Grid item key={index} xs={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
+                return <Grid item key={index} xs={12} sm={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
                   <ProductSkeleton />
                 </Grid>
               })
             ) : (products?.map((item, index) => {
-              return <Grid item key={index} xs={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
+              return <Grid item key={index} xs={12} sm={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
                 <Product key={index} obj={item} />
               </Grid>
             }))

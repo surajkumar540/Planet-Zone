@@ -65,14 +65,14 @@ const ShowProduct = ({ obj }) => {
                         <Typography fontSize={'28px'} color={'green'}>
                             {
                                 obj?.totalPrice ? (
-                                    <Box>
+                                    <>
                                         ₹{Math.floor(obj?.totalPrice)}{" "}
                                         <Typography as='del' fontSize='1rem' sx={{ color: "grey", fontWeight: 400 }}>
                                             {obj?.price && `₹${obj?.price}`}
                                         </Typography>
 
                                         <Typography as='span' fontSize='1rem' color='#388E3C'>{obj?.discount && `${obj?.discount}% off`}</Typography>
-                                    </Box>
+                                    </>
                                 ) : (
                                     <Skeleton />
                                 )

@@ -7,7 +7,8 @@ import { Provider } from 'react-redux'
 import store from './redux/store/store.js'
 import axios from 'axios'
 import { getToken } from './utils/functions.js'
-console.log(import.meta.env.VITE_PUBLIC_URL)
+import ProtectedRoute from './components/Provider/ProtectedRoute.jsx'
+
 axios.defaults.baseURL = "https://planet-backend-92ic.onrender.com";
 axios.defaults.headers.common[
   "Authorization"
@@ -18,7 +19,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
       <BrowserRouter>
+        <ProtectedRoute>
         <App />
+        </ProtectedRoute>
       </BrowserRouter>
     </Provider>
   </React.StrictMode>,

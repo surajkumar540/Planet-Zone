@@ -19,9 +19,15 @@ import AccountMenu from '../Tools/AccountMenu';
 import Badge from '@mui/material/Badge';
 
 const drawerWidth = 240;
-// const navItems = ['Home', 'Shop', 'About', 'Contact', "Cart"];
-const navItems = {'Home':"/", 'Shop':"/shop", 'About':"/about", 'Contact':"/contact", "Cart":'/cart'};
-const mainColor="linear-gradient(to right bottom, #396afc,#2948ff)"
+const navItems = {
+  'Home': "/",
+  'Shop': "/shop",
+  'About': "/about",
+  'Contact': "/contact",
+  "Cart": '/cart'
+};
+const mainColor = "linear-gradient(to right bottom, #396afc,#2948ff)"
+
 
 const pageTheme = {
   "/": mainColor,
@@ -48,13 +54,13 @@ function Header(props) {
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" sx={{ my: 2,fontWeight:600 }}>
+      <Typography variant="h6" sx={{ my: 2, fontWeight: 600 }}>
         Planet
       </Typography>
       <Divider />
       <List>
         {Object.keys(navItems).map((key) => (
-          <ListItem key={key} disablePadding onClick={()=>navigate(navItems[key])}>
+          <ListItem key={key} disablePadding onClick={() => navigate(navItems[key])}>
             <ListItemButton sx={{ textAlign: 'center' }}>
               <ListItemText primary={key} />
             </ListItemButton>

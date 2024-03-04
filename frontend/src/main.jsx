@@ -5,11 +5,7 @@ import './index.css'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import store from './redux/store/store.js'
-import axios from 'axios'
 import ProtectedRoute from './components/Provider/ProtectedRoute.jsx'
-
-axios.defaults.baseURL = "https://planet-backend-92ic.onrender.com";
-
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

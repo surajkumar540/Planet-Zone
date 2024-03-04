@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { getToken } from '../utils/functions';
 
-const instance = axios.create({});
+const instance = axios.create({
+  baseURL:"https://planet-backend-92ic.onrender.com"
+});
+
+
 
 // Add request interceptor
 instance.interceptors.request.use(

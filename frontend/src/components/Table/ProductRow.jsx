@@ -1,6 +1,7 @@
 import { Typography, Grid, Box, CardMedia, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { deleteSingleProduct } from "../../api/devApi";
+// import { deleteSingleProduct } from "../../api/devApi";
+import { deleteSingleProduct } from "../../api/productApi";
 import { useNavigate } from "react-router-dom";
 
 const ProductRow = ({obj,sno,refetch}) => {

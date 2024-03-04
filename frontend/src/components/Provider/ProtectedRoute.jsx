@@ -2,7 +2,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from "../Tools/Loader";
-import { setStatus, tokenVerificationAsync } from "../../redux/reducers/userSlice";
+import { tokenVerificationAsync } from "../../redux/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
 
 export const ADMINPROTECTEDROUTES = Object.freeze({
@@ -13,8 +13,8 @@ export const ADMINPROTECTEDROUTES = Object.freeze({
 })
 
 export const USERPROTECTEDROUTES = Object.freeze({
-    ORDERS: "/orders",
-    SINGLE_ORDER:"/order"
+    SINGLE_ORDER:"/order",
+    ORDERS: "/orders"
 })
 
 const NORMALROUTES = Object.freeze({
@@ -39,12 +39,10 @@ const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
     const { status, isUserLogged, isAdminLogged } = useSelector((state) => state?.user)
-    console.log(isUserLogged, isAdminLogged, "selector", status)
+    // console.log(isUserLogged, isAdminLogged, "selector", status)
 
     const checkUserAuthentication = () => {
-        console.log("ek")
         if (status === "success") {
-            console.log("do")
 
             if (isAdminLogged) {
                 checkAdminProtectedRoutes()
@@ -58,7 +56,6 @@ const ProtectedRoute = ({ children }) => {
             setIsLoading(false)
 
         } else if (status === "error") {
-            console.log("teen")
             checkUnprotecedRoutes()
             setIsLoading(false)
         }
@@ -67,6 +64,7 @@ const ProtectedRoute = ({ children }) => {
 
 
     const checkAdminProtectedRoutes = () => {
+        // Admin logged In
         let myRoutes = [
             ADMINPROTECTEDROUTES.DASHBOARD,
             ADMINPROTECTEDROUTES.PRODUCT_ADD,
@@ -75,10 +73,7 @@ const ProtectedRoute = ({ children }) => {
             ADMINPROTECTEDROUTES.SERVICE_DETAIL
         ];
 
-        let currentPath = location.pathname;
-        // let path = currentPath.slice(0, 7) === "/detail" ? currentPath.slice(0, 7) : currentPath
-        // path = currentPath.slice(0, 8) === "/payment" ? currentPath.slice(0, 8) : path
-
+        let currentPath = location.pathname; 
         let pathNotFound = myRoutes.indexOf(currentPath) === -1;
 
         //If path not found then redirect admin to dashboard
@@ -89,8 +84,7 @@ const ProtectedRoute = ({ children }) => {
 
 
     const checkUserProtectedRoutes = () => {
-        console.log("protected me hai")
-
+        // User logged In
         let myRoutes = [
             NORMALROUTES.LANDING,
             NORMALROUTES.SHOP,
@@ -119,7 +113,6 @@ const ProtectedRoute = ({ children }) => {
 
 
     const checkUnprotecedRoutes = () => {
-        console.log("unprotected")
         // User not logged In
         let myRoutes = [
             NORMALROUTES.LANDING,

@@ -8,7 +8,8 @@ import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { shippingAdd, getShipping } from '../api/devApi';
+// import { shippingAdd, getShipping } from '../api/devApi';
+import { shippingAdd,getShipping } from '../api/shippingApi';
 import { setPrice, shippingAddress } from '../redux/reducers/orderSlice';
 
 const steps = [

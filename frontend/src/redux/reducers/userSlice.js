@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { tokenVerify } from "../../api/devApi";
+// import { tokenVerify } from "../../api/devApi";
+import { tokenVerify } from "../../api/userApi";
 import STATUSES from "../constants/status";
 import { getAdmin, getToken } from "../../utils/functions";
 
@@ -47,7 +48,6 @@ export const tokenVerificationAsync = () => {
       if (!token) {
         throw new Error("Token not found")
       }
-      console.log("ye chala")
 
       const admin = getAdmin() || false;
       const response = await tokenVerify({ admin });

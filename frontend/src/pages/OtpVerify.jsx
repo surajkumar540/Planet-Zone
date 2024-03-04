@@ -3,9 +3,9 @@ import { Typography, Box, CardMedia, FormControl, Button, TextField } from '@mui
 import otpImg from "../assets/Auth/otp.jpg"
 import { Link } from "react-router-dom";
 import { validateOtp } from '../utils/validate';
-import Header from '../components/Header/Header';
-import { otpVerfiy } from '../api/devApi';
-import { signup } from '../api/devApi';
+// import { otpVerfiy } from '../api/devApi';
+// import { signup } from '../api/devApi';
+import { otpVerify, signup } from '../api/userApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setUserLogged } from '../redux/reducers/userSlice';

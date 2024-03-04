@@ -6,10 +6,10 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Link,useNavigate } from "react-router-dom";
 import ForgetModal from '../components/Modals/ForgetModal';
 import { validateSignInPage } from '../utils/validate';
-import { login, forgetOtp } from '../api/devApi';
+// import { login, forgetOtp } from '../api/devApi';
+import { login,forgetOtp } from '../api/userApi';
 import { useDispatch } from 'react-redux';
 import { setUserLogged,setAdminLogged } from '../redux/reducers/userSlice';
-import Header from '../components/Header/Header';
 
 const Login = () => {
   const dispatch=useDispatch()

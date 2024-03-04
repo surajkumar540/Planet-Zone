@@ -15,7 +15,9 @@ import { Container, Paper, Divider } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
-import { createOrderApi, paymentInit, paymentSuccess } from "../api/devApi";
+// import { createOrderApi, paymentInit, paymentSuccess } from "../api/devApi";
+import { createOrderApi } from "../api/orderApi";
+import { paymentInit,paymentSuccess } from "../api/paymentApi";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../redux/reducers/cartSlice";
 

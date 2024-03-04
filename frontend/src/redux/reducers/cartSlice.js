@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchSingleProductApi } from "../../api/devApi";
+// import { fetchSingleProductApi } from "../../api/devApi";
+import { fetchSingleProductApi } from "../../api/productApi";
 import STATUSES from "../constants/status";
 
 const cartItems = localStorage.getItem("cart")

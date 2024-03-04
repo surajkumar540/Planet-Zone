@@ -4,7 +4,8 @@ import Avatar from '@mui/material/Avatar';
 import Banner from "../components/Tools/Banner";
 import Location from "../components/Tools/Location";
 import { useState } from "react";
-import { contactUsApi } from "../api/devApi";
+// import { contactUsApi } from "../api/devApi";
+import { contactUsApi } from "../api/contactApi";
 import Footer from "../components/Footer/Footer";
 
 const ContactUs = () => {

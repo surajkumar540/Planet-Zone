@@ -27,10 +27,6 @@ const ShowProducts = () => {
 
   useEffect(()=>{
     fetchSingleProduct()
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth' // Optional: Add smooth scrolling animation
-    });
   },[pid])
 
   return (

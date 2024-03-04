@@ -1,6 +1,6 @@
 import "./App.css";
-import { useEffect} from "react";
-import { Routes, Route } from "react-router-dom";
+import { useEffect, useLayoutEffect} from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -29,10 +29,16 @@ import ContactEmail from "./pages/ContactEmail";
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
 
   useEffect(() => {
     dispatch(fetchAllProducts());
   }, []);
+
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname])
 
 
   return (

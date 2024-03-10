@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import Loader from '../components/Tools/Loader';
 import Footer from '../components/Footer/Footer';
 import { Box, Typography, CardMedia, Grid } from '@mui/material';
 import FilterModal from "../components/Modals/FilterModal"
 import Product from '../components/Products/Product';
-import { getAllProducts } from '../api/devApi';
+import { getAllProducts } from '../api/productApi';
 import blankHome from "../assets/Images/admin_empty.webp"
+import ProductSkeleton from '../components/Tools/ProductSkeleton';
 
 const Categories = () => {
     const [productConstant, setProductConstant] = useState([])
     const [products, setProducts] = useState([]);
     const [category, setCategory] = useState("All")
-
+    const [isLoading, setIsLoading] = useState(false)
 
     const filterTypeFunction = () => {
         const resultArr = productConstant?.filter((item) => {
@@ -24,6 +24,7 @@ const Categories = () => {
 
 
     const fetchAllProducts = async () => {
+        setIsLoading(true)
         try {
             const response = await getAllProducts()
             setProducts(response?.data)
@@ -31,6 +32,7 @@ const Categories = () => {
         } catch (error) {
             console.log(error)
         }
+        setIsLoading(false)
     }
 
     useEffect(() => {
@@ -65,7 +67,7 @@ const Categories = () => {
 
             <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'} mb='5rem'>
 
-                {products.length === 0 &&
+                {!isLoading && products.length === 0 &&
                     <Box display={'flex'} justifyContent={'center'} flexDirection={'columnn'} alignContent={'center'}>
                         <Box>
                             <CardMedia
@@ -80,12 +82,19 @@ const Categories = () => {
 
                 <Box flexGrow={1} width={'95%'}>
                     <Grid container spacing={2} rowSpacing={{ xs: 1, sm: 2, md: 8 }}>
+
                         {
-                            products?.map((item, index) => {
-                                return <Grid key={index} item xs={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
+                            isLoading ? (
+                                Array(20).fill({})?.map((item, index) => {
+                                    return <Grid item key={index} xs={12} sm={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
+                                        <ProductSkeleton />
+                                    </Grid>
+                                })
+                            ) : (products?.map((item, index) => {
+                                return <Grid item key={index} xs={12} sm={6} md={4} lg={3} display={"flex"} justifyContent={"center"}>
                                     <Product key={index} obj={item} />
                                 </Grid>
-                            })
+                            }))
                         }
                     </Grid>
                 </Box>

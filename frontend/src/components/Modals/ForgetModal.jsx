@@ -4,9 +4,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
-import { forgetOtp } from '../../api/devApi';
+import { forgetOtp } from '../../api/userApi';
 import { useNavigate } from "react-router-dom"
-import { useSelector } from 'react-redux';
 import { useState } from 'react';
 
 const style = {
@@ -24,10 +23,9 @@ const style = {
 export default function ForgetModal() {
     const navigate = useNavigate()
     const [email,setEmail]=useState("")
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    // const emailRex = useSelector((state) => state.user.email);
 
     const handleSendForgetOtp = async () => {
 

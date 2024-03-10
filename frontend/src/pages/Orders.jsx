@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CardMedia, Typography, Box } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
-import { getAllOrders } from '../api/devApi';
+import { getAllOrders } from '../api/orderApi';
 import { useNavigate } from 'react-router-dom';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
 import blankHome from "../assets/Images/admin_empty.webp"
 
 const Orders = () => {

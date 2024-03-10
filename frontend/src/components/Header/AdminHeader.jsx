@@ -104,7 +104,7 @@ function AdminHeader(props) {
                 Add product
               </Button>
 
-              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/contactEmail'}>
+              <Button sx={{ color: 'white',textTransform:'capitalize' }} component={Link} to={'/mails'}>
                 Mails
               </Button>
 

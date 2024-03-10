@@ -8,8 +8,7 @@ const functions = require("../utils/functions");
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if(!email || !password)
-    {
+    if (!email || !password) {
       res.status(404).json({
         message: "Something is missing",
         status: false,
@@ -32,6 +31,7 @@ const loginController = async (req, res) => {
     if (!existingUser.emailVerify) {
       res.status(409).json({
         message: "Sign up to verify your account",
+        isVerified: false,
         status: false,
       });
       return;
@@ -46,12 +46,12 @@ const loginController = async (req, res) => {
       return;
     }
 
-    const token = await jwt.sign({ id: existingUser._id,admin: existingUser.isAdmin },process.env.SECRET_KEY,{ expiresIn: "7d" });
+    const token = await jwt.sign({ id: existingUser._id, admin: existingUser.isAdmin }, process.env.SECRET_KEY, { expiresIn: "7d" });
 
     res.status(200).json({
       message: "User login successfully",
-      isAdmin:existingUser.isAdmin,
-      userId:existingUser._id,
+      isAdmin: existingUser.isAdmin,
+      userId: existingUser._id,
       token: token,
       status: true,
     });
@@ -69,17 +69,11 @@ const loginController = async (req, res) => {
 
 
 
-
-
-
-
-
 const signupController = async (req, res) => {
   try {
-    const { firstName,lastName, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
 
-    if(!firstName||!email||!password||!confirmPassword)
-    {
+    if (!firstName || !email || !password || !confirmPassword) {
       res.status(404).json({
         message: "Something is missing",
         status: false,
@@ -111,6 +105,8 @@ const signupController = async (req, res) => {
     const otp = functions.generateOTP();
 
     if (!otpExist) {
+
+      // Date limit at Otp Model will also set represent the time when otp data will create
       const response = await Otp.create({
         email: email,
         otp: otp,
@@ -121,14 +117,18 @@ const signupController = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await User.create({
         firstName: firstName,
-        lastName:lastName,
+        lastName: lastName,
         email: email,
         password: hashedPassword,
       });
+
     } else {
+
+      // Limit for one day in otp is 3 times
       if (otpExist.registerOtpCount >= 3) {
-        const dateLimit = new Date(otpExist.dateLimit).getTime();
-        const todayDate = new Date().getTime();
+
+        const todayDate = new Date().getTime(); // Today's time
+        const dateLimit = new Date(otpExist.dateLimit).getTime(); // Time when otp data created
 
         //86400000 represent 1 day in millisecond if time is more than a day then reset count
         if (todayDate - dateLimit > 86400000) {
@@ -143,7 +143,10 @@ const signupController = async (req, res) => {
           });
           return;
         }
+
       } else {
+
+        // Increase registerOtpCount by 1
         const response = await Otp.findOneAndUpdate(
           { email: email },
           { otp: otp, registerOtpCount: otpExist.registerOtpCount + 1 }
@@ -158,12 +161,13 @@ const signupController = async (req, res) => {
       text: `Your Email verification Code is ${otp}`,
     };
 
-    mail(mailObj);
+    mail(mailObj); // Send mail by mail function
 
     res.status(201).json({
       message: "Otp sent successfully",
       status: true,
     });
+
   } catch (error) {
     res.status(400).json({
       message: "Error in signup",
@@ -184,40 +188,38 @@ const signupController = async (req, res) => {
 
 
 // For token verification
-const tokenController = async (req, res) => {
+const tokenVerificationController = async (req, res) => {
   try {
-      const body=req.body;
-      const admin=body.admin==='true'?true:false;
-      
-      const token=req.headers.authorization.split(" ")[1];
-      if(token)
-      {
-          const jwtResponse=jwt.verify(token,process.env.SECRET_KEY)
+    const body = req.body;
+    const admin = body.admin === 'true' ? true : false;
 
-          if(Object.keys(jwtResponse).length>0 && jwtResponse.admin===admin )
-          {
-              res.status(200).json({
-                  message: "Token is valid",
-                  status:true
-              });
-          }else{
-            res.status(401).json({
-              message: "Unauthorized user",
-              status: false,
-          });
-          }
-      }
-      else{
-          res.status(401).json({
-              message: "Unauthorized user",
-              status: false,
-          });
-      }
-  } catch (error) {
-      res.status(401).json({
+    const token = req.headers.authorization.split(" ")[1];
+    if (token) {
+      const jwtResponse = jwt.verify(token, process.env.SECRET_KEY)
+
+      if (Object.keys(jwtResponse).length > 0 && jwtResponse.admin === admin) {
+        res.status(200).json({
+          message: "Token is valid",
+          status: true
+        });
+      } else {
+        res.status(401).json({
           message: "Unauthorized user",
           status: false,
+        });
+      }
+    }
+    else {
+      res.status(401).json({
+        message: "Unauthorized user",
+        status: false,
       });
+    }
+  } catch (error) {
+    res.status(401).json({
+      message: "Unauthorized user",
+      status: false,
+    });
   }
 };
 
@@ -238,8 +240,7 @@ const otpController = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    if(!email||!otp)
-    {
+    if (!email || !otp) {
       res.status(404).json({
         message: "Something is missing",
         status: false,
@@ -248,6 +249,7 @@ const otpController = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email: email });
+
     //Check if person email already verified
     if (existingUser?.emailVerify) {
       res.status(200).json({
@@ -269,16 +271,20 @@ const otpController = async (req, res) => {
     }
 
     if (userOtpObj.otp === String(otp)) {
-      
+
+      //Create token for new user
       const token = await jwt.sign(
         { id: existingUser._id },
         process.env.SECRET_KEY,
         { expiresIn: "7d" }
       );
-      const user = await User.findOneAndUpdate({ email: email },{ emailVerify: true });
-      const otp = await Otp.findOneAndUpdate({ email: email },{ otp: "" });
+
+      // Update user email to verified and clear otp document data
+      const user = await User.findOneAndUpdate({ email: email }, { emailVerify: true });
+      const otp = await Otp.findOneAndUpdate({ email: email }, { otp: "" });
+      
       res.status(200).json({
-        token:token,
+        token: token,
         message: "Email verified successfully",
         status: true,
       });
@@ -307,11 +313,10 @@ const otpController = async (req, res) => {
 const forgetOtpController = async (req, res) => {
   try {
     const { email } = req.body;
-    
-    if(!email)
-    {
+
+    if (!email) {
       res.status(404).json({
-        message: "Enter email ",
+        message: "Enter your email",
         status: false,
       });
       return;
@@ -332,7 +337,7 @@ const forgetOtpController = async (req, res) => {
     //Check if user account is verified
     if (!existingUser.emailVerify) {
       res.status(409).json({
-        message: "Sign up to verify your account",
+        message: "Please verify your account",
         status: false,
       });
     }
@@ -343,39 +348,43 @@ const forgetOtpController = async (req, res) => {
 
     if (!otpExist) {
 
+      // Date limit at Otp Model will also set represent the time when otp document will create
       const response = await Otp.create({
         email: email,
         otp: otp,
         forgetOtpCount: 1,
         registerOtpCount: 0,
       });
-    
+
     } else {
       if (otpExist.forgetOtpCount >= 4) {
-        
-        const dateLimit = new Date(otpExist.dateLimit).getTime();
-        const todayDate = new Date().getTime();
+
+        const todayDate = new Date().getTime(); // Current time
+        const dateLimit = new Date(otpExist.dateLimit).getTime(); // Time at document created 1st time
 
         //86400000 represent 1 day in millisecond if time is more than a day then reset count
         if (todayDate - dateLimit > 86400000) {
-          
+
           const response = await Otp.findOneAndUpdate(
             { email: email },
             { otp: otp, forgetOtpCount: 1 }
           );
 
-        } 
+        }
         else {
+
           res.status(404).json({
             message: "Email limit exceed",
             status: false,
           });
           return;
+
         }
-      } 
+
+      }
       else {
 
-        const response = await Otp.findOneAndUpdate({ email: email },{ otp: otp, forgetOtpCount: otpExist.forgetOtpCount + 1 });
+        const response = await Otp.findOneAndUpdate({ email: email }, { otp: otp, forgetOtpCount: otpExist.forgetOtpCount + 1 });
 
       }
     }
@@ -389,14 +398,14 @@ const forgetOtpController = async (req, res) => {
 
     mail(mailObj);
 
-    
+
     res.status(201).json({
       message: "Forget Otp sent successfully",
       status: true,
     });
 
 
-  } 
+  }
   catch (error) {
     console.log(error);
     res.status(400).json({
@@ -422,10 +431,9 @@ const forgetOtpController = async (req, res) => {
 // Make new password
 const changePasswordController = async (req, res) => {
   try {
-    const { email,otp,password,confirmPassword } = req.body;
-    
-    if(!email || !otp|| !password|| !confirmPassword)
-    {
+    const { email, otp, password, confirmPassword } = req.body;
+
+    if (!email || !otp || !password || !confirmPassword) {
       res.status(404).json({
         message: "Something is missing",
         status: false,
@@ -452,8 +460,8 @@ const changePasswordController = async (req, res) => {
       return;
     }
 
-     //Check for password and confirmPassword
-     if (password !== confirmPassword) {
+    //Check for password and confirmPassword
+    if (password !== confirmPassword) {
       res.status(409).json({
         message: "Password and confirm password not matched",
         status: false,
@@ -464,17 +472,17 @@ const changePasswordController = async (req, res) => {
 
     //Check if otp already exist
     const otpExist = await Otp.findOne({ email: email });
-    if(!otpExist.otp)
-    {
+    if (!otpExist.otp) {
+
       //If otp not exists on collection
       res.status(404).json({
         message: "Please try again",
         status: false,
       });
       return;
+
     }
-    else if(otpExist.otp!==String(otp))
-    {
+    else if (otpExist.otp !== String(otp)) {
       //If otp didn't matched
       res.status(404).json({
         message: "Otp not matched",
@@ -482,10 +490,10 @@ const changePasswordController = async (req, res) => {
       });
       return;
     }
-    
-    //If everything is good then change password
+
+    //If everything is good then change password and update user document
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user=await User.findOneAndUpdate({email:email},{password:hashedPassword})
+    const user = await User.findOneAndUpdate({ email: email }, { password: hashedPassword })
 
     res.status(201).json({
       message: "Password changed successfully",
@@ -493,7 +501,7 @@ const changePasswordController = async (req, res) => {
     });
 
 
-  } 
+  }
   catch (error) {
 
     res.status(404).json({
@@ -518,36 +526,35 @@ const changePasswordController = async (req, res) => {
 //Get details of User Profile
 const getProfileController = async (req, res) => {
   try {
-    const userId=req.userId;
-    
-    if(!userId)
-    {
+    const userId = req.userId;
+
+    if (!userId) {
       res.status(404).json({
         message: "Something is wrong",
         status: false,
       });
       return;
     }
-    
+
     const existingUser = await User.findOne({ _id: userId });
-    const userDetailsObj={
-      firstName:existingUser.firstName,
-      lastName:existingUser.lastName,
-      email:existingUser.email,
-      gender:existingUser.gender,
-      linkedIn:existingUser.linkedIn,
-      twitter:existingUser.twitter,
-      phoneNo:existingUser.phoneNo,
-      address:existingUser.address
+    const userDetailsObj = {
+      firstName: existingUser.firstName,
+      lastName: existingUser.lastName,
+      email: existingUser.email,
+      gender: existingUser.gender,
+      linkedIn: existingUser.linkedIn,
+      twitter: existingUser.twitter,
+      phoneNo: existingUser.phoneNo,
+      address: existingUser.address
     }
-    
+
     res.status(201).json({
-      data:userDetailsObj,
+      data: userDetailsObj,
       status: true,
     });
 
 
-  } 
+  }
   catch (error) {
 
     res.status(404).json({
@@ -572,35 +579,34 @@ const getProfileController = async (req, res) => {
 //Set details of User Profile
 const setProfileController = async (req, res) => {
   try {
-    const userId=req.userId;
-    const {firstName="",lastName="",gender="",phoneNo="",linkedIn="",twitter="",address=""}=req.body;
-    
-    if(!userId)
-    {
+    const userId = req.userId;
+    const { firstName = "", lastName = "", gender = "", phoneNo = "", linkedIn = "", twitter = "", address = "" } = req.body;
+
+    if (!userId) {
       res.status(404).json({
         message: "Something is wrong",
         status: false,
       });
       return;
     }
-    
-    const user = await User.findOneAndUpdate({ _id: userId},{
-      firstName:firstName,
-      lastName:lastName,
-      gender:gender,
-      linkedIn:linkedIn,
-      twitter:twitter,
-      phoneNo:phoneNo,
-      address:address
+
+    const user = await User.findOneAndUpdate({ _id: userId }, {
+      firstName: firstName,
+      lastName: lastName,
+      gender: gender,
+      linkedIn: linkedIn,
+      twitter: twitter,
+      phoneNo: phoneNo,
+      address: address
     });
-    
+
     res.status(200).json({
-      message:"Data updated successfully",
+      message: "Data updated successfully",
       status: true,
     });
 
 
-  } 
+  }
   catch (error) {
 
     res.status(404).json({
@@ -619,7 +625,7 @@ const setProfileController = async (req, res) => {
 module.exports = {
   loginController,
   signupController,
-  tokenController,
+  tokenVerificationController,
   otpController,
   forgetOtpController,
   changePasswordController,

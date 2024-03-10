@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Paper, Typography, TextField, Button, Grid, Box, Divider, Checkbox } from '@mui/material';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Header from '../components/Header/Header';
+import { Container, Paper, Typography, TextField, Button, Grid, Box, Divider } from '@mui/material';
 import Footer from '../components/Footer/Footer';
-import { useSelector } from 'react-redux';
-import { createOrderApi } from '../api/devApi';
 import { useParams } from 'react-router-dom';
-import { getSingleOrder } from '../api/devApi';
+import { getSingleOrder } from '../api/orderApi';
 
 const steps = [
     'Shipping Address',
@@ -51,23 +45,11 @@ const OrderDetails = () => {
             console.log(error)
         }
     }
-    console.log(products)
 
 
     useEffect(()=>{
         fetchOrder()
     },[])
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const dummy = {
-            name: 'suraj',
-            age: '12'
-        }
-
-        const res = await createOrderApi(dummy);
-        console.log(res, "dhh")
-    };
 
 
 
@@ -79,7 +61,6 @@ const OrderDetails = () => {
 
                     <Container maxWidth="lg" >
                         <Paper elevation={3} sx={{ padding: 3 }}  >
-                            <form onSubmit={handleSubmit}>
 
                                 <Box mt={2}>
                                     <Typography variant="h4" gutterBottom>
@@ -124,7 +105,6 @@ const OrderDetails = () => {
                                         <img src="https://img.freepik.com/free-vector/customer-woman-shopping-with-barrow-concept_40876-2550.jpg?w=740&t=st=1687329604~exp=1687330204~hmac=7c854ca75f7d59f0ac155df4ea38ea0898b688e17659f7ffd162d3e74c200efe" width='100%' />
                                     </Box>
                                 </Box>
-                            </form>
                         </Paper>
                     </Container>
 

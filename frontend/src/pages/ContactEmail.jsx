@@ -10,7 +10,7 @@ import DeleteModal from '../components/Modals/DeleteModal';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { deleteMail, getContactUs } from '../api/devApi';
+import { deleteMail, getContactUs } from '../api/contactApi';
 import blankHome from "../assets/Images/admin_empty.webp"
 
 export default function ContactEmail() {

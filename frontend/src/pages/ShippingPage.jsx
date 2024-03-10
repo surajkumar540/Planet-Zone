@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
-// import { makeStyles } from '@mui/styles';
 import { Container, Paper, Typography, TextField, Button, Grid, Box } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { shippingAdd, getShipping } from '../api/devApi';
-import { setPrice, shippingAddress } from '../redux/reducers/orderSlice';
+import { shippingAdd,getShipping } from '../api/shippingApi';
+import { shippingAddress } from '../redux/reducers/orderSlice';
 
 const steps = [
   'Shipping Address',
@@ -19,7 +17,6 @@ const ShippingPage = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate()
-  const [isAddress, setIsAddress] = useState();
   const [formValues, setFormValues] = useState({ fullName: "", phoneNo: "", state: "", city: "", address: "", pinCode: "", landMark: "" })
 
 
@@ -31,12 +28,10 @@ const ShippingPage = () => {
     try {
 
       const response = await getShipping();
-      // console.log(response,"dd")
       const { fullName, phoneNo, state, city, address, pinCode, landMark } = response?.data;
       setFormValues({
         fullName, phoneNo, state, city, address, pinCode, landMark
       })
-      // setFormValues()
     }
     catch (error) {
       console.log(error);

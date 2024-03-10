@@ -1,7 +1,7 @@
 import React,{useEffect, useState} from "react";
 import { Box, TextField, Typography,FormControl,InputLabel,MenuItem,Select,Button } from "@mui/material";
 import { getUserId } from "../../utils/functions";
-import { addSingleProduct } from "../../api/devApi";
+import { addSingleProduct } from "../../api/productApi";
 import { useNavigate } from "react-router-dom";
 
 const AddProduct = () => {

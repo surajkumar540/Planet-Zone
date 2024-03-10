@@ -2,7 +2,7 @@ import React,{useEffect, useState} from 'react';
 import ShowProduct from './ShowProduct';
 import Products from '../Products/Products';
 import { useSelector } from 'react-redux';
-import { fetchSingleProductApi } from '../../api/devApi';
+import { fetchSingleProductApi } from '../../api/productApi';
 import { useParams } from 'react-router-dom';
 import Footer from '../Footer/Footer';
 
@@ -26,10 +26,6 @@ const ShowProducts = () => {
 
   useEffect(()=>{
     fetchSingleProduct()
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth' // Optional: Add smooth scrolling animation
-    });
   },[pid])
 
   return (

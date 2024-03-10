@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { Typography, Box, CardMedia, FormControl, Button, TextField } from '@mui/material';
-import otpImg from "../assets/Auth/otp.jpg"
 import { Link } from "react-router-dom";
+import otpImg from "../assets/Auth/otp.jpg"
+import { useNavigate } from 'react-router-dom';
 import { validateOtp } from '../utils/validate';
-// import { otpVerfiy } from '../api/devApi';
-// import { signup } from '../api/devApi';
 import { otpVerify, signup } from '../api/userApi';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { setUserLogged } from '../redux/reducers/userSlice';
+import { Typography, Box, CardMedia, FormControl, Button, TextField } from '@mui/material';
 
 const OtpVerify = () => {
 
@@ -49,14 +47,13 @@ const OtpVerify = () => {
     }
 
 
-    const dummyData = {
+    const apiData = {
       "otp": formValues.number,
       "email": emailRex
     }
 
     try {
-      const response = await otpVerfiy(dummyData);
-      // console.log(response);
+      const response = await otpVerify(apiData);
       if (response.status && response.token) {
         localStorage.setItem("token", response.token);
         dispatch(setUserLogged());
@@ -91,7 +88,7 @@ const OtpVerify = () => {
 
 
   const resendOtp = async () => {
-    const dummyData = {
+    const apiData = {
       "firstName": userObj.firstName,
       "lastName": userObj.lastName,
       "email": userObj.email,
@@ -100,7 +97,7 @@ const OtpVerify = () => {
     }
 
     try {
-      const response = await signup(dummyData)
+      const response = await signup(apiData)
 
       if (response.status === true) {
         navigate("/otp")

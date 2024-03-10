@@ -11,6 +11,7 @@ import Logout from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setLoggedOut } from "../../redux/reducers/userSlice";
+import { stringAvatar } from "../../utils/tools";
 
 export default function AccountMenu() {
   const navigate=useNavigate()
@@ -42,7 +43,7 @@ export default function AccountMenu() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}></Avatar>
+            <Avatar sx={{ width: 32, height: 32 }} {...stringAvatar('Jai')} ></Avatar>
           </IconButton>
         </Tooltip>
       </Box>

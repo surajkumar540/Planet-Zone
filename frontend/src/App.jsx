@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useLayoutEffect} from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -24,7 +24,7 @@ import Error from "./components/Tools/Error";
 import Orders from "./pages/Orders";
 import Shop from "./pages/Shop";
 import ContactEmail from "./pages/ContactEmail";
-  import EditProduct from "./components/Admin/EditProduct";
+import EditProduct from "./components/Admin/EditProduct";
 
 function App() {
   const isAdminLogged = useSelector((state) => state?.user?.isAdminLogged);
@@ -57,7 +57,7 @@ function App() {
         <Route path="/editProduct/:pid" element={<EditProduct />} />
         <Route path="/mails" element={<ContactEmail />} />
         <Route path="*" element={<Error />} />
-    
+
         <Route path="/shipping" element={<ShippingPage />} />
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />

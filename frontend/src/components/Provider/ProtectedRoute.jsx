@@ -1,19 +1,19 @@
-"use client"
-import { useEffect, useLayoutEffect, useState } from "react";
-import { useDispatch, useSelector } from 'react-redux';
 import Loader from "../Tools/Loader";
-import { tokenVerificationAsync } from "../../redux/reducers/userSlice";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useLayoutEffect, useState } from "react";
+import { tokenVerificationAsync } from "../../redux/reducers/userSlice";
 
-export const ADMINPROTECTEDROUTES = Object.freeze({
+
+const ADMINROUTESOBJ = Object.freeze({
     DASHBOARD: '/dashboard',
     PRODUCT_ADD: '/addProduct',
     EDIT_PRODUCT: '/editProduct',
     CONTACT_EMAIL: '/mails',
 })
 
-export const USERPROTECTEDROUTES = Object.freeze({
-    SINGLE_ORDER:"/order",
+const USERROUTESOBJ = Object.freeze({
+    SINGLE_ORDER: "/order",
     ORDERS: "/orders"
 })
 
@@ -29,8 +29,6 @@ const NORMALROUTES = Object.freeze({
 
 
 
-
-
 //check if you are on the client (browser) or server
 const isBrowser = () => typeof window !== "undefined";
 
@@ -39,51 +37,50 @@ const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
     const { status, isUserLogged, isAdminLogged } = useSelector((state) => state?.user)
-    // console.log(isUserLogged, isAdminLogged, "selector", status)
 
-    const checkUserAuthentication = () => {
+    const fetchUserData = () => {
         if (status === "success") {
 
             if (isAdminLogged) {
-                checkAdminProtectedRoutes()
+                checkInAdminRoutes()
             }
             else if (isUserLogged) {
-                checkUserProtectedRoutes()
+                checkInUserRoutes()
             }
             else {
-                checkUnprotecedRoutes()
+                checkInUnprotectedRoutes()
             }
             setIsLoading(false)
 
         } else if (status === "error") {
-            checkUnprotecedRoutes()
+            checkInUnprotectedRoutes()
             setIsLoading(false)
         }
 
     }
 
 
-    const checkAdminProtectedRoutes = () => {
+    const checkInAdminRoutes = () => {
         // Admin logged In
         let myRoutes = [
-            ADMINPROTECTEDROUTES.DASHBOARD,
-            ADMINPROTECTEDROUTES.PRODUCT_ADD,
-            ADMINPROTECTEDROUTES.EDIT_PRODUCT,
-            ADMINPROTECTEDROUTES.CONTACT_EMAIL,
-            ADMINPROTECTEDROUTES.SERVICE_DETAIL
+            ADMINROUTESOBJ.DASHBOARD,
+            ADMINROUTESOBJ.PRODUCT_ADD,
+            ADMINROUTESOBJ.EDIT_PRODUCT,
+            ADMINROUTESOBJ.CONTACT_EMAIL,
+            ADMINROUTESOBJ.SERVICE_DETAIL
         ];
 
-        let currentPath = location.pathname; 
+        let currentPath = location.pathname;
         let pathNotFound = myRoutes.indexOf(currentPath) === -1;
 
         //If path not found then redirect admin to dashboard
         if (isBrowser() && pathNotFound) {
-            navigate(ADMINPROTECTEDROUTES.DASHBOARD);
+            navigate(ADMINROUTESOBJ.DASHBOARD);
         }
     }
 
 
-    const checkUserProtectedRoutes = () => {
+    const checkInUserRoutes = () => {
         // User logged In
         let myRoutes = [
             NORMALROUTES.LANDING,
@@ -91,16 +88,15 @@ const ProtectedRoute = ({ children }) => {
             NORMALROUTES.ABOUT,
             NORMALROUTES.CONTACT,
             NORMALROUTES.CART,
-            USERPROTECTEDROUTES.ORDERS,
-            USERPROTECTEDROUTES.SINGLE_ORDER,
+            USERROUTESOBJ.ORDERS,
+            USERROUTESOBJ.SINGLE_ORDER,
         ];
 
         let currentPath = location.pathname;
-        
+
         // Our order path is /order/12345 something, so we have to slice path to compare
-        if(currentPath.slice(0,6)===USERPROTECTEDROUTES.SINGLE_ORDER)
-        {
-            currentPath="/order"
+        if (currentPath.slice(0, 6) === USERROUTESOBJ.SINGLE_ORDER) {
+            currentPath = "/order"
         }
 
         let pathNotFound = myRoutes.indexOf(currentPath) === -1;
@@ -112,7 +108,7 @@ const ProtectedRoute = ({ children }) => {
     }
 
 
-    const checkUnprotecedRoutes = () => {
+    const checkInUnprotectedRoutes = () => {
         // User not logged In
         let myRoutes = [
             NORMALROUTES.LANDING,
@@ -140,10 +136,11 @@ const ProtectedRoute = ({ children }) => {
 
     useEffect(() => {
         // Fetch user details when render
-        checkUserAuthentication()
+        fetchUserData()
     }, [isUserLogged, isAdminLogged, status])
 
     useLayoutEffect(() => {
+        // Set loading true
         setIsLoading(true)
         dispatch(tokenVerificationAsync());
     }, [])

@@ -2,10 +2,10 @@ import axios from 'axios';
 import { getToken } from '../utils/functions';
 
 
-const basePublicUrl = import.meta.env.VITE_APP_PUBLIC_URL;
+const basePublicUrl = import.meta.env.VITE_PUBLIC_URL
 
 const instance = axios.create({
-  baseURL: "https://planet-backend-92ic.onrender.com"
+  baseURL: basePublicUrl
 });
 
 // Add request interceptor
@@ -37,7 +37,6 @@ instance.interceptors.response.use(
 
     if (error?.response?.status === 401) {
       //   refreshTokenApi();
-      //   AllToast.info("Please try again")
     } else {
       return new Promise((resolve, reject) => {
         reject(error);

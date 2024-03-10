@@ -4,9 +4,14 @@ const User=require("../models/UserModel")
 const getShippingAdd=async(req,res)=>{
     try{
         const userId=req.userId;
-        console.log(userId)
         const result=await Shipping.findOne({User:userId})
-        
+        if(!result){
+            res.status(200).json({
+                data:{},
+                status:false
+            })
+            return;
+        }
         res.status(200).json({
             data:result.shippingAddress,
             status:true

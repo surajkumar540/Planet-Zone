@@ -50,7 +50,6 @@ export const tokenVerificationAsync = () => {
 
       const admin = getAdmin() || false;
       const response = await tokenVerify({ admin });
-
       if (response.status) {
 
         if (admin) {

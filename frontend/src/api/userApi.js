@@ -43,7 +43,7 @@ export const changePassword = async (data) => {
 
 
 export const tokenVerify = async (data) => {
-    const response = await axios.post(`/api/tokenVerification`,data,headerData);
+    const response = await axios.post(`/api/tokenVerification`,data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
@@ -59,7 +59,7 @@ export const tokenVerify = async (data) => {
 
 
 export const getProfile = async () => {
-    const response = await axios.get(`/api/profile`, headerData);
+    const response = await axios.get(`/api/profile`);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }

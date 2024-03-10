@@ -106,7 +106,7 @@ const signupController = async (req, res) => {
 
     if (!otpExist) {
 
-      // Date limit will also set represent the time when otp data will create
+      // Date limit at Otp Model will also set represent the time when otp data will create
       const response = await Otp.create({
         email: email,
         otp: otp,
@@ -249,6 +249,7 @@ const otpController = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email: email });
+
     //Check if person email already verified
     if (existingUser?.emailVerify) {
       res.status(200).json({
@@ -271,13 +272,17 @@ const otpController = async (req, res) => {
 
     if (userOtpObj.otp === String(otp)) {
 
+      //Create token for new user
       const token = await jwt.sign(
         { id: existingUser._id },
         process.env.SECRET_KEY,
         { expiresIn: "7d" }
       );
+
+      // Update user email to verified and clear otp document data
       const user = await User.findOneAndUpdate({ email: email }, { emailVerify: true });
       const otp = await Otp.findOneAndUpdate({ email: email }, { otp: "" });
+      
       res.status(200).json({
         token: token,
         message: "Email verified successfully",
@@ -311,7 +316,7 @@ const forgetOtpController = async (req, res) => {
 
     if (!email) {
       res.status(404).json({
-        message: "Enter email ",
+        message: "Enter your email",
         status: false,
       });
       return;
@@ -332,7 +337,7 @@ const forgetOtpController = async (req, res) => {
     //Check if user account is verified
     if (!existingUser.emailVerify) {
       res.status(409).json({
-        message: "Sign up to verify your account",
+        message: "Please verify your account",
         status: false,
       });
     }
@@ -343,6 +348,7 @@ const forgetOtpController = async (req, res) => {
 
     if (!otpExist) {
 
+      // Date limit at Otp Model will also set represent the time when otp document will create
       const response = await Otp.create({
         email: email,
         otp: otp,
@@ -353,8 +359,8 @@ const forgetOtpController = async (req, res) => {
     } else {
       if (otpExist.forgetOtpCount >= 4) {
 
-        const dateLimit = new Date(otpExist.dateLimit).getTime();
-        const todayDate = new Date().getTime();
+        const todayDate = new Date().getTime(); // Current time
+        const dateLimit = new Date(otpExist.dateLimit).getTime(); // Time at document created 1st time
 
         //86400000 represent 1 day in millisecond if time is more than a day then reset count
         if (todayDate - dateLimit > 86400000) {
@@ -366,12 +372,15 @@ const forgetOtpController = async (req, res) => {
 
         }
         else {
+
           res.status(404).json({
             message: "Email limit exceed",
             status: false,
           });
           return;
+
         }
+
       }
       else {
 
@@ -464,12 +473,14 @@ const changePasswordController = async (req, res) => {
     //Check if otp already exist
     const otpExist = await Otp.findOne({ email: email });
     if (!otpExist.otp) {
+
       //If otp not exists on collection
       res.status(404).json({
         message: "Please try again",
         status: false,
       });
       return;
+
     }
     else if (otpExist.otp !== String(otp)) {
       //If otp didn't matched
@@ -480,7 +491,7 @@ const changePasswordController = async (req, res) => {
       return;
     }
 
-    //If everything is good then change password
+    //If everything is good then change password and update user document
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.findOneAndUpdate({ email: email }, { password: hashedPassword })
 

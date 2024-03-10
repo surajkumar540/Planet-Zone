@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-// import { fetchSingleProductApi } from "../../api/devApi";
 import { fetchSingleProductApi } from "../../api/productApi";
 import STATUSES from "../constants/status";
 
@@ -69,7 +68,7 @@ export const addToCartAsync = (getObj) => {
   return async function addToCartThunk(dispatch) {    
     try {
         dispatch(setStatus(STATUSES.LOADING))
-        const response = await fetchSingleProductApi(getObj.id);
+        const response = (getObj.id);
         if (response.status) {
                 const product = response.data;
                 const newObj = {

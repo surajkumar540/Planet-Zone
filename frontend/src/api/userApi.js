@@ -1,18 +1,7 @@
 import axios from "./axios"
 
-const headerData =
-{
-    headers: {
-        'Content-Type': 'application/json'
-    }
-}
-
-//////-------------------------------///////////
-///////-------Authentication -------------////
-//////-------------------------------///////////
-
 export const signup = async (data) => {
-    const response = await axios.post(`/api/signup`, data, headerData);
+    const response = await axios.post(`/api/signup`, data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
@@ -20,7 +9,7 @@ export const signup = async (data) => {
 }
 
 export const login = async (data) => {
-    const response = await axios.post(`/api/login`, data, headerData);
+    const response = await axios.post(`/api/login`, data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
@@ -28,7 +17,7 @@ export const login = async (data) => {
 }
 
 export const otpVerify = async (data) => {
-    const response = await axios.post(`/api/otpVerify`, data, headerData);
+    const response = await axios.post(`/api/otpVerify`, data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
@@ -37,7 +26,7 @@ export const otpVerify = async (data) => {
 
 
 export const forgetOtp = async (data) => {
-    const response = await axios.post(`/api/forgetOtp`, data, headerData);
+    const response = await axios.post(`/api/forgetOtp`, data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
@@ -45,7 +34,7 @@ export const forgetOtp = async (data) => {
 }
 
 export const changePassword = async (data) => {
-    const response = await axios.post(`/api/changePassword`, data, headerData);
+    const response = await axios.post(`/api/changePassword`, data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }
@@ -79,7 +68,7 @@ export const getProfile = async () => {
 
 
 export const setProfile = async (data) => {
-    const response = await axios.post(`/api/profile`, data, headerData);
+    const response = await axios.post(`/api/profile`, data);
     if (!response.statusText === "OK") {
         throw new Error("Something is wrong.");
     }

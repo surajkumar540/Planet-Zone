@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, TextField, CardMedia, InputLabel, MenuItem, Select, FormControl, Button, Input, InputAdornment } from "@mui/material";
+import { Box, Typography, TextField, CardMedia, InputLabel, MenuItem, Select, FormControl, Button} from "@mui/material";
 import C from "../assets/Auth/c.jpg"
-// import { getProfile, setProfile } from "../api/devApi";
 import { getProfile, setProfile } from "../api/userApi";
 import Footer from "../components/Footer/Footer";
 

@@ -3,9 +3,7 @@ import { Typography, Box, CardMedia, FormControl, IconButton, InputAdornment, In
 import signupImg from "../assets/Auth/change.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link } from "react-router-dom"
 import { validateChangePassword } from '../utils/validate';
-// import { changePassword } from '../api/devApi';
 import { changePassword } from '../api/userApi';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-// import { tokenVerify } from "../../api/devApi";
 import { tokenVerify } from "../../api/userApi";
 import STATUSES from "../constants/status";
 import { getAdmin, getToken } from "../../utils/functions";

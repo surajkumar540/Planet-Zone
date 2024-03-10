@@ -1,6 +1,5 @@
 import React from "react";
 import { useState } from "react";
-import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import Progress from "../components/Tools/Progress";
 import {
@@ -15,7 +14,6 @@ import { Container, Paper, Divider } from "@mui/material";
 import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
-// import { createOrderApi, paymentInit, paymentSuccess } from "../api/devApi";
 import { createOrderApi } from "../api/orderApi";
 import { paymentInit,paymentSuccess } from "../api/paymentApi";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +41,6 @@ const PaymentMethod = () => {
     }
     dispatch(paymentMethod(selectedOption));
 
-    // navigate("/order");
   };
 
   const handleCashPayment = async () => {

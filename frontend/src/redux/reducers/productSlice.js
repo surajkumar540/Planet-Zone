@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-// import { getAllProducts } from "../../api/devApi";
 import { getAllProducts } from "../../api/productApi";
 import STATUSES from "../constants/status";
 

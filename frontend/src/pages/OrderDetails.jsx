@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Container, Paper, Typography, TextField, Button, Grid, Box, Divider } from '@mui/material';
 import Footer from '../components/Footer/Footer';
 import { useParams } from 'react-router-dom';
-// import { getSingleOrder } from '../api/devApi';
 import { getSingleOrder } from '../api/orderApi';
 
 const steps = [

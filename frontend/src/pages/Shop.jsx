@@ -3,7 +3,6 @@ import Footer from '../components/Footer/Footer';
 import { Box, Typography, CardMedia, Grid } from '@mui/material';
 import FilterModal from "../components/Modals/FilterModal"
 import Product from '../components/Products/Product';
-// import { getAllProducts } from '../api/devApi';
 import { getAllProducts } from '../api/productApi';
 import blankHome from "../assets/Images/admin_empty.webp"
 import ProductSkeleton from '../components/Tools/ProductSkeleton';

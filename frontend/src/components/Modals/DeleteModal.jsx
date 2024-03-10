@@ -3,8 +3,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import TextField from '@mui/material/TextField';
-// import { deleteAllMails } from '../../api/devApi';
 import { deleteAllMails } from '../../api/contactApi';
 
 const style = {
@@ -21,7 +19,7 @@ const style = {
 };
 
 export default function DeleteModal({fetchAllMails=false}) {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 

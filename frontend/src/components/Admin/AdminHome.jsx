@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import ProductRow from '../Table/ProductRow'
 import ProductHeading from '../Table/ProductHeading'
-// import { getAllProducts } from '../../api/devApi'
 import { getAllProducts } from '../../api/productApi';
 import { Box, CardMedia, Typography, Button } from "@mui/material";
 import blankHome from "../../assets/Images/admin_empty.webp"

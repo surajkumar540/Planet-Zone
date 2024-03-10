@@ -105,6 +105,8 @@ const signupController = async (req, res) => {
     const otp = functions.generateOTP();
 
     if (!otpExist) {
+
+      // Date limit will also set represent the time when otp data will create
       const response = await Otp.create({
         email: email,
         otp: otp,
@@ -119,12 +121,14 @@ const signupController = async (req, res) => {
         email: email,
         password: hashedPassword,
       });
+
     } else {
 
       // Limit for one day in otp is 3 times
       if (otpExist.registerOtpCount >= 3) {
-        const dateLimit = new Date(otpExist.dateLimit).getTime();
-        const todayDate = new Date().getTime();
+
+        const todayDate = new Date().getTime(); // Today's time
+        const dateLimit = new Date(otpExist.dateLimit).getTime(); // Time when otp data created
 
         //86400000 represent 1 day in millisecond if time is more than a day then reset count
         if (todayDate - dateLimit > 86400000) {
@@ -139,7 +143,10 @@ const signupController = async (req, res) => {
           });
           return;
         }
+
       } else {
+
+        // Increase registerOtpCount by 1
         const response = await Otp.findOneAndUpdate(
           { email: email },
           { otp: otp, registerOtpCount: otpExist.registerOtpCount + 1 }
@@ -160,7 +167,6 @@ const signupController = async (req, res) => {
       message: "Otp sent successfully",
       status: true,
     });
-    // We will store user data after verification of user so that unnecessary data will not save
 
   } catch (error) {
     res.status(400).json({
@@ -182,7 +188,7 @@ const signupController = async (req, res) => {
 
 
 // For token verification
-const tokenController = async (req, res) => {
+const tokenVerificationController = async (req, res) => {
   try {
     const body = req.body;
     const admin = body.admin === 'true' ? true : false;
@@ -608,7 +614,7 @@ const setProfileController = async (req, res) => {
 module.exports = {
   loginController,
   signupController,
-  tokenController,
+  tokenVerificationController,
   otpController,
   forgetOtpController,
   changePasswordController,

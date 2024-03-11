@@ -541,9 +541,6 @@ const getProfileController = async (req, res) => {
       firstName: existingUser.firstName,
       lastName: existingUser.lastName,
       email: existingUser.email,
-      gender: existingUser.gender,
-      linkedIn: existingUser.linkedIn,
-      twitter: existingUser.twitter,
       phoneNo: existingUser.phoneNo,
       address: existingUser.address
     }
@@ -580,7 +577,7 @@ const getProfileController = async (req, res) => {
 const setProfileController = async (req, res) => {
   try {
     const userId = req.userId;
-    const { firstName = "", lastName = "", gender = "", phoneNo = "", linkedIn = "", twitter = "", address = "" } = req.body;
+    const { firstName = "", lastName = "", phoneNo = "", address = "" } = req.body;
 
     if (!userId) {
       res.status(404).json({
@@ -593,9 +590,6 @@ const setProfileController = async (req, res) => {
     const user = await User.findOneAndUpdate({ _id: userId }, {
       firstName: firstName,
       lastName: lastName,
-      gender: gender,
-      linkedIn: linkedIn,
-      twitter: twitter,
       phoneNo: phoneNo,
       address: address
     });

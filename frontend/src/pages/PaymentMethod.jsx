@@ -15,7 +15,7 @@ import { paymentMethod } from "../redux/reducers/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { loadScript } from "../utils/functions";
 import { createOrderApi } from "../api/orderApi";
-import { paymentInit,paymentSuccess } from "../api/paymentApi";
+import { paymentInit, paymentSuccess } from "../api/paymentApi";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../redux/reducers/cartSlice";
 
@@ -49,11 +49,11 @@ const PaymentMethod = () => {
         cart: cart,
         shippingAddress: shipping,
         paymentId: {},
-        onlinePayment:false
+        onlinePayment: false
       }
       const order = await createOrderApi(apiData)
       navigate(`/order/${order?.orderId}`)
-                dispatch(clearCart())
+      dispatch(clearCart())
     } catch (error) {
       console.log(error)
     }

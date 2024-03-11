@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, TextField, CardMedia, InputLabel, MenuItem, Select, FormControl, Button} from "@mui/material";
+import { Box, Typography, TextField, CardMedia, InputLabel, MenuItem, Select, FormControl, Button } from "@mui/material";
 import C from "../assets/Auth/c.jpg"
 import { getProfile, setProfile } from "../api/userApi";
 import Footer from "../components/Footer/Footer";
@@ -8,7 +8,6 @@ const Profile = () => {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
-  const [gender, setGender] = useState("")
   const [phoneNo, setPhoneNo] = useState("")
   const [linkedIn, setLinkedIn] = useState("")
   const [twitter, setTwitter] = useState("")
@@ -20,7 +19,6 @@ const Profile = () => {
         firstName,
         lastName,
         email,
-        gender,
         phoneNo,
         linkedIn,
         twitter,
@@ -44,7 +42,6 @@ const Profile = () => {
       setLastName(data.lastName);
       setEmail(data.email);
       setPhoneNo(data.phoneNo)
-      setGender(data.gender)
       setLinkedIn(data.linkedIn)
       setTwitter(data.twitter)
       setAddress(data.address)
@@ -95,38 +92,6 @@ const Profile = () => {
 
             </Box>
 
-            <Box display={'flex'} width={{ xs: '100%', sm: '80%' }} mb='1rem'>
-              <Box flex={0.5}>
-                <FormControl sx={{ width: "95%" }} >
-                  <InputLabel id="demo-simple-select-autowidth-label">Gender</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-autowidth-label"
-                    id="demo-simple-select-autowidth"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    autoWidth
-                    disabled={edit === false ? true : false}
-                    label="Gender"
-                  >
-                    <MenuItem value={'male'}>Male</MenuItem>
-                    <MenuItem value={'female'}>Female</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box flex={0.5} display={'flex'} justifyContent={'flex-end'}>
-                <TextField disabled={edit === false ? true : false} value={phoneNo} onChange={(e) => setPhoneNo(e.target.value)} id="outlined-basic" variant="outlined" sx={{ width: "95%" }} label="Phone no" />
-              </Box>
-            </Box>
-
-
-            <Box display={'flex'} my={'1.5rem'} width={{ xs: '100%', sm: '80%' }}>
-              <Box flex={0.5}>
-                <TextField disabled={edit === false ? true : false} value={linkedIn} onChange={(e) => setLinkedIn(e.target.value)} id="outlined-basic" variant="outlined" sx={{ width: "95%" }} label="Linked In" />
-              </Box>
-              <Box flex={0.5} display={'flex'} justifyContent={'flex-end'}>
-                <TextField disabled={edit === false ? true : false} value={twitter} onChange={(e) => setTwitter(e.target.value)} id="outlined-basic" variant="outlined" sx={{ width: "95%" }} label="Twitter" />
-              </Box>
-            </Box>
 
             <Box display={'flex'} my={'1.5rem'} width={{ xs: '100%', sm: '80%' }}>
               <TextField disabled={edit === false ? true : false}

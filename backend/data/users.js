@@ -9,10 +9,7 @@ const users=[
         isAdmin:true,
         emailVerify:true,
         phoneNo:'',
-        linkedIn:"",
-        twitter:"",
         address:"",
-        gender:"male"
     },
     {
         firstName:'admin',
@@ -22,8 +19,6 @@ const users=[
         isAdmin:true,
         emailVerify:true,
         phoneNo:'',
-        linkedIn:"",
-        twitter:"",
         address:"",
         gender:"male"
     }

@@ -24,7 +24,7 @@ const otpSchema=mongoose.Schema({
         require:true,
         default:Date.now()
     }
-},{timestamps:true})
+})
 
 
 const Otp=mongoose.model("Otp",otpSchema);

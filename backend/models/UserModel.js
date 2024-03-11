@@ -16,26 +16,6 @@ const userSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    gender:{
-        type:String,
-        default:""
-    },
-    phoneNo:{
-        type:String,
-        default:""
-    },
-    linkedIn:{
-        type:String,
-        default:""
-    },
-    twitter:{
-        type:String,
-        default:""
-    },
-    address:{
-        type:String,
-        default:""
-    },
     emailVerify:{
         type:Boolean,
         required:true,

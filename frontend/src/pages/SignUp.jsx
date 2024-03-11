@@ -3,7 +3,7 @@ import { Typography, Box, CardMedia, FormControl, IconButton, TextField, InputAd
 import signupImg from "../assets/Auth/signup.jpg"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link,useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { validateSignUpPage } from '../utils/validate';
 import { signup } from '../api/userApi';
 import { createAccount } from '../redux/reducers/userSlice';
@@ -11,20 +11,20 @@ import { useDispatch } from 'react-redux';
 
 const SignUp = () => {
   const dispatch = useDispatch()
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const [formValues, setFormValues] = useState({ firstName: '',lastName: '', email: '', password: '', confirmPassword: '' });
+  const [formValues, setFormValues] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConrfirmPassword = () => setShowConfirmPassword((show) => !show);
 
-  const clearFormValues=()=>{
-    setFormValues({ firstName: '',lastName:"", email: '', password: '', confirmPassword: '' });
+  const clearFormValues = () => {
+    setFormValues({ firstName: '', lastName: "", email: '', password: '', confirmPassword: '' });
     setFormErrors({})
-}
+  }
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -33,18 +33,17 @@ const SignUp = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const newObject={...formValues,[name]:value};
-    setFormValues({...newObject});
+    const newObject = { ...formValues, [name]: value };
+    setFormValues({ ...newObject });
 
-    if(isSubmit)
-    {    
-        const errorObj = validateSignUpPage(newObject);
-        setFormErrors(errorObj);
+    if (isSubmit) {
+      const errorObj = validateSignUpPage(newObject);
+      setFormErrors(errorObj);
     }
 
   }
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmit(true);
 
@@ -56,194 +55,190 @@ const SignUp = () => {
       return;
     }
 
-    try{
-      const response=await signup(formValues)
-      
-      if(response.status)
-      {
+    try {
+      const response = await signup(formValues)
+
+      if (response.status) {
         dispatch(createAccount(formValues))
         navigate("/otp")
       }
-    }catch(error)
-    {
+    } catch (error) {
       console.log(error)
     }
 
-    
+
     clearFormValues();
     setIsSubmit(false)
 
   }
 
 
- 
+
 
   return (
     <>
-    <Box display={'flex'} height={'calc(100vh - 64px)'} >
+      <Box display={'flex'} height={'calc(100vh - 64px)'} >
 
-      <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'} bgcolor={'#138F74'}>
+        <Box flex={0.5} display={'flex'} justifyContent={'center'} alignItems={'center'} bgcolor={'#138F74'}>
 
-        <Box width={'55%'} bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'} >
+          <Box width={'55%'} bgcolor={'#ffffff'} padding={'3rem 2rem'} borderRadius={'10px'} >
 
-          <Box mb={'1rem'}>
-            <Typography sx={{ fontSize: '1.8rem', fontWeight: '500' }}>Sign up</Typography>
-            <Typography sx={{ fontSize: '.9rem', color: 'gray' }}>Start your journey with us</Typography>
-          </Box>
-          <form onSubmit={handleSubmit}>
-            <Box display={'flex'} flexDirection={'column'} alignItems={'center'} >
+            <Box mb={'1rem'}>
+              <Typography sx={{ fontSize: '1.8rem', fontWeight: '500' }}>Sign up</Typography>
+              <Typography sx={{ fontSize: '.9rem', color: 'gray' }}>Start your journey with us</Typography>
+            </Box>
+            <form onSubmit={handleSubmit}>
+              <Box display={'flex'} flexDirection={'column'} alignItems={'center'} >
 
-              <Box display={'flex'}>
+                <Box display={'flex'} width={'100%'} justifyContent={'space-between'}>
 
-             
-              <FormControl sx={{ mr: 1 }} variant="outlined" >
 
-                <TextField
+                  <FormControl variant="outlined" sx={{ flex: "0.49" }}>
 
-                  sx={{ width: "100%" }}
-                  id="filled-error-helper-text"
-                  type={'text'}
-                  error={formErrors.firstName ? true : false}
-                  helperText={formErrors.firstName}
-                  name='firstName'
-                  value={formValues.firstName}
-                  label="First Name"
-                  onChange={handleChange}
-                />
-              </FormControl>
+                    <TextField
+                      id="filled-error-helper-text"
+                      type={'text'}
+                      error={formErrors.firstName ? true : false}
+                      helperText={formErrors.firstName}
+                      name='firstName'
+                      value={formValues.firstName}
+                      label="First Name"
+                      onChange={handleChange}
+                    />
+                  </FormControl>
 
-              <FormControl sx={{ ml: 1 }} variant="outlined" >
+                  <FormControl variant="outlined" sx={{ flex: "0.49" }}>
 
-                <TextField
+                    <TextField
 
-                  sx={{ width: "100%" }}
-                  id="filled-error-helper-text"
-                  type={'text'}
-                  error={formErrors.lastName ? true : false}
-                  helperText={formErrors.lastName}
-                  name='lastName'
-                  value={formValues.lastName}
-                  label="Last Name"
-                  onChange={handleChange}
-                />
-              </FormControl>
+                      sx={{ width: "100%" }}
+                      id="filled-error-helper-text"
+                      type={'text'}
+                      error={formErrors.lastName ? true : false}
+                      helperText={formErrors.lastName}
+                      name='lastName'
+                      value={formValues.lastName}
+                      label="Last Name"
+                      onChange={handleChange}
+                    />
+                  </FormControl>
+
+                </Box>
+
+                <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
+
+                  <TextField
+                    sx={{ width: "100%" }}
+                    id="outlined-adornment-email"
+                    type={'text'}
+                    error={formErrors.email ? true : false}
+                    helperText={formErrors.email}
+                    name='email'
+                    value={formValues.email}
+                    onChange={handleChange}
+                    label="Email"
+                  />
+                </FormControl>
+
+                <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
+                  <TextField
+                    id="outlined-adornment-password"
+                    type={showPassword ? 'text' : 'password'}
+                    onChange={handleChange}
+                    name='password'
+                    error={formErrors.password ? true : false}
+                    helperText={formErrors.password}
+                    value={formValues.password}
+
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    label="Password"
+                  />
+                </FormControl>
+
+                <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
+                  <TextField
+                    id="outlined-adornment-confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    onChange={handleChange}
+                    error={formErrors.confirmPassword ? true : false}
+                    helperText={formErrors.confirmPassword}
+                    name="confirmPassword"
+                    value={formValues.confirmPassword}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle confirm-password visibility"
+                            onClick={handleClickShowConrfirmPassword}
+                            onMouseDown={handleMouseDownPassword}
+                            edge="end"
+                          >
+                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    label="Confirm Password"
+                  />
+                </FormControl>
+
+                <Button type="submit" variant="contained" fullWidth sx={{ m: 2, textTransform: 'capitalize', p: '.7rem 0' }}>Sign Up</Button>
 
               </Box>
+            </form>
 
-              <FormControl sx={{ m: 1 }} fullWidth variant="outlined" >
+            <Box mt={'.2rem'}>
+              <Typography textAlign={'center'}>Already have an account ? <Typography component={'span'}>
+                <Link to={"/login"} style={{ textDecoration: 'none' }}>
+                  Log In
+                </Link>
+              </Typography></Typography>
 
-                <TextField
-                  sx={{ width: "100%" }}
-                  id="outlined-adornment-email"
-                  type={'text'}
-                  error={formErrors.email ? true : false}
-                  helperText={formErrors.email}
-                  name='email'
-                  value={formValues.email}
-                  onChange={handleChange}
-                  label="Email"
-                />
-              </FormControl>
-
-              <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
-                <TextField
-                  id="outlined-adornment-password"
-                  type={showPassword ? 'text' : 'password'}
-                  onChange={handleChange}
-                  name='password'
-                  error={formErrors.password ? true : false}
-                  helperText={formErrors.password}
-                  value={formValues.password}
-
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                  label="Password"
-                />
-              </FormControl>
-
-              <FormControl sx={{ m: 1 }} fullWidth variant="outlined">
-                <TextField
-                  id="outlined-adornment-confirm-password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  onChange={handleChange}
-                  error={formErrors.confirmPassword ? true : false}
-                  helperText={formErrors.confirmPassword}
-                  name="confirmPassword"
-                  value={formValues.confirmPassword}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle confirm-password visibility"
-                          onClick={handleClickShowConrfirmPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                        >
-                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                  label="Confirm Password"
-                />
-              </FormControl>
-
-              <Button type="submit" variant="contained" fullWidth sx={{ m: 2, textTransform: 'capitalize', p: '.7rem 0' }}>Sign Up</Button>
-
+              {/* <Typography mt={'.5rem'} textAlign={'center'} color={'red'}>Forgot Password ?</Typography> */}
             </Box>
-          </form>
 
-          <Box mt={'.2rem'}>
-            <Typography textAlign={'center'}>Already have an account ? <Typography component={'span'}>
-              <Link to={"/login"} style={{ textDecoration: 'none' }}>
-                Log In
-              </Link>
-            </Typography></Typography>
+          </Box>
 
-            {/* <Typography mt={'.5rem'} textAlign={'center'} color={'red'}>Forgot Password ?</Typography> */}
+        </Box>
+
+
+        <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
+
+          <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
+            <Box>
+              <CardMedia
+                component="img"
+                height="400"
+                image={signupImg}
+                alt="Paella dish"
+              />
+            </Box>
+          </Box>
+
+          <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
+            <Box textAlign={'center'}>
+              <Typography sx={{ fontSize: "2rem", fontWeight: "500", marginBottom: '1rem', color: '#231F20' }}>Create New Account</Typography>
+              <Typography sx={{ fontWeight: '400' }}>Start your shopping with our website and get assured returns</Typography>
+              <Typography sx={{ fontWeight: '400' }}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
+            </Box>
           </Box>
 
         </Box>
 
       </Box>
-
-
-      <Box flex={0.5} flexDirection={'column'} display={'flex'} justifyContent={'space-evenly'}>
-
-        <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
-          <Box>
-            <CardMedia
-              component="img"
-              height="400"
-              image={signupImg}
-              alt="Paella dish"
-            />
-          </Box>
-        </Box>
-
-        <Box display={'flex'} justifyContent={'center'} flexDirection={'column'} alignItems={'center'}>
-          <Box textAlign={'center'}>
-            <Typography sx={{ fontSize: "2rem", fontWeight: "500", marginBottom: '1rem', color: '#231F20' }}>Create New Account</Typography>
-            <Typography sx={{ fontWeight: '400' }}>Start your shopping with our website and get assured returns</Typography>
-            <Typography sx={{ fontWeight: '400' }}>Manage your shopping faster than anyone, anywhere and anytime</Typography>
-          </Box>
-        </Box>
-
-      </Box>
-
-    </Box>
     </>
   )
 }

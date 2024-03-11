@@ -8,11 +8,6 @@ const users=[
         password:bcrypt.hashSync('Test@1234',10),
         isAdmin:true,
         emailVerify:true,
-        phoneNo:'',
-        linkedIn:"",
-        twitter:"",
-        address:"",
-        gender:"male"
     },
     {
         firstName:'admin',
@@ -21,11 +16,6 @@ const users=[
         password:bcrypt.hashSync('Test@1234',10),
         isAdmin:true,
         emailVerify:true,
-        phoneNo:'',
-        linkedIn:"",
-        twitter:"",
-        address:"",
-        gender:"male"
     }
 ]
 

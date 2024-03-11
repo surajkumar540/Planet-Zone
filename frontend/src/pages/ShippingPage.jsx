@@ -6,7 +6,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Footer from '../components/Footer/Footer';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { shippingAdd,getShipping } from '../api/shippingApi';
+import { shippingAdd, getShipping } from '../api/shippingApi';
 import { shippingAddress } from '../redux/reducers/orderSlice';
 
 const steps = [
@@ -71,7 +71,7 @@ const ShippingPage = () => {
 
       if (response.message == "Already shipping address available") {
         dispatch(shippingAddress(userDataObj))
-      
+
         navigate("/payment")
       }
     } catch (error) {

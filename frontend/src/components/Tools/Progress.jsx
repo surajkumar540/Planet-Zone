@@ -5,7 +5,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 
 const steps = [
-  'Select Shipping address',
+  'Select Shipping Address',
   'Choose Payment Method',
 ];
 

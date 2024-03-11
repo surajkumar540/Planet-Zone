@@ -8,10 +8,9 @@ const Profile = () => {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
-  const [linkedIn, setLinkedIn] = useState("")
-  const [twitter, setTwitter] = useState("")
   const [address, setAddress] = useState("");
   const [edit, setEdit] = useState(false);
+  
   const setProfileData = async () => {
     try {
       const obj = {
@@ -39,8 +38,6 @@ const Profile = () => {
       setFirstName(data.firstName);
       setLastName(data.lastName);
       setEmail(data.email);
-      setLinkedIn(data.linkedIn)
-      setTwitter(data.twitter)
       setAddress(data.address)
     } catch (error) {
       console.log(error)

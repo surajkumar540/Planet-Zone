@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Paper, Typography, TextField, Button, Grid, Box, Divider } from '@mui/material';
+import { Container, Paper, Typography, Grid, Box, Divider } from '@mui/material';
 import Footer from '../components/Footer/Footer';
 import { useParams } from 'react-router-dom';
 import { getSingleOrder } from '../api/orderApi';
 
-const steps = [
-    'Shipping Address',
-    'Payment',
-    'Order Details',
-];
 
 const OrderDetails = () => {
     const {orderId}=useParams();

@@ -8,7 +8,6 @@ const Profile = () => {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
-  const [phoneNo, setPhoneNo] = useState("")
   const [linkedIn, setLinkedIn] = useState("")
   const [twitter, setTwitter] = useState("")
   const [address, setAddress] = useState("");
@@ -19,7 +18,6 @@ const Profile = () => {
         firstName,
         lastName,
         email,
-        phoneNo,
         linkedIn,
         twitter,
         address
@@ -41,7 +39,6 @@ const Profile = () => {
       setFirstName(data.firstName);
       setLastName(data.lastName);
       setEmail(data.email);
-      setPhoneNo(data.phoneNo)
       setLinkedIn(data.linkedIn)
       setTwitter(data.twitter)
       setAddress(data.address)

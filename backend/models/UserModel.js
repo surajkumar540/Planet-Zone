@@ -16,10 +16,6 @@ const userSchema=mongoose.Schema({
         type:String,
         required:true
     },
-    phoneNo:{
-        type:String,
-        default:""
-    },
     address:{
         type:String,
         default:""

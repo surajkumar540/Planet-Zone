@@ -1,125 +1,213 @@
-import { Box, Typography, TextField, Button } from "@mui/material";
+import { Box, Typography, TextField, Button, Container, Grid, Paper, Avatar, IconButton } from "@mui/material";
 import React from "react";
-import Avatar from '@mui/material/Avatar';
 import Banner from "../components/Tools/Banner";
 import Location from "../components/Tools/Location";
 import { useState } from "react";
 import { contactUsApi } from "../api/devApi";
 import Footer from "../components/Footer/Footer";
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import SendIcon from '@mui/icons-material/Send';
 
 const ContactUs = () => {
 
-    const [name,setName]=useState("")
-    const [email,setEmail]=useState("")
-    const [city,setCity]=useState("");
-    const [message,setMessage]=useState("");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [city, setCity] = useState("");
+    const [message, setMessage] = useState("");
 
-
-    const handleSendMail=async(e)=>{
-        e.preventDefault()
-        try{
-            const obj={name,email,city,message}
-            const response=await contactUsApi(obj)
-    
-            setName("")
-            setEmail("")
-            setCity("")
-            setMessage("")
-            
-        }catch(error)
-        {
-            console.log(error)
+    const handleSendMail = async (e) => {
+        e.preventDefault();
+        try {
+            const obj = { name, email, city, message };
+            const response = await contactUsApi(obj);
+            // Optionally add a success toast here
+            setName("");
+            setEmail("");
+            setCity("");
+            setMessage("");
+        } catch (error) {
+            console.log(error);
         }
-    }
+    };
+
+    // Team data for cleaner mapping
+    const teamMembers = [
+        { name: "John Doe", role: "Senior Manager", phone: "+234 567 890", email: "john@planet.com", color: "#3CB815" },
+        { name: "Sarah Smith", role: "Sales Lead", phone: "+234 567 891", email: "sarah@planet.com", color: "#FF9800" },
+        { name: "Mike Johnson", role: "Customer Support", phone: "+234 567 892", email: "mike@planet.com", color: "#2196F3" },
+    ];
 
     return (
         <>
-            <Banner title='#Contact Us' text='Connect with us to be part of our family'/>
-            <Location/>
+            <Banner title='#Contact Us' text='Connect with us to be part of our family' />
+            <Location />
 
-            <Box display='flex' margin={3} border="1px solid #D9D9D9" borderRadius='6px'>
+            {/* Main Container */}
+            <Box sx={{ bgcolor: '#FDFBF7', py: 8 }}>
+                <Container maxWidth="lg">
+                    <Grid container spacing={6} alignItems="flex-start">
+                        
+                        {/* LEFT SIDE - Contact Form */}
+                        <Grid item xs={12} md={7}>
+                            <Paper 
+                                elevation={0}
+                                sx={{ 
+                                    p: { xs: 3, md: 5 }, 
+                                    borderRadius: 4, 
+                                    border: '1px solid rgba(0,0,0,0.05)',
+                                    background: '#fff'
+                                }}
+                            >
+                                <Box mb={4}>
+                                    <Typography variant="h3" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#1A1A1A', mb: 1 }}>
+                                        Send a Message
+                                    </Typography>
+                                    <Typography variant="body1" color="text.secondary">
+                                        We'd love to hear from you. Fill out the form below and we'll get back to you shortly.
+                                    </Typography>
+                                </Box>
 
+                                <form onSubmit={handleSendMail}>
+                                    <Grid container spacing={3}>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField 
+                                                fullWidth
+                                                label="Your Name" 
+                                                variant="outlined" 
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField 
+                                                fullWidth
+                                                label="Email Address" 
+                                                type="email"
+                                                variant="outlined" 
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <TextField 
+                                                fullWidth
+                                                label="City" 
+                                                variant="outlined" 
+                                                value={city}
+                                                onChange={(e) => setCity(e.target.value)}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <TextField 
+                                                fullWidth
+                                                multiline 
+                                                rows={5} 
+                                                label="Your Message" 
+                                                variant="outlined" 
+                                                value={message}
+                                                onChange={(e) => setMessage(e.target.value)}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <Button 
+                                                type="submit" 
+                                                variant="contained" 
+                                                size="large"
+                                                endIcon={<SendIcon />}
+                                                sx={{
+                                                    bgcolor: '#3CB815',
+                                                    color: '#fff',
+                                                    px: 5,
+                                                    py: 1.5,
+                                                    borderRadius: 2,
+                                                    fontWeight: 700,
+                                                    textTransform: 'none',
+                                                    boxShadow: '0 4px 14px rgba(60, 184, 21, 0.25)',
+                                                    '&:hover': { bgcolor: '#2fa012' }
+                                                }}
+                                            >
+                                                Send Message
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </form>
+                            </Paper>
+                        </Grid>
 
-                <Box display='flex' flexDirection='column' flex='0.7' gap={2} p='2rem'>
-                <form onSubmit={handleSendMail}>
-                    <Box mb='1rem'>
-                    <Typography variant="h6">Leave a Message</Typography>
-                    <Typography fontSize="30px" fontWeight="bold">We love to hear from you</Typography>
-                    </Box>
-                    
-                    <Box mb='1rem'>
-                    <TextField size='small' type="text" fullWidth label="Your Name" name="name" value={name} onChange={(e)=>setName(e.target.value)}/>
-                    </Box>
+                        {/* RIGHT SIDE - Team Contacts */}
+                        <Grid item xs={12} md={5}>
+                            <Box display="flex" flexDirection="column" gap={3}>
+                                <Typography variant="h5" sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#1A1A1A', mb: 1 }}>
+                                    Talk to Us Directly
+                                </Typography>
 
-                    <Box mb='1rem'>
-                    <TextField size='small' type="email" fullWidth label="E-mail" name="email" onChange={(e)=>setEmail(e.target.value)}/>
-                    </Box>
-                    
-                    <Box mb='1rem'>
-                    <TextField size='small' type="text" fullWidth label="City" name="city" onChange={(e)=>setCity(e.target.value)}/>
-                    </Box>
-                    
-                    <Box mb='1rem'>
-                    <TextField multiline rows={5} fullWidth label="Your Message" name="message" onChange={(e)=>setMessage(e.target.value)}/>
-                    </Box>
-                    
-                    <Button variant="contained" sx={{width:'100px'}} type="submit">
-                        Send
-                    </Button>
-                </form>
-                </Box>
+                                {teamMembers.map((member, index) => (
+                                    <Paper
+                                        key={index}
+                                        elevation={0}
+                                        sx={{
+                                            p: 3,
+                                            borderRadius: 3,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2.5,
+                                            border: '1px solid #f0f0f0',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                                borderColor: 'rgba(0,0,0,0.1)',
+                                                transform: 'translateY(-2px)'
+                                            }
+                                        }}
+                                    >
+                                        {/* Avatar with Initials & Color */}
+                                        <Avatar 
+                                            sx={{ 
+                                                width: 60, 
+                                                height: 60, 
+                                                bgcolor: member.color, 
+                                                fontWeight: 700,
+                                                fontSize: '1.5rem'
+                                            }}
+                                        >
+                                            {member.name.split(' ').map(n => n[0]).join('')}
+                                        </Avatar>
+                                        
+                                        <Box flex={1}>
+                                            <Typography fontWeight={700} variant="subtitle1" color="#333">
+                                                {member.name}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                {member.role}
+                                            </Typography>
+                                            <Box display="flex" flexDirection="column" gap={0.5}>
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <PhoneIcon sx={{ fontSize: 14, color: '#888' }} />
+                                                    <Typography variant="caption" color="text.secondary">{member.phone}</Typography>
+                                                </Box>
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <EmailIcon sx={{ fontSize: 14, color: '#888' }} />
+                                                    <Typography variant="caption" color="text.secondary">{member.email}</Typography>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </Paper>
+                                ))}
+                            </Box>
+                        </Grid>
 
-                <Box display='flex' flex='0.3' flexDirection="column" justifyContent='center' alignItems='start' gap={4}>
-
-                    <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
-                        <Avatar alt="Travis Howard" src="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMjgtMzY2LXRvbmctMDhfMS5qcGc.jpg" sx={{ width: 65, height: 65 }} />
-                        <Box>
-                            <Typography fontWeight='bold' fontSize={'1.1rem'}>John Doe</Typography>
-                            <Typography fontSize="12px" color="#A6A6A6" >Senior Developer Manager</Typography>
-                            <Typography fontSize="12px">
-                                Phone: +234567890
-                            </Typography>
-                            <Typography fontSize="12px">
-                                Email: contact@example.com
-                            </Typography>
-                        </Box>
-                    </Box>
-
-                    <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
-                        <Avatar alt="Travis Howard" src="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMjgtMzY2LXRvbmctMDhfMS5qcGc.jpg" sx={{ width: 65, height: 65 }} />
-                        <Box>
-                            <Typography fontWeight='bold' fontSize={'1.1rem'}>John Doe</Typography>
-                            <Typography fontSize="12px" color="#A6A6A6" >Senior Developer Manager</Typography>
-                            <Typography fontSize="12px">
-                                Phone: +234567890
-                            </Typography>
-                            <Typography fontSize="12px">
-                                Email: contact@example.com
-                            </Typography>
-                        </Box>
-                    </Box>
-
-                    <Box display='flex' gap={3} justifyContent='center' width={'100%'} alignItems='center'>
-                        <Avatar alt="Travis Howard" src="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMjgtMzY2LXRvbmctMDhfMS5qcGc.jpg" sx={{ width: 65, height: 65 }} />
-                        <Box>
-                            <Typography fontWeight='bold' fontSize={'1.1rem'}>John Doe</Typography>
-                            <Typography fontSize="12px" color="#A6A6A6" >Senior Developer Manager</Typography>
-                            <Typography fontSize="12px">
-                                Phone: +234567890
-                            </Typography>
-                            <Typography fontSize="12px">
-                                Email: contact@example.com
-                            </Typography>
-                        </Box>
-                    </Box>
-
-
-                    
-                </Box>
-
+                    </Grid>
+                </Container>
             </Box>
-            <Footer/>
+
+            <Footer />
         </>
-    )
-}
+    );
+};
+
 export default ContactUs;

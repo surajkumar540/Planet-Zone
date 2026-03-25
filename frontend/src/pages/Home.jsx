@@ -1,36 +1,27 @@
-import React, { useEffect } from 'react';
+
+import React from 'react';
 import Poster1 from '../components/Poster/Poster1';
 import Products from "../components/Products/Products"
-import Poster2 from '../components/Poster/Poster2';
 import Poster3 from '../components/Poster/Poster3';
 import { useSelector } from 'react-redux';
 import Loader from '../components/Tools/Loader';
 import Footer from '../components/Footer/Footer';
-import { getClothes } from '../utils/functions';
+import { Box } from '@mui/material';
 
 const Home = () => {
-  const {data:products,status}=useSelector((state)=>state?.products)
+  const { data: products, status } = useSelector((state) => state?.products);
 
-  // if(status==='loading')
-  // {
-  //   return <Loader/>
-  // }
-
+  if (status === 'loading') return <Loader />;
 
   return (
-    <>
-      <Poster1/>
-      <Products products={products.slice(0,4).reverse()} isLoading={status==='loading'?true:false}/>
-      <Poster3/>
+    <Box sx={{ width: '100%', overflowX: 'hidden' }}>
+      <Poster1 />
+      <Products products={products.slice(0, 8)} />
+      <Poster3 />
+      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products} />
+      <Footer />
+    </Box>
+  );
+};
 
-      {/* <Products heading="Winter Sales" title="Monsoon products at your point" products={getClothes(products)}/> */}
-      
-      
-      <Products heading="Monsoon Sales" title="Monsoon products at your point" products={products} isLoading={status==='loading'?true:false}/>
-      {/* <Poster2/> */}
-      <Footer/>
-    </>
-  )
-}
-
-export default Home
+export default Home;

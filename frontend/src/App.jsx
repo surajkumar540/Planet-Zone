@@ -94,6 +94,7 @@ function App() {
         <Route path="/otp" element={<OtpVerify />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/order/:orderId" element={<OrderDetails />} />
+        <Route path="/order/:orderId" element={<OrderDetails />} />
       </Routes>
 
       {isAdminLogged ? (

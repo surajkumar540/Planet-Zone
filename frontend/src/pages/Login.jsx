@@ -48,6 +48,9 @@ const Login = () => {
     setFormValues(newObject);
     if (isSubmit) setFormErrors(validateSignInPage(newObject));
   };
+    setFormValues(newObject);
+    if (isSubmit) setFormErrors(validateSignInPage(newObject));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,6 +79,7 @@ const Login = () => {
     }
     setIsSubmit(false);
     clearFormValues();
+  };
   };
 
   return (
@@ -456,6 +460,8 @@ const Login = () => {
         </Box>
       </Box>
     </Box>
+  );
+};
   );
 };
 

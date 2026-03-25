@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, CardMedia, Typography, IconButton } from '@mui/material';
 import Bag from "../../assets/Home/bag.jpg"
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarIcon from '@mui/icons-material/Star';
+import StarHalfIcon from '@mui/icons-material/StarHalf';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCartAsync } from '../../redux/reducers/cartSlice';
@@ -79,4 +79,4 @@ const Product = ({ obj }) => {
     )
 }
 
-export default Product
+export default Product;

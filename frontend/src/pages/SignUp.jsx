@@ -60,7 +60,12 @@ const SignUp = () => {
     setFormValues(newObject);
     if (isSubmit) setFormErrors(validateSignUpPage(newObject));
   };
+    const newObject = { ...formValues, [name]: value };
+    setFormValues(newObject);
+    if (isSubmit) setFormErrors(validateSignUpPage(newObject));
+  };
 
+  const handleSubmit = async (e) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmit(true);
@@ -79,6 +84,8 @@ const SignUp = () => {
       console.log(error);
     }
     clearFormValues();
+    setIsSubmit(false);
+  };
     setIsSubmit(false);
   };
 
@@ -374,8 +381,15 @@ const SignUp = () => {
                   size="small"
                   name="firstName"
                   label="First Name"
+                  fullWidth
+                  size="small"
+                  name="firstName"
+                  label="First Name"
                   value={formValues.firstName}
                   onChange={handleChange}
+                  error={!!formErrors.firstName}
+                  helperText={formErrors.firstName}
+                  sx={inputSx}
                   error={!!formErrors.firstName}
                   helperText={formErrors.firstName}
                   sx={inputSx}
@@ -385,14 +399,32 @@ const SignUp = () => {
                   size="small"
                   name="lastName"
                   label="Last Name"
+                  fullWidth
+                  size="small"
+                  name="lastName"
+                  label="Last Name"
                   value={formValues.lastName}
                   onChange={handleChange}
+                  error={!!formErrors.lastName}
+                  helperText={formErrors.lastName}
+                  sx={inputSx}
                   error={!!formErrors.lastName}
                   helperText={formErrors.lastName}
                   sx={inputSx}
                 />
               </Box>
 
+              <TextField
+                fullWidth
+                size="small"
+                name="email"
+                label="Email Address"
+                value={formValues.email}
+                onChange={handleChange}
+                error={!!formErrors.email}
+                helperText={formErrors.email}
+                sx={inputSx}
+              />
               <TextField
                 fullWidth
                 size="small"
@@ -526,6 +558,8 @@ const SignUp = () => {
         </Box>
       </Box>
     </Box>
+  );
+};
   );
 };
 

@@ -1,22 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { Box, Typography, Button, Chip } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import React, { useEffect, useRef } from "react";
 import { Box, Typography, Button, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Poster1 = () => {
-  const navigate = useNavigate();
-
-  const heroProduct = {
-    name: "Grow Bag",
-    brand: "Iconic",
-    originalPrice: 400,
-    discount: 4,
-    finalPrice: 388,
-    tag: "Eco-Friendly",
-  };
-
   const navigate = useNavigate();
 
   const heroProduct = {
@@ -460,8 +445,6 @@ const Poster1 = () => {
         </Box>
       </Box>
     </Box>
-  );
-};
   );
 };
 

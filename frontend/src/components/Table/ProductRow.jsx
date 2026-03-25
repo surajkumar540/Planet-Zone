@@ -1,83 +1,122 @@
-import { Typography, Grid, Box, CardMedia, IconButton } from "@mui/material";
+import { Typography, Grid, Box, CardMedia, IconButton, Tooltip } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { deleteSingleProduct } from "../../api/productApi";
 import { useNavigate } from "react-router-dom";
 
-const ProductRow = ({obj,sno,refetch}) => {
+const ProductRow = ({ obj, sno, refetch }) => {
   
-  const navigate=useNavigate()
-  const handleNavigate=()=>{
-    navigate(`/editProduct/${obj?._id}`)
-  }
+  const navigate = useNavigate();
 
-  const handleDeleteProduct=async(pid)=>{
-    try{
-      const response=await deleteSingleProduct(pid);
-      if(response.status)
-      {
-        refetch()
+  const handleDeleteProduct = async (pid) => {
+    if(window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        const response = await deleteSingleProduct(pid);
+        if (response.status) {
+          refetch();
+        }
+      } catch (error) {
+        console.log(error);
       }
-    }catch(error)
-    {
-      console.log(error)
     }
-  }
+  };
 
   return (
-    <Box marginX={'2rem'} marginY={'1rem'}>
-    <Grid container sx={{background:"linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",paddingY:'.8rem',borderRadius:"10px",textAlign:'center',cursor:"pointer","&:hover": {
-    background: "linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%)",
-    transform: "scale(1.005)",
-    transition: "all 0.2s linear"
-  },}} >
+    <Box 
+      sx={{ 
+        borderBottom: '1px solid #f0f0f0',
+        transition: 'background 0.2s',
+        '&:hover': {
+          bgcolor: '#F1F8E9', // Light green hover
+        },
+        '&:last-child': {
+          borderBottom: 'none'
+        }
+      }}
+    >
+      <Grid container sx={{ py: 2, px: 3, alignItems: 'center' }}>
 
-      <Grid item xs={1} alignSelf={"center"} onClick={handleNavigate}>
-      <Typography>{sno}</Typography>
-      </Grid>
-
-      
-
-      <Grid item xs={1} display={"flex"} justifyContent={"center"} alignItems={"center"} onClick={handleNavigate}>
-
-        <CardMedia
-          component="img"
-          height="50"
-          sx={{objectFit:'contain'}}
-          image={obj?.image||"https://images.pexels.com/photos/777001/pexels-photo-777001.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"}
-          alt="green iguana"
-        />
-      </Grid>
-
-
-      <Grid item xs={3} alignSelf={"center"} onClick={handleNavigate}>
-        <Typography>{obj?.name}</Typography>
-      </Grid>
-
-
-      <Grid item xs={2} alignSelf={"center"} onClick={handleNavigate}>
-        <Typography>{obj?.brand}</Typography>
-      </Grid>
-      
-     
-      <Grid item xs={2} alignSelf={"center"} onClick={handleNavigate}>
-        <Typography>
-            {obj?.category}
-        </Typography>
-      </Grid>
-
-      <Grid item xs={2} alignSelf={"center"} onClick={handleNavigate}>
-        <Typography>
-            ₹ {obj?.price}
-        </Typography>
-      </Grid>
-  
-        <Grid item xs={1} alignSelf={"center"} >
-          <IconButton sx={{color:"red"}} size="small" onClick={()=>handleDeleteProduct(obj?._id)}>
-            <DeleteIcon/>
-          </IconButton>
+        {/* S.No */}
+        <Grid item xs={1}>
+          <Typography variant="body2" color="text.secondary">{sno}</Typography>
         </Grid>
- 
-    </Grid>
+
+        {/* Image */}
+        <Grid item xs={1} display="flex" justifyContent="center">
+          <Box 
+            sx={{ 
+              width: 45, 
+              height: 45, 
+              borderRadius: 2, 
+              overflow: 'hidden', 
+              bgcolor: '#f5f5f5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <CardMedia
+              component="img"
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              image={obj?.image || "https://via.placeholder.com/50"}
+              alt={obj?.name}
+            />
+          </Box>
+        </Grid>
+
+        {/* Name */}
+        <Grid item xs={3}>
+          <Typography 
+            sx={{ 
+              fontWeight: 600, 
+              color: '#333', 
+              whiteSpace: 'nowrap', 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis',
+              maxWidth: '200px',
+              cursor: 'pointer',
+              '&:hover': { color: '#3CB815' }
+            }}
+            onClick={() => navigate(`/editProduct/${obj?._id}`)}
+          >
+            {obj?.name}
+          </Typography>
+        </Grid>
+
+        {/* Brand */}
+        <Grid item xs={2}>
+          <Typography variant="body2" color="text.secondary">{obj?.brand || 'N/A'}</Typography>
+        </Grid>
+       
+        {/* Category */}
+        <Grid item xs={2}>
+          <Typography variant="body2" color="text.secondary">{obj?.category}</Typography>
+        </Grid>
+
+        {/* Price */}
+        <Grid item xs={2}>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: '#1A1A1A' }}>
+            ₹{obj?.price}
+          </Typography>
+        </Grid>
+
+        {/* Actions */}
+        <Grid item xs={1} textAlign="center">
+          <Tooltip title="Delete">
+            <IconButton 
+              sx={{ 
+                color: '#ef5350',
+                '&:hover': { bgcolor: '#FFEBEE' }
+              }} 
+              size="small" 
+              onClick={() => handleDeleteProduct(obj?._id)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+
+      </Grid>
     </Box>
   );
 };

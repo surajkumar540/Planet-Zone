@@ -19,7 +19,7 @@ const style = {
 };
 
 export default function DeleteModal({fetchAllMails=false}) {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 

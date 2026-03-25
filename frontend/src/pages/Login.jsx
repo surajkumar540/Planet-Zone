@@ -42,15 +42,15 @@ const Login = () => {
     setFormErrors({});
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const newObject = { ...formValues, [name]: value };
-    setFormValues(newObject);
-    if (isSubmit) setFormErrors(validateSignInPage(newObject));
-  };
-    setFormValues(newObject);
-    if (isSubmit) setFormErrors(validateSignInPage(newObject));
-  };
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  const newObject = { ...formValues, [name]: value };
+  setFormValues(newObject);
+
+  if (isSubmit) {
+    setFormErrors(validateSignInPage(newObject));
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,7 +79,6 @@ const Login = () => {
     }
     setIsSubmit(false);
     clearFormValues();
-  };
   };
 
   return (
@@ -461,8 +460,5 @@ const Login = () => {
       </Box>
     </Box>
   );
-};
-  );
-};
-
+}
 export default Login;

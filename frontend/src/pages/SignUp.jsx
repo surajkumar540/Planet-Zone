@@ -60,12 +60,7 @@ const SignUp = () => {
     setFormValues(newObject);
     if (isSubmit) setFormErrors(validateSignUpPage(newObject));
   };
-    const newObject = { ...formValues, [name]: value };
-    setFormValues(newObject);
-    if (isSubmit) setFormErrors(validateSignUpPage(newObject));
-  };
 
-  const handleSubmit = async (e) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmit(true);
@@ -84,8 +79,6 @@ const SignUp = () => {
       console.log(error);
     }
     clearFormValues();
-    setIsSubmit(false);
-  };
     setIsSubmit(false);
   };
 
@@ -425,17 +418,6 @@ const SignUp = () => {
                 helperText={formErrors.email}
                 sx={inputSx}
               />
-              <TextField
-                fullWidth
-                size="small"
-                name="email"
-                label="Email Address"
-                value={formValues.email}
-                onChange={handleChange}
-                error={!!formErrors.email}
-                helperText={formErrors.email}
-                sx={inputSx}
-              />
 
               <TextField
                 fullWidth
@@ -559,8 +541,6 @@ const SignUp = () => {
       </Box>
     </Box>
   );
-};
-  );
-};
+}
 
 export default SignUp;

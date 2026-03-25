@@ -1,82 +1,110 @@
 import React from 'react';
 import { Box, CardMedia, Typography, IconButton } from '@mui/material';
-import Bag from "../../assets/Home/bag.jpg"
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import StarIcon from '@mui/icons-material/Star';
-import StarHalfIcon from '@mui/icons-material/StarHalf';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { addToCartAsync } from '../../redux/reducers/cartSlice';
+import { useDispatch } from 'react-redux';
 
 const Product = ({ obj }) => {
     const { _id } = obj;
     const navigate = useNavigate();
-    const dispatch = useDispatch()
-
-    //Send item to cart 
-    // const handleCart=()=>{
-    //     const dummy={
-    //         id:obj?._id,
-    //         qty:1
-    //     }
-    //     dispatch(addToCartAsync(dummy))
-    //     navigate("/cart")
-    // }
+    const dispatch = useDispatch();
 
     return (
-        <Box onClick={() => navigate(`/product/${_id}`)}
+        <Box
+            onClick={() => navigate(`/product/${_id}`)}
             sx={{
-                height: '20rem', width: '15rem' , borderRadius: '10px', display: 'flex', flexDirection: 'column', cursor: 'pointer', zIndex: '0', padding:"3px",border:"1px solid #f5f2f2",
-                '&:hover': { boxShadow:"rgba(0, 0, 0, 0.16) 0px 1px 4px",transform:"scale(1.02)",transition:"all .3s ease-in-out" }
-            }} >
-
-            <Box flex={0.68} boxSizing={'border-box'}>
+                borderRadius: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                border: '1px solid #EEF4EC',
+                overflow: 'hidden',
+                bgcolor: '#fff',
+                transition: 'all 0.25s ease-in-out',
+                '&:hover': {
+                    boxShadow: '0 8px 28px rgba(60,184,21,0.13)',
+                    transform: 'translateY(-4px)',
+                },
+            }}
+        >
+            {/* Image */}
+            <Box sx={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden' }}>
                 <CardMedia
-                    sx={{ height: '100%', borderRadius: '10px', objectFit: 'cover' }}
+                    component="img"
                     image={obj?.image}
-                    title="green iguana"
+                    alt={obj?.name}
+                    sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.35s ease',
+                        '&:hover': { transform: 'scale(1.05)' },
+                    }}
                 />
             </Box>
-            <Box flex={0.32} p={'.5rem'}>
-                <Box>
-                    <Box>
-                        <Typography fontSize={'.8rem'} color={'grey'}>{obj?.brand || 'Default'}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography>{obj?.name || "Cloth Bags"}</Typography>
-                    </Box>
 
-                    <Box display={'flex'}  width={'100%'}>
+            {/* Info */}
+            <Box sx={{ p: { xs: '10px', sm: '12px' }, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.3 }}>
+                <Typography
+                    sx={{ fontSize: { xs: '10px', sm: '11px' }, color: '#8A9E86', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 600 }}
+                >
+                    {obj?.brand || 'Organic'}
+                </Typography>
 
-                        <Box flex={0.6}>
-                            {/* <Box display={'flex'}>
-                            <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
-                            <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
-                            <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
-                            <StarIcon sx={{color:'#ffc107'}} fontSize='small'/>
-                            <StarOutlineIcon sx={{color:'#ffc107'}} fontSize='small'/>
-                        </Box> */}
-                            <Box  display={'flex'} flexDirection={'column'} alignItems={'flex-start'} justifyContent={'space-evenly'}>
-                                <Typography fontSize={'1.2rem'} fontWeight={600} color='#388E3C'>
-                                    ₹{Math.floor(obj?.totalPrice)}{" "}
-                                    <Typography as='del' fontSize='1rem' sx={{ color: "grey", fontWeight: 400 }}>{obj?.price && `₹${obj?.price}`}</Typography>
+                <Typography
+                    sx={{
+                        fontSize: { xs: '13px', sm: '14px' },
+                        fontWeight: 600,
+                        color: '#1A2F1A',
+                        lineHeight: 1.3,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                    }}
+                >
+                    {obj?.name || 'Product'}
+                </Typography>
+
+                {/* Price row */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto', pt: 1 }}>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.6, flexWrap: 'wrap' }}>
+                            <Typography sx={{ fontSize: { xs: '15px', sm: '17px' }, fontWeight: 700, color: '#2E7D32' }}>
+                                ₹{Math.floor(obj?.totalPrice)}
+                            </Typography>
+                            {obj?.price && (
+                                <Typography
+                                    component="span"
+                                    sx={{ fontSize: '12px', color: '#aaa', textDecoration: 'line-through' }}
+                                >
+                                    ₹{obj?.price}
                                 </Typography>
-                                    <Typography as='span' fontSize='1rem' color='#388E3C'>{obj?.discount && `${obj?.discount - obj?.gst}% off`}</Typography>
-                            </Box>
+                            )}
                         </Box>
-
-                        <Box flex={0.4} display={'flex'} justifyContent={'center'} alignItems={'center'}  zIndex={500}
-                        // onClick={handleCart}
-                        >
-                            <IconButton >
-                                <ShoppingCartOutlinedIcon sx={{ color: '#1976D2' }} />
-                            </IconButton>
-                        </Box>
+                        {obj?.discount && (
+                            <Typography sx={{ fontSize: '11px', color: '#3CB815', fontWeight: 600 }}>
+                                {obj?.discount - obj?.gst}% off
+                            </Typography>
+                        )}
                     </Box>
+
+                    <IconButton
+                        size="small"
+                        onClick={(e) => { e.stopPropagation(); /* handleCart */ }}
+                        sx={{
+                            bgcolor: '#E8F5E9',
+                            borderRadius: '10px',
+                            p: '7px',
+                            '&:hover': { bgcolor: '#C8E6C9' },
+                        }}
+                    >
+                        <ShoppingCartOutlinedIcon sx={{ fontSize: '18px', color: '#2E7D32' }} />
+                    </IconButton>
                 </Box>
             </Box>
         </Box>
-    )
-}
+    );
+};
 
 export default Product;

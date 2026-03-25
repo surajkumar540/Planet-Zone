@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { forgetOtp } from '../../api/userApi';
 import { useNavigate } from "react-router-dom"
 import { useState } from 'react';
-
+import LockResetIcon from '@mui/icons-material/LockReset';
 const style = {
   position: 'absolute',
   top: '50%',

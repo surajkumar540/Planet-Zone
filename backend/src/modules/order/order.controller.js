@@ -35,6 +35,11 @@ const confirmPayment = asyncHandler(async (req, res) => {
   });
 });
 
+const quoteOrder = asyncHandler(async (req, res) => {
+  const data = await orderService.quote({ userId: req.auth.userId, ...req.body });
+  return ok(res, { data });
+});
+
 const createOrder = asyncHandler(async (req, res) => {
   const order = await orderService.createOrder({ userId: req.auth.userId, ...req.body });
   // `orderId` is repeated at the top level for the existing checkout screen.
@@ -90,6 +95,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  quoteOrder,
   initPayment,
   confirmPayment,
   createOrder,

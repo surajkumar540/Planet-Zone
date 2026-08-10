@@ -42,11 +42,12 @@ export const changePassword = async (data) => {
 }
 
 
-export const tokenVerify = async (data) => {
-    const response = await axios.post(`/api/tokenVerification`,data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
+/**
+ * Confirms the stored token is still valid. The caller's role comes back in
+ * the response; nothing about identity is sent from the client.
+ */
+export const tokenVerify = async () => {
+    const response = await axios.post(`/api/tokenVerification`);
     return response.data
 }
 

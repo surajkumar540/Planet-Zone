@@ -2,10 +2,13 @@ const AppError = require("../../core/AppError");
 const logger = require("../../core/logger");
 const { withTransaction } = require("../../core/transaction");
 const orderRepository = require("./order.repository");
-const productRepository = require("../product/product.repository");
+const inventoryService = require("../inventory/inventory.service");
+const couponService = require("../coupon/coupon.service");
 const pricingService = require("../../services/pricing.service");
 const paymentService = require("../../services/payment.service");
 const { parseSort, searchFilter } = require("../../utils/schemas");
+const { toMinorUnits } = require("../../utils/money");
+const { MOVEMENT_REASONS } = require("../../constants/inventory");
 const {
   ORDER_STATUS,
   PAYMENT_STATUS,
@@ -14,63 +17,84 @@ const {
 } = require("../../constants/orderStatus");
 
 /**
- * Reserves stock for every line, rolling back the reservations already made
- * if any line cannot be satisfied.
+ * Reserves stock for every line, releasing what was already taken if any
+ * line cannot be satisfied.
  *
- * Each decrement is conditional on sufficient stock, so two concurrent
- * checkouts for the last unit cannot both succeed.
+ * Reservations are conditional on unreserved stock existing, so two
+ * concurrent checkouts cannot both claim the last unit.
  */
-const reserveStock = async (items, session) => {
+const reserveAll = async (items, orderRef, session) => {
   const reserved = [];
   try {
     for (const item of items) {
-      const updated = await productRepository.decrementStock(item.product, item.qty, session);
-      if (!updated) {
-        throw AppError.conflict(`${item.name} is no longer available in the requested quantity`);
-      }
+      await inventoryService.reserve({
+        productId: item.product,
+        variantSku: item.variantSku || "",
+        qty: item.qty,
+        referenceId: orderRef,
+        session,
+      });
       reserved.push(item);
     }
   } catch (error) {
-    // Inside a transaction the abort undoes these; without one we must
-    // compensate by hand.
-    if (!session) {
-      await Promise.all(
-        reserved.map((item) =>
-          productRepository
-            .incrementStock(item.product, item.qty)
-            .catch((rollbackError) =>
-              logger.error(`Failed to release reserved stock: ${rollbackError.message}`, {
-                product: item.product,
-              })
-            )
-        )
-      );
-    }
+    // A transaction abort undoes these; without one they must be compensated.
+    if (!session) await releaseAll(reserved, orderRef);
     throw error;
   }
   return reserved;
 };
 
-const releaseStock = (items) =>
+const releaseAll = (items, orderRef) =>
   Promise.all(
     (items || []).map((item) =>
-      productRepository
-        .incrementStock(item.product, item.qty)
+      inventoryService
+        .release({
+          productId: item.product,
+          variantSku: item.variantSku || "",
+          qty: item.qty,
+          referenceId: orderRef,
+        })
         .catch((error) =>
-          logger.error(`Failed to return stock: ${error.message}`, { product: item.product })
+          logger.error(`Failed to release reserved stock: ${error.message}`, {
+            product: item.product,
+          })
         )
     )
   );
 
 /**
+ * Prices a cart without placing an order.
+ *
+ * Backs the cart summary and coupon-preview screens, using the same code path
+ * that computes the real charge.
+ */
+const quote = ({ userId, cart, couponCode, shippingAddress, shippingRateId }) =>
+  pricingService.quoteOrder({ cart, userId, couponCode, shippingAddress, shippingRateId });
+
+/**
  * Places an order.
  *
- * Prices come from the catalogue rather than the request, stock is reserved
- * atomically, and an online order is only accepted once its payment has been
- * verified against the gateway signature.
+ * Prices, discounts and delivery costs are all recomputed here; an online
+ * order is accepted only once its payment has been verified against the
+ * gateway signature and matches the computed total.
  */
-const createOrder = async ({ userId, cart, shippingAddress, paymentId, onlinePayment }) => {
-  const { items, pricing } = await pricingService.priceCart(cart);
+const createOrder = async ({
+  userId,
+  cart,
+  shippingAddress,
+  paymentId,
+  onlinePayment,
+  couponCode,
+  shippingRateId,
+}) => {
+  const quoted = await pricingService.quoteOrder({
+    cart,
+    userId,
+    couponCode,
+    shippingAddress,
+    shippingRateId,
+  });
+  const { items, pricing, coupon, shipping } = quoted;
 
   let paymentDoc = null;
   if (onlinePayment) {
@@ -78,8 +102,7 @@ const createOrder = async ({ userId, cart, shippingAddress, paymentId, onlinePay
 
     paymentDoc = await paymentService.getVerifiedPayment(paymentId, userId);
 
-    // The gateway works in the smallest currency unit; compare like for like.
-    const expected = Math.round(pricing.grandTotal * 100);
+    const expected = toMinorUnits(pricing.grandTotal);
     if (paymentDoc.amount_paid !== expected) {
       logger.error("Payment amount does not match the order total", {
         paymentId,
@@ -91,7 +114,7 @@ const createOrder = async ({ userId, cart, shippingAddress, paymentId, onlinePay
   }
 
   return withTransaction(async (session) => {
-    const reserved = await reserveStock(items, session);
+    const reserved = await reserveAll(items, paymentId || userId, session);
 
     try {
       const order = await orderRepository.create(
@@ -100,6 +123,24 @@ const createOrder = async ({ userId, cart, shippingAddress, paymentId, onlinePay
           orderItems: items,
           shippingAddress,
           pricing,
+          coupon: coupon
+            ? {
+                coupon: coupon._id,
+                code: coupon.code,
+                type: coupon.type,
+                discountAmount: coupon.discountAmount,
+              }
+            : undefined,
+          shipping: shipping
+            ? {
+                zone: shipping.zone?._id,
+                zoneName: shipping.zone?.name || "",
+                rateName: shipping.rate?.name || "",
+                cost: shipping.cost,
+                minDeliveryDays: shipping.rate?.minDeliveryDays || 0,
+                maxDeliveryDays: shipping.rate?.maxDeliveryDays || 0,
+              }
+            : undefined,
           onlinePayment: Boolean(onlinePayment),
           paymentRef: paymentDoc?._id || null,
           paymentStatus: onlinePayment ? PAYMENT_STATUS.PAID : PAYMENT_STATUS.PENDING,
@@ -118,9 +159,19 @@ const createOrder = async ({ userId, cart, shippingAddress, paymentId, onlinePay
         session ? { session } : {}
       );
 
+      if (coupon) {
+        await couponService.redeem({
+          coupon,
+          userId,
+          orderId: order._id,
+          discountAmount: coupon.discountAmount,
+          session,
+        });
+      }
+
       return order;
     } catch (error) {
-      if (!session) await releaseStock(reserved);
+      if (!session) await releaseAll(reserved, paymentId || userId);
       throw error;
     }
   });
@@ -156,8 +207,6 @@ const listAllOrders = async ({ page, limit, sort, search, status, paymentStatus,
 
 /**
  * A single order. Customers may only read their own; staff may read any.
- * This is the check whose absence previously allowed any signed-in user to
- * read any order by guessing its id.
  */
 const getOrderById = async ({ orderId, requester }) => {
   const order = await orderRepository.findById(orderId, {
@@ -173,8 +222,13 @@ const getOrderById = async ({ orderId, requester }) => {
   return order;
 };
 
-/** Moves an order along its lifecycle, rejecting illegal transitions. */
-const updateOrderStatus = async ({ orderId, status, note, actorId }) => {
+/**
+ * Moves an order along its lifecycle, rejecting illegal transitions.
+ *
+ * Stock follows the order: dispatch converts reservations into a real
+ * decrement, and cancellation returns the reserved units.
+ */
+const updateOrderStatus = async ({ orderId, status, note, actorId, tracking }) => {
   const order = await orderRepository.model.findById(orderId);
   if (!order) throw AppError.notFound("Order not found");
 
@@ -187,6 +241,33 @@ const updateOrderStatus = async ({ orderId, status, note, actorId }) => {
   order.status = status;
   order.statusHistory.push({ status, note: note || "", changedBy: actorId });
 
+  if (status === ORDER_STATUS.SHIPPED) {
+    order.shipping = order.shipping || {};
+    order.shipping.shippedAt = new Date();
+    if (tracking?.trackingNumber) order.shipping.trackingNumber = tracking.trackingNumber;
+    if (tracking?.carrier) order.shipping.carrier = tracking.carrier;
+
+    // The goods have left the building, so the reservation becomes a sale.
+    if (!order.stockFulfilled) {
+      for (const item of order.orderItems) {
+        await inventoryService
+          .fulfil({
+            productId: item.product,
+            variantSku: item.variantSku || "",
+            qty: item.qty,
+            referenceId: order._id,
+          })
+          .catch((error) =>
+            logger.error(`Failed to fulfil stock on dispatch: ${error.message}`, {
+              order: order._id,
+              product: item.product,
+            })
+          );
+      }
+      order.stockFulfilled = true;
+    }
+  }
+
   if (status === ORDER_STATUS.DELIVERED) {
     order.deliveredAt = new Date();
     // Cash on delivery is settled at the door.
@@ -196,7 +277,32 @@ const updateOrderStatus = async ({ orderId, status, note, actorId }) => {
   if (status === ORDER_STATUS.CANCELLED) {
     order.cancelledAt = new Date();
     order.cancellationReason = note || "";
-    await releaseStock(order.orderItems);
+
+    // Only unfulfilled stock is still reserved; dispatched stock is gone.
+    if (!order.stockFulfilled) await releaseAll(order.orderItems, order._id);
+    await couponService.revoke({ orderId: order._id });
+  }
+
+  if (status === ORDER_STATUS.RETURNED) {
+    // Returned goods come back onto the shelf.
+    for (const item of order.orderItems) {
+      await inventoryService
+        .adjustStock({
+          productId: item.product,
+          variantSku: item.variantSku || "",
+          quantity: item.qty,
+          reason: MOVEMENT_REASONS.RETURN,
+          referenceType: "Order",
+          referenceId: order._id,
+          performedBy: actorId,
+        })
+        .catch((error) =>
+          logger.error(`Failed to restock returned item: ${error.message}`, {
+            order: order._id,
+            product: item.product,
+          })
+        );
+    }
   }
 
   await order.save();
@@ -227,6 +333,7 @@ const cancelOrder = async ({ orderId, requester, reason }) => {
 };
 
 module.exports = {
+  quote,
   createOrder,
   listMyOrders,
   listAllOrders,

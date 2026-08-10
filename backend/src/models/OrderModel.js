@@ -14,6 +14,10 @@ const {
 const orderItemSchema = new mongoose.Schema(
   {
     product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+    /** Empty for products sold without variants. */
+    variantSku: { type: String, default: "" },
+    /** Human-readable option summary, e.g. "Red / Medium". */
+    variantLabel: { type: String, default: "" },
     name: { type: String, required: true },
     qty: { type: Number, required: true, min: 1 },
     image: { type: String, required: true },
@@ -26,6 +30,7 @@ const orderItemSchema = new mongoose.Schema(
     lineTotal: { type: Number, required: true, min: 0 },
     brand: { type: String, default: "" },
     category: { type: String, default: "" },
+    categoryRef: { type: mongoose.Schema.Types.ObjectId, ref: "Category", default: null },
   },
   { _id: false }
 );
@@ -68,12 +73,39 @@ const orderSchema = new mongoose.Schema(
      */
     pricing: {
       itemsTotal: { type: Number, required: true, min: 0, default: 0 },
+      /** Product markdowns and coupon savings combined. */
       discountTotal: { type: Number, required: true, min: 0, default: 0 },
+      productDiscountTotal: { type: Number, min: 0, default: 0 },
+      couponDiscountTotal: { type: Number, min: 0, default: 0 },
       taxTotal: { type: Number, required: true, min: 0, default: 0 },
       shippingTotal: { type: Number, required: true, min: 0, default: 0 },
       grandTotal: { type: Number, required: true, min: 0, default: 0 },
       currency: { type: String, default: "INR" },
     },
+
+    /** Snapshot of the coupon applied, if any. */
+    coupon: {
+      coupon: { type: mongoose.Schema.Types.ObjectId, ref: "Coupon", default: null },
+      code: { type: String, default: "" },
+      type: { type: String, default: "" },
+      discountAmount: { type: Number, min: 0, default: 0 },
+    },
+
+    /** Delivery zone, rate and promised window at the time of ordering. */
+    shipping: {
+      zone: { type: mongoose.Schema.Types.ObjectId, ref: "ShippingZone", default: null },
+      zoneName: { type: String, default: "" },
+      rateName: { type: String, default: "" },
+      cost: { type: Number, min: 0, default: 0 },
+      minDeliveryDays: { type: Number, min: 0, default: 0 },
+      maxDeliveryDays: { type: Number, min: 0, default: 0 },
+      trackingNumber: { type: String, default: "" },
+      carrier: { type: String, default: "" },
+      shippedAt: { type: Date },
+    },
+
+    /** Set once reserved stock has been converted into a dispatch. */
+    stockFulfilled: { type: Boolean, default: false },
 
     status: {
       type: String,

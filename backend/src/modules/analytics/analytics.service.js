@@ -14,6 +14,21 @@ const revenueMatch = (from, to) => ({
     : {}),
 });
 
+const DEFAULT_RANGE_DAYS = 30;
+
+/**
+ * Resolves an optional range into concrete dates.
+ *
+ * Every panel resolves the range through here so a dashboard request without
+ * explicit dates reports the same window everywhere, rather than mixing a
+ * 30-day summary with all-time top sellers.
+ */
+const resolveRange = ({ from, to } = {}) => {
+  const end = to || new Date();
+  const start = from || new Date(end.getTime() - DEFAULT_RANGE_DAYS * 24 * 60 * 60 * 1000);
+  return { start, end };
+};
+
 /** Percentage change from `previous` to `current`, guarding division by zero. */
 const percentChange = (current, previous) => {
   if (!previous) return current > 0 ? 100 : 0;
@@ -34,9 +49,8 @@ const sumRevenue = async (from, to) => {
  * The comparison window is the equally sized period immediately before the
  * requested one, so "last 30 days" is compared against the 30 days before it.
  */
-const getSummary = async ({ from, to }) => {
-  const end = to || new Date();
-  const start = from || new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+const getSummary = async (range) => {
+  const { start, end } = resolveRange(range);
   const spanMs = end.getTime() - start.getTime();
   const previousStart = new Date(start.getTime() - spanMs);
 
@@ -85,9 +99,8 @@ const getSummary = async ({ from, to }) => {
  * Buckets with no orders are filled in with zeros so the chart draws a
  * continuous line rather than skipping empty days.
  */
-const getSalesTrend = async ({ from, to, interval = "day" }) => {
-  const end = to || new Date();
-  const start = from || new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+const getSalesTrend = async ({ interval = "day", ...range } = {}) => {
+  const { start, end } = resolveRange(range);
 
   const formats = { day: "%Y-%m-%d", week: "%Y-%V", month: "%Y-%m" };
   const format = formats[interval] || formats.day;
@@ -121,14 +134,10 @@ const getSalesTrend = async ({ from, to, interval = "day" }) => {
 };
 
 /** Order counts per lifecycle status, for the distribution donut. */
-const getStatusDistribution = async ({ from, to }) => {
+const getStatusDistribution = async (range) => {
+  const { start, end } = resolveRange(range);
   const rows = await Order.aggregate([
-    {
-      $match:
-        from || to
-          ? { createdAt: { ...(from ? { $gte: from } : {}), ...(to ? { $lte: to } : {}) } }
-          : {},
-    },
+    { $match: { createdAt: { $gte: start, $lte: end } } },
     { $group: { _id: "$status", count: { $sum: 1 } } },
   ]);
 
@@ -141,9 +150,10 @@ const getStatusDistribution = async ({ from, to }) => {
 };
 
 /** Best sellers by units sold, with the revenue each generated. */
-const getTopProducts = async ({ from, to, limit = 5 }) =>
-  Order.aggregate([
-    { $match: revenueMatch(from, to) },
+const getTopProducts = async ({ limit = 5, ...range } = {}) => {
+  const { start, end } = resolveRange(range);
+  return Order.aggregate([
+    { $match: revenueMatch(start, end) },
     { $unwind: "$orderItems" },
     {
       $group: {
@@ -157,13 +167,25 @@ const getTopProducts = async ({ from, to, limit = 5 }) =>
     },
     { $sort: { unitsSold: -1 } },
     { $limit: limit },
-    { $project: { _id: 0, productId: "$_id", name: 1, image: 1, category: 1, unitsSold: 1, revenue: 1 } },
+    {
+      $project: {
+        _id: 0,
+        productId: "$_id",
+        name: 1,
+        image: 1,
+        category: 1,
+        unitsSold: 1,
+        revenue: 1,
+      },
+    },
   ]);
+};
 
 /** Revenue split by product category, for the category breakdown chart. */
-const getRevenueByCategory = async ({ from, to, limit = 8 }) =>
-  Order.aggregate([
-    { $match: revenueMatch(from, to) },
+const getRevenueByCategory = async ({ limit = 8, ...range } = {}) => {
+  const { start, end } = resolveRange(range);
+  return Order.aggregate([
+    { $match: revenueMatch(start, end) },
     { $unwind: "$orderItems" },
     {
       $group: {
@@ -176,6 +198,7 @@ const getRevenueByCategory = async ({ from, to, limit = 8 }) =>
     { $limit: limit },
     { $project: { _id: 0, category: "$_id", revenue: 1, unitsSold: 1 } },
   ]);
+};
 
 const getRecentOrders = ({ limit = 5 }) =>
   Order.find({})
@@ -198,7 +221,11 @@ const getLowStockProducts = ({ limit = 5 }) => productRepository.findLowStock(li
  * Single round trip powering the overview screen, so the dashboard renders
  * from one request instead of eight.
  */
-const getDashboard = async ({ from, to, interval }) => {
+const getDashboard = async (query = {}) => {
+  // Resolved once so every panel below reports the identical window.
+  const { start: from, end: to } = resolveRange(query);
+  const interval = query.interval;
+
   const [
     summary,
     salesTrend,

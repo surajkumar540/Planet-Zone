@@ -31,6 +31,14 @@ router.post(
 
 /* --------------------------------- Customer -------------------------------- */
 
+/** Prices a cart, including coupon and delivery, without placing an order. */
+router.post(
+  "/orders/quote",
+  authenticate,
+  validate({ body: schemas.quoteOrderSchema }),
+  controller.quoteOrder
+);
+
 router.post(
   "/createOrder",
   authenticate,

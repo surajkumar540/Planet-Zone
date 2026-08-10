@@ -374,15 +374,8 @@ const SignUp = () => {
                   size="small"
                   name="firstName"
                   label="First Name"
-                  fullWidth
-                  size="small"
-                  name="firstName"
-                  label="First Name"
                   value={formValues.firstName}
                   onChange={handleChange}
-                  error={!!formErrors.firstName}
-                  helperText={formErrors.firstName}
-                  sx={inputSx}
                   error={!!formErrors.firstName}
                   helperText={formErrors.firstName}
                   sx={inputSx}
@@ -392,15 +385,8 @@ const SignUp = () => {
                   size="small"
                   name="lastName"
                   label="Last Name"
-                  fullWidth
-                  size="small"
-                  name="lastName"
-                  label="Last Name"
                   value={formValues.lastName}
                   onChange={handleChange}
-                  error={!!formErrors.lastName}
-                  helperText={formErrors.lastName}
-                  sx={inputSx}
                   error={!!formErrors.lastName}
                   helperText={formErrors.lastName}
                   sx={inputSx}

@@ -48,7 +48,6 @@ const PaymentMethod = () => {
       const apiData = {
         cart: cart,
         shippingAddress: shipping,
-        paymentId: {},
         onlinePayment: false
       }
       const order = await createOrderApi(apiData)
@@ -100,7 +99,10 @@ const PaymentMethod = () => {
               const apiData = {
                 cart: cart,
                 shippingAddress: shipping,
-                paymentId: response?.data?._id
+                paymentId: response?.data?._id,
+                // Omitting this previously recorded every online payment as a
+                // cash-on-delivery order.
+                onlinePayment: true
               }
               const order = await createOrderApi(apiData)
               if (order.status) {

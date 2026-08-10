@@ -8,7 +8,8 @@
     "dev": "nodemon backend/src/server.js",
     "data:import": "node backend/src/seeder.js",
     "data:destroy": "node backend/src/seeder.js -d",
-    "db:migrate": "node backend/src/migrations/001-backfill-schema-fields.js"
+    "db:migrate": "node backend/src/migrations/001-backfill-schema-fields.js",
+    "db:migrate:inventory": "node backend/src/migrations/002-seed-inventory.js"
   },
   "author": "jai",
   "license": "ISC",

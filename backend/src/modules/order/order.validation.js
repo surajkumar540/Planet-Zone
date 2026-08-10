@@ -9,6 +9,9 @@ const { ORDER_STATUS_VALUES, PAYMENT_STATUS_VALUES } = require("../../constants/
 const cartLineSchema = z.object({
   _id: objectId.optional(),
   product: objectId.optional(),
+  /** Selects a variant when the product has them. */
+  variantSku: z.string().trim().max(60).optional(),
+  variantId: objectId.optional(),
   qty: z.coerce.number().int().min(1).max(100),
 });
 
@@ -27,6 +30,8 @@ const createOrderSchema = z
     cart: z.array(cartLineSchema).min(1, "Your cart is empty"),
     shippingAddress: shippingAddressSchema,
     onlinePayment: z.coerce.boolean().default(false),
+    couponCode: z.string().trim().max(40).optional(),
+    shippingRateId: objectId.optional(),
     // The checkout screen sends `{}` for cash on delivery; normalise any
     // non-string placeholder to "absent".
     paymentId: z.preprocess(
@@ -50,6 +55,14 @@ const paymentSuccessSchema = z.object({
   razorpaySignature: z.string().trim().min(1),
 });
 
+/** Prices a cart without placing an order. */
+const quoteOrderSchema = z.object({
+  cart: z.array(cartLineSchema).min(1, "Your cart is empty"),
+  couponCode: z.string().trim().max(40).optional(),
+  shippingAddress: shippingAddressSchema.partial().optional(),
+  shippingRateId: objectId.optional(),
+});
+
 const listOrdersQuery = listQuery.extend({
   status: z.enum(ORDER_STATUS_VALUES).optional(),
   paymentStatus: z.enum(PAYMENT_STATUS_VALUES).optional(),
@@ -60,6 +73,12 @@ const listOrdersQuery = listQuery.extend({
 const updateStatusSchema = z.object({
   status: z.enum(ORDER_STATUS_VALUES),
   note: z.string().trim().max(500).optional(),
+  tracking: z
+    .object({
+      trackingNumber: z.string().trim().max(100).optional(),
+      carrier: z.string().trim().max(100).optional(),
+    })
+    .optional(),
 });
 
 const cancelOrderSchema = z.object({
@@ -68,6 +87,7 @@ const cancelOrderSchema = z.object({
 
 module.exports = {
   createOrderSchema,
+  quoteOrderSchema,
   paymentInitSchema,
   paymentSuccessSchema,
   listOrdersQuery,

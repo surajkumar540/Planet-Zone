@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ForgetModal from "../components/Modals/ForgetModal";
 import { validateSignInPage } from "../utils/validate";
 import { login } from "../api/userApi";
+import { setSession } from "../utils/functions";
 import { useDispatch } from "react-redux";
 import { setUserLogged, setAdminLogged } from "../redux/reducers/userSlice";
 import SpaIcon from "@mui/icons-material/Spa";
@@ -63,10 +64,13 @@ const Login = () => {
     try {
       const response = await login(formValues);
       if (response.status) {
-        localStorage.setItem("token", response.token);
-        localStorage.setItem("userId", response.userId);
+        setSession({
+          token: response.token,
+          userId: response.userId,
+          isAdmin: response.isAdmin,
+        });
+
         if (response.isAdmin) {
-          localStorage.setItem("admin", response.isAdmin);
           dispatch(setAdminLogged());
           navigate("/dashboard");
         } else {
@@ -75,7 +79,11 @@ const Login = () => {
         }
       }
     } catch (error) {
-      console.log(error);
+      // The API returns a single message for both unknown email and wrong
+      // password, so it is safe to surface directly.
+      setFormErrors({
+        password: error?.response?.data?.message || "Unable to sign in. Please try again.",
+      });
     }
     setIsSubmit(false);
     clearFormValues();

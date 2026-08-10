@@ -4,7 +4,58 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Planet — commerce operations dashboard and storefront" />
+    <meta name="theme-color" content="#16a34a" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <title>Planet</title>
+
+    <script>
+      /*
+       * Applies the stored appearance before the first paint.
+       *
+       * React mounts too late to prevent a flash of the wrong theme, so the
+       * saved preference is stamped onto <html> synchronously here. Kept
+       * deliberately small and dependency-free; ThemeProvider takes over on
+       * mount and writes the same values.
+       */
+      (function applyStoredAppearance() {
+        try {
+          var stored = JSON.parse(localStorage.getItem("planet.appearance") || "null") || {};
+          var mode = stored.themeMode || "system";
+          var resolved =
+            mode === "system"
+              ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : mode;
+
+          if (mode !== "system") document.documentElement.setAttribute("data-theme", resolved);
+          document.documentElement.style.colorScheme = resolved;
+
+          var sizes = { sm: 15, md: 16, lg: 17 };
+          document.documentElement.style.fontSize = (sizes[stored.fontSize] || 16) + "px";
+
+          var densities = { compact: 0.875, comfortable: 1, spacious: 1.125 };
+          document.documentElement.style.setProperty(
+            "--density",
+            String(densities[stored.density] || 1)
+          );
+
+          /* Paint the canvas immediately so dark mode never flashes white. */
+          document.documentElement.style.backgroundColor =
+            resolved === "dark" ? "#0f1114" : "#f6f7f9";
+        } catch (error) {
+          /* A corrupt preference must never stop the app from booting. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

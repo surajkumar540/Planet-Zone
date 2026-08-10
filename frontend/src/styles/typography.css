@@ -1,0 +1,105 @@
+/**
+ * Typography system.
+ *
+ * Components use these classes rather than choosing a size per component,
+ * so the interface has one type scale instead of a dozen ad-hoc sizes.
+ * Every class pairs a size with the line height and weight it was designed
+ * against; none of them set colour, which stays a separate decision.
+ */
+
+@layer components {
+  /* Largest number on a screen — hero metrics only. */
+  .type-display {
+    font-size: var(--text-display);
+    line-height: var(--text-display-lh);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+  }
+
+  /* One per screen, at the top. */
+  .type-page-title {
+    font-size: var(--text-page);
+    line-height: var(--text-page-lh);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.015em;
+  }
+
+  /* Groups of cards or a region within a page. */
+  .type-section-title {
+    font-size: var(--text-section);
+    line-height: var(--text-section-lh);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+  }
+
+  /* The heading inside a card. */
+  .type-card-title {
+    font-size: var(--text-card);
+    line-height: var(--text-card-lh);
+    font-weight: var(--weight-semibold);
+  }
+
+  .type-body {
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    font-weight: var(--weight-regular);
+  }
+
+  .type-body-strong {
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    font-weight: var(--weight-medium);
+  }
+
+  /* Supporting sentence under a title. */
+  .type-description {
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    font-weight: var(--weight-regular);
+    color: var(--text-secondary);
+  }
+
+  /* Form field labels and table headers. */
+  .type-label {
+    font-size: var(--text-label);
+    line-height: var(--text-label-lh);
+    font-weight: var(--weight-medium);
+  }
+
+  /* Timestamps, helper text, footnotes. */
+  .type-caption {
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--weight-regular);
+    color: var(--text-muted);
+  }
+
+  /* Uppercase eyebrow above a group. */
+  .type-overline {
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .type-button {
+    font-size: var(--text-body);
+    line-height: 1;
+    font-weight: var(--weight-medium);
+  }
+
+  /* Table cells; slightly tighter than body so rows stay compact. */
+  .type-table {
+    font-size: var(--text-body);
+    line-height: 1.25rem;
+    font-weight: var(--weight-regular);
+  }
+
+  /* Aligns digits in columns so figures compare vertically. */
+  .type-numeric {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}

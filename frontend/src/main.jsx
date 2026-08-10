@@ -1,20 +1,33 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { BrowserRouter } from 'react-router-dom'
-import { Provider } from 'react-redux'
-import store from './redux/store/store.js'
-import ProtectedRoute from './components/Provider/ProtectedRoute.jsx'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+import App from "./App.jsx";
+import store from "./redux/store/store.js";
+import AppThemeProvider from "./theme/AppThemeProvider.jsx";
+import { ToastProvider } from "./components/ui/Toast.jsx";
+import ErrorBoundary from "./components/ui/ErrorBoundary.jsx";
+import "./index.css";
+
+/*
+ * Provider order matters: the theme must wrap everything that renders, and the
+ * error boundary sits inside it so a crash screen is still themed correctly.
+ * Route protection now lives in the router rather than wrapping the tree, so a
+ * redirect cannot fire before the destination route is known.
+ */
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
-        <ProtectedRoute>
-        <App />
-        </ProtectedRoute>
-      </BrowserRouter>
+      <AppThemeProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
+          </BrowserRouter>
+        </ToastProvider>
+      </AppThemeProvider>
     </Provider>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

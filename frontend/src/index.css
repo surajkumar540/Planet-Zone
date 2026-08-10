@@ -1,13 +1,12 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
+/* CSS requires @import before any other rule. Vite inlines these, then
+   Tailwind processes the combined file, so the @layer blocks inside them
+   still land in the right layers. */
+@import "./styles/tokens.css";
+@import "./styles/typography.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 *{
   margin: 0;

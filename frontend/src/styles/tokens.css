@@ -1,0 +1,270 @@
+/**
+ * Design tokens.
+ *
+ * Both themes are designed, not inverted: the dark palette uses its own
+ * lightness steps so borders stay visible and surfaces keep their hierarchy.
+ * Every colour a component uses resolves through a role token here, so a
+ * component is written once and works in both modes.
+ *
+ * Accent tokens (--accent-*) are written at runtime by ThemeProvider from the
+ * selected preset, which is why they are not declared with fixed values.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Surfaces: page → raised card → sunken well ---- */
+  --surface-canvas: #f6f7f9;
+  --surface-default: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f1f3f5;
+  --surface-overlay: #ffffff;
+  --surface-hover: #f3f4f6;
+  --surface-active: #e9ebee;
+  /* Chart cards use the surface the data-viz palette was validated against. */
+  --surface-chart: #fcfcfb;
+  --surface-inverse: #111827;
+
+  /* ---- Ink ---- */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --text-disabled: #9ca3af;
+  --text-inverse: #f9fafb;
+
+  /* ---- Lines ---- */
+  --border-subtle: #eceef1;
+  --border-default: #e0e3e8;
+  --border-strong: #cbd0d8;
+
+  /* ---- Fixed status roles, shared by badges, toasts and charts ---- */
+  --status-good: #0ca30c;
+  --status-good-bg: #e8f7e8;
+  --status-warning: #b45309;
+  --status-warning-bg: #fef3c7;
+  --status-serious: #c2410c;
+  --status-serious-bg: #ffedd5;
+  --status-critical: #d03b3b;
+  --status-critical-bg: #fdeaea;
+  --status-info: #2a78d6;
+  --status-info-bg: #e6f0fc;
+
+  /* ---- Elevation. Dark mode replaces these rather than reusing them, since
+         shadows read as haze on a dark surface. ---- */
+  --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(16 24 40 / 0.06), 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-md: 0 4px 8px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04);
+  --shadow-lg: 0 12px 16px -4px rgb(16 24 40 / 0.08), 0 4px 6px -2px rgb(16 24 40 / 0.03);
+  --shadow-xl: 0 20px 24px -4px rgb(16 24 40 / 0.1), 0 8px 8px -4px rgb(16 24 40 / 0.04);
+
+  /* ---- Scrollbars ---- */
+  --scrollbar-thumb: #d3d7de;
+  --scrollbar-track: transparent;
+
+  /* ---- Type scale. Sizes are rem so the font-size preference rescales the
+         whole interface from one root value. ---- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-display: 2rem;
+  --text-display-lh: 2.5rem;
+  --text-page: 1.5rem;
+  --text-page-lh: 2rem;
+  --text-section: 1.125rem;
+  --text-section-lh: 1.75rem;
+  --text-card: 0.9375rem;
+  --text-card-lh: 1.375rem;
+  --text-body: 0.875rem;
+  --text-body-lh: 1.375rem;
+  --text-label: 0.8125rem;
+  --text-label-lh: 1.125rem;
+  --text-caption: 0.75rem;
+  --text-caption-lh: 1rem;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- Density: written at runtime, drives control heights and gaps ---- */
+  --density: 1;
+  --control-height: calc(2.25rem * var(--density));
+  --control-height-sm: calc(1.875rem * var(--density));
+  --control-height-lg: calc(2.75rem * var(--density));
+  --row-padding-y: calc(0.75rem * var(--density));
+  --section-gap: calc(1.5rem * var(--density));
+
+  /* ---- Radii ---- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 72px;
+  --topbar-height: 60px;
+}
+
+/*
+ * Dark theme.
+ *
+ * Declared under both the explicit stamp and the OS preference so the toggle
+ * wins in either direction: `:not([data-theme="light"])` lets an explicit
+ * light choice beat OS dark.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-canvas: #0f1114;
+  --surface-default: #16191d;
+  --surface-raised: #1c2025;
+  --surface-sunken: #101317;
+  --surface-overlay: #1c2025;
+  --surface-hover: #22262c;
+  --surface-active: #2a2f36;
+  --surface-chart: #1a1a19;
+  --surface-inverse: #f9fafb;
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #b6bcc6;
+  --text-muted: #8b929c;
+  --text-disabled: #626973;
+  --text-inverse: #111827;
+
+  /* Lightened rather than darkened: on a dark surface a border must step up. */
+  --border-subtle: #23272d;
+  --border-default: #2e333a;
+  --border-strong: #414851;
+
+  --status-good: #22c55e;
+  --status-good-bg: #14351f;
+  --status-warning: #fab219;
+  --status-warning-bg: #3d2f0d;
+  --status-serious: #ec835a;
+  --status-serious-bg: #40230f;
+  --status-critical: #ef5b5b;
+  --status-critical-bg: #40191c;
+  --status-info: #3987e5;
+  --status-info-bg: #12294a;
+
+  /* Deeper and more opaque, since a translucent black barely registers here. */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 16px -4px rgb(0 0 0 / 0.5), 0 4px 6px -2px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 24px -4px rgb(0 0 0 / 0.55), 0 8px 8px -4px rgb(0 0 0 / 0.35);
+
+  --scrollbar-thumb: #3a4048;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+
+    --surface-canvas: #0f1114;
+    --surface-default: #16191d;
+    --surface-raised: #1c2025;
+    --surface-sunken: #101317;
+    --surface-overlay: #1c2025;
+    --surface-hover: #22262c;
+    --surface-active: #2a2f36;
+    --surface-chart: #1a1a19;
+    --surface-inverse: #f9fafb;
+
+    --text-primary: #f3f4f6;
+    --text-secondary: #b6bcc6;
+    --text-muted: #8b929c;
+    --text-disabled: #626973;
+    --text-inverse: #111827;
+
+    --border-subtle: #23272d;
+    --border-default: #2e333a;
+    --border-strong: #414851;
+
+    --status-good: #22c55e;
+    --status-good-bg: #14351f;
+    --status-warning: #fab219;
+    --status-warning-bg: #3d2f0d;
+    --status-serious: #ec835a;
+    --status-serious-bg: #40230f;
+    --status-critical: #ef5b5b;
+    --status-critical-bg: #40191c;
+    --status-info: #3987e5;
+    --status-info-bg: #12294a;
+
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 12px 16px -4px rgb(0 0 0 / 0.5), 0 4px 6px -2px rgb(0 0 0 / 0.3);
+    --shadow-xl: 0 20px 24px -4px rgb(0 0 0 / 0.55), 0 8px 8px -4px rgb(0 0 0 / 0.35);
+
+    --scrollbar-thumb: #3a4048;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------ */
+
+html {
+  /* Rewritten by ThemeProvider for the font-size preference. */
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Theme changes animate, but never while the user is mid-interaction with a
+   control, and never for people who ask for reduced motion. */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease !important;
+  transition-delay: 0ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition: none !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+  background-clip: content-box;
+}
+
+/* A single focus treatment for every interactive element, keyboard-only so it
+   does not fire on mouse clicks. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

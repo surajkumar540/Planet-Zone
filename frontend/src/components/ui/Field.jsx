@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Check, ChevronDown, Minus, X } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Eye, EyeOff, Minus, X } from "lucide-react";
 import cn from "../../lib/cn";
 
 /**
@@ -70,6 +70,7 @@ export const Input = forwardRef(
       required,
       icon: Icon,
       suffix,
+      trailing,
       size = "md",
       clearable = false,
       onClear,
@@ -107,12 +108,16 @@ export const Input = forwardRef(
                 "px-3",
                 SIZES[size] || SIZES.md,
                 Icon && "pl-9",
-                (suffix || showClear) && "pr-10",
+                (suffix || showClear || trailing) && "pr-10",
                 className
               )
             )}
             {...props}
           />
+
+          {/* Interactive slot, vertically centred by the flex row rather than a
+              hand-tuned offset that breaks with the control size. */}
+          {trailing && <span className="absolute right-2 flex items-center">{trailing}</span>}
 
           {showClear ? (
             <button
@@ -136,6 +141,39 @@ export const Input = forwardRef(
   }
 );
 Input.displayName = "Input";
+
+/**
+ * Password field with a reveal toggle.
+ *
+ * Separate from `Input` because the toggle occupies the same slot as `suffix`
+ * and has to stay clickable, which a decorative suffix never is. The button is
+ * excluded from the tab order: it is a convenience, and stopping between every
+ * password field and the next control would slow the form down for keyboard
+ * users.
+ */
+export const PasswordInput = forwardRef((props, ref) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Input
+      ref={ref}
+      type={visible ? "text" : "password"}
+      trailing={
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => setVisible((current) => !current)}
+          aria-label={visible ? "Hide password" : "Show password"}
+          className="flex h-7 w-7 items-center justify-center rounded-sm text-content-muted transition-colors hover:bg-surface-hover hover:text-content"
+        >
+          {visible ? <EyeOff size={15} /> : <Eye size={15} />}
+        </button>
+      }
+      {...props}
+    />
+  );
+});
+PasswordInput.displayName = "PasswordInput";
 
 /* -------------------------------- Textarea --------------------------------- */
 

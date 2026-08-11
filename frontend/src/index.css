@@ -16,6 +16,31 @@
 body {
   margin: 0;
   padding: 0;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * Tailwind's Preflight is disabled so Material UI keeps the browser defaults it
+ * relies on, which leaves the user-agent underline on every anchor. Links are
+ * styled per component here — a header nav item is not underlined, a link
+ * inside a paragraph is — so the default is cleared and each call site opts in
+ * with `underline` or `hover:underline`.
+ */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Buttons inherit the app's type rather than the platform's UI font. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 .cs-loader {

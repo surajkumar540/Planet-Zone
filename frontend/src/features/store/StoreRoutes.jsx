@@ -49,6 +49,16 @@ const load = (Screen) => (
  */
 const StoreRoutes = () => (
   <Routes>
+    {/*
+      The auth screens carry their own full-bleed layout. They sit outside
+      StoreLayout because the storefront header — search, wishlist, bag — is
+      noise on a sign-in page and competes with the one action being asked for.
+    */}
+    <Route path="login" element={load(Login)} />
+    <Route path="signup" element={load(SignUp)} />
+    <Route path="otp" element={load(OtpVerify)} />
+    <Route path="change-password" element={load(ForgotPassword)} />
+
     <Route element={<StoreLayout />}>
       <Route index element={<Home />} />
       <Route path="shop" element={<Shop />} />
@@ -56,11 +66,6 @@ const StoreRoutes = () => (
       <Route path="cart" element={load(Cart)} />
       <Route path="about" element={load(About)} />
       <Route path="contact" element={load(Contact)} />
-
-      <Route path="login" element={load(Login)} />
-      <Route path="signup" element={load(SignUp)} />
-      <Route path="otp" element={load(OtpVerify)} />
-      <Route path="change-password" element={load(ForgotPassword)} />
 
       <Route element={<RequireAuth />}>
         <Route path="checkout" element={load(Checkout)} />

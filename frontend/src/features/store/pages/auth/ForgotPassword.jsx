@@ -1,12 +1,65 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, ArrowRight, Check, KeyRound, Lock, Mail } from "lucide-react";
 
 import { changePassword, forgetOtp } from "../../../../api/userApi";
 import { useMutation } from "../../../../hooks/useApi";
 import Button from "../../../../components/ui/Button";
-import { Input } from "../../../../components/ui/Field";
+import { Input, PasswordInput } from "../../../../components/ui/Field";
 import { useToast } from "../../../../components/ui/Toast";
-import AuthShell from "./AuthShell";
+import cn from "../../../../lib/cn";
+import AuthShell, { AuthLink } from "./AuthShell";
+import OtpInput from "./OtpInput";
+
+const STEPS = [
+  { id: "request", label: "Your email" },
+  { id: "reset", label: "New password" },
+];
+
+/** Two dots and a connecting line — enough to show there is an end in sight. */
+const StepIndicator = ({ current }) => (
+  <ol className="mb-7 flex items-center gap-3">
+    {STEPS.map((step, index) => {
+      const active = STEPS.findIndex((item) => item.id === current) === index;
+      const done = STEPS.findIndex((item) => item.id === current) > index;
+
+      return (
+        <li key={step.id} className="flex flex-1 items-center gap-3">
+          <span className="flex items-center gap-2">
+            <span
+              className={cn(
+                "flex h-6 w-6 items-center justify-center rounded-full type-caption font-semibold transition-colors",
+                done && "bg-status-good text-white",
+                active && "bg-accent text-accent-on",
+                !done && !active && "bg-surface-sunken text-content-muted"
+              )}
+            >
+              {done ? <Check size={13} strokeWidth={3} /> : index + 1}
+            </span>
+            <span
+              className={cn(
+                "type-caption transition-colors",
+                active ? "font-medium text-content" : "text-content-muted"
+              )}
+            >
+              {step.label}
+            </span>
+          </span>
+          {index < STEPS.length - 1 && (
+            <span className={cn("h-px flex-1", done ? "bg-status-good" : "bg-line")} />
+          )}
+        </li>
+      );
+    })}
+  </ol>
+);
+
+const slide = {
+  initial: { opacity: 0, x: 24 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+  exit: { opacity: 0, x: -24, transition: { duration: 0.2 } },
+};
 
 /**
  * Password reset.
@@ -63,6 +116,7 @@ const ForgotPassword = () => {
 
   return (
     <AuthShell
+      badge="Reset"
       title="Reset your password"
       description={
         step === "request"
@@ -71,67 +125,108 @@ const ForgotPassword = () => {
       }
       footer={
         <>
-          Remembered it?{" "}
-          <Link to="/login" className="text-accent-text hover:underline">
-            Back to sign in
-          </Link>
+          Remembered it? <AuthLink to="/login">Back to sign in</AuthLink>
         </>
       }
     >
-      {step === "request" ? (
-        <form onSubmit={requestCode} className="space-y-4">
-          <Input
-            label="Email"
-            type="email"
-            required
-            autoComplete="email"
-            error={error || undefined}
-            value={form.email}
-            onChange={(event) => setForm({ ...form, email: event.target.value })}
-          />
-          <Button type="submit" variant="primary" size="lg" fullWidth loading={request.loading}>
-            Send reset code
-          </Button>
-        </form>
-      ) : (
-        <form onSubmit={submitReset} className="space-y-4">
-          <Input
-            label="Reset code"
-            inputMode="numeric"
-            maxLength={6}
-            required
-            value={form.otp}
-            onChange={(event) => setForm({ ...form, otp: event.target.value.replace(/\D/g, "") })}
-            className="type-numeric tracking-[0.4em]"
-          />
-          <Input
-            label="New password"
-            type="password"
-            required
-            autoComplete="new-password"
-            hint="At least 8 characters"
-            value={form.password}
-            onChange={(event) => setForm({ ...form, password: event.target.value })}
-          />
-          <Input
-            label="Confirm new password"
-            type="password"
-            required
-            autoComplete="new-password"
-            error={error || undefined}
-            value={form.confirmPassword}
-            onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })}
-          />
+      <StepIndicator current={step} />
 
-          <Button type="submit" variant="primary" size="lg" fullWidth loading={reset.loading}>
-            Set new password
-          </Button>
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            role="alert"
+            className="mb-4 flex items-start gap-2.5 overflow-hidden rounded-md border border-status-critical bg-status-critical-bg px-3.5 py-3"
+          >
+            <AlertCircle size={16} className="mt-px shrink-0 text-status-critical" />
+            <p className="type-body text-status-critical">{error}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <Button variant="ghost" fullWidth onClick={() => setStep("request")}>
-            Use a different email
-          </Button>
-        </form>
-      )}
+      <AnimatePresence mode="wait">
+        {step === "request" ? (
+          <motion.form
+            key="request"
+            {...slide}
+            onSubmit={requestCode}
+            className="space-y-5"
+          >
+            <Input
+              label="Email address"
+              type="email"
+              icon={Mail}
+              required
+              autoFocus
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(event) => setForm({ ...form, email: event.target.value })}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={request.loading}
+              iconRight={ArrowRight}
+            >
+              Send reset code
+            </Button>
+          </motion.form>
+        ) : (
+          <motion.form key="reset" {...slide} onSubmit={submitReset} className="space-y-5">
+            <div>
+              <span className="type-label mb-1.5 flex items-center gap-1.5 text-content-secondary">
+                <KeyRound size={13} />
+                Reset code
+              </span>
+              <OtpInput
+                value={form.otp}
+                onChange={(otp) => setForm({ ...form, otp })}
+                invalid={Boolean(error)}
+                autoFocus
+              />
+            </div>
+
+            <PasswordInput
+              label="New password"
+              icon={Lock}
+              required
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              value={form.password}
+              onChange={(event) => setForm({ ...form, password: event.target.value })}
+            />
+            <PasswordInput
+              label="Confirm new password"
+              icon={Lock}
+              required
+              autoComplete="new-password"
+              placeholder="Type it once more"
+              value={form.confirmPassword}
+              onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })}
+            />
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={reset.loading}
+              disabled={form.otp.length < 6}
+            >
+              Set new password
+            </Button>
+
+            <Button variant="ghost" fullWidth onClick={() => setStep("request")}>
+              Use a different email
+            </Button>
+          </motion.form>
+        )}
+      </AnimatePresence>
     </AuthShell>
   );
 };

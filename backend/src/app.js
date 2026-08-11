@@ -29,7 +29,17 @@ app.use(
     origin(origin, callback) {
       // Same-origin and non-browser callers (curl, health checks) send no Origin.
       if (!origin || env.corsOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+
+      /*
+       * Refuse by withholding the CORS headers rather than raising.
+       *
+       * Passing an Error here turns a disallowed origin into a 500, which
+       * misreports a configuration issue as a server fault and buries the
+       * actual cause. The browser still blocks the response; the log line is
+       * what tells an operator to add the origin to CORS_ORIGINS.
+       */
+      logger.warn(`Blocked request from disallowed origin: ${origin}`);
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

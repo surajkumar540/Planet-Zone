@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin, Package, Truck } from "lucide-react";
 import { getOrder, updateOrderStatus } from "../../../api/adminApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
@@ -52,7 +52,6 @@ const SummaryRow = ({ label, value, strong }) => (
 
 const OrderDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const toast = useToast();
 
   const { data: order, loading, error, refetch } = useApi(getOrder, id);

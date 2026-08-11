@@ -30,6 +30,13 @@ const userSchema = new mongoose.Schema(
     // sync with `role` by the pre-save hook below.
     isAdmin: { type: Boolean, required: true, default: false },
 
+    // Saved-for-later products. Stored on the user rather than in its own
+    // collection because it is only ever read whole, for one user at a time.
+    wishlist: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+      default: [],
+    },
+
     emailVerify: { type: Boolean, required: true, default: false },
     isActive: { type: Boolean, default: true, index: true },
     lastLoginAt: { type: Date },

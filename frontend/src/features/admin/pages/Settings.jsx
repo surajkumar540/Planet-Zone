@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, Monitor, Moon, Palette, RotateCcw, Store, Sun, Truck, User } from "lucide-react";
+import { Check, Monitor, Moon, Palette, RotateCcw, Store, Sun, User } from "lucide-react";
 import { getSettings, updateSettings } from "../../../api/adminApi";
 import { getProfile, setProfile } from "../../../api/userApi";
 import { useApi, useMutation } from "../../../hooks/useApi";

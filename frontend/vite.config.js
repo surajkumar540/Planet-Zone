@@ -33,6 +33,11 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             react: ["react", "react-dom", "react-router-dom"],
             redux: ["@reduxjs/toolkit", "react-redux"],
+            // Shared by the storefront and the dashboard, so it cannot be
+            // lazily split — but it changes rarely, which makes it worth
+            // isolating for long-term caching.
+            antd: ["antd"],
+            motion: ["framer-motion"],
           },
         },
       },

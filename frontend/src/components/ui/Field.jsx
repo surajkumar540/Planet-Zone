@@ -1,4 +1,5 @@
-import { forwardRef, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useId, useState } from "react";
+import { Select as AntdSelect } from "antd";
 import { AlertCircle, Check, ChevronDown, Eye, EyeOff, Minus, X } from "lucide-react";
 import cn from "../../lib/cn";
 
@@ -259,27 +260,21 @@ export const NativeSelect = forwardRef(
 );
 NativeSelect.displayName = "NativeSelect";
 
-/** Matches an option list against typed characters for keyboard typeahead. */
-const findByPrefix = (options, prefix, from = 0) => {
-  const lower = prefix.toLowerCase();
-  const ordered = [...options.slice(from), ...options.slice(0, from)];
-  return ordered.find((option) => String(option.label).toLowerCase().startsWith(lower));
-};
-
 /**
  * Select.
  *
- * A listbox rather than a native `<select>`, because the browser's own popup
- * cannot be styled: it renders in the OS palette, so on the dark theme the
- * open list arrives as a sheet of white. This version paints the list from the
- * same tokens as everything else and gives each option room to breathe.
+ * Ant Design's Select, wrapped so it keeps this app's field contract. The
+ * hand-rolled listbox it replaces had to implement its own typeahead, flip
+ * detection, scroll-into-view and outside-click handling; antd brings those
+ * plus virtual scrolling for long option lists.
  *
- * The native element is still present behind the trigger, mirroring the value.
- * It carries `required`, so the browser's own form validation keeps working —
- * removing it would silently drop the required check on every form using this.
- *
- * `onChange` receives an event-shaped object, so call sites keep reading
+ * `onChange` still receives an event-shaped object, so call sites keep reading
  * `event.target.value` exactly as they did with the native control.
+ *
+ * A native `<select>` stays behind the trigger mirroring the value. It carries
+ * `required`, so the browser's own form validation keeps working — antd's
+ * component is not a form control and would silently drop the required check
+ * on every form using this.
  */
 export const Select = ({
   label,
@@ -299,185 +294,42 @@ export const Select = ({
 }) => {
   const generatedId = useId();
   const inputId = id || generatedId;
-  const listId = `${inputId}-listbox`;
 
-  const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [dropUp, setDropUp] = useState(false);
-
-  const wrapperRef = useRef(null);
-  const triggerRef = useRef(null);
-  const listRef = useRef(null);
-  const nativeRef = useRef(null);
-  const typeahead = useRef({ term: "", timer: 0 });
-
-  const selectedIndex = useMemo(
-    () => options.findIndex((option) => String(option.value) === String(value ?? "")),
-    [options, value]
-  );
-  const selected = selectedIndex >= 0 ? options[selectedIndex] : null;
-
-  const commit = useCallback(
-    (option) => {
-      // Shaped like a change event so existing `event.target.value` callers work.
-      onChange?.({
-        target: { value: option.value, name },
-        currentTarget: { value: option.value, name },
-      });
-      setOpen(false);
-      triggerRef.current?.focus();
-    },
-    [name, onChange]
-  );
-
-  // Opening lands on the current selection, so arrow keys continue from there.
-  const openList = useCallback(() => {
-    if (disabled) return;
-    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
-    setOpen(true);
-  }, [disabled, selectedIndex]);
-
-  // Flip above the trigger when the list would run off the bottom of the window.
-  useLayoutEffect(() => {
-    if (!open) return;
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const needed = Math.min(options.length * 36 + 8, 280);
-    setDropUp(rect.bottom + needed > window.innerHeight && rect.top > needed);
-  }, [open, options.length]);
-
-  // Keep the active option in view while arrowing through a long list.
-  useEffect(() => {
-    if (!open || activeIndex < 0) return;
-    listRef.current
-      ?.querySelector(`[data-index="${activeIndex}"]`)
-      ?.scrollIntoView({ block: "nearest" });
-  }, [open, activeIndex]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-
-    const onPointerDown = (event) => {
-      if (!wrapperRef.current?.contains(event.target)) setOpen(false);
-    };
-    // A scroll elsewhere on the page would leave the list detached from its
-    // trigger, so close rather than chase it.
-    const onScroll = (event) => {
-      if (!listRef.current?.contains(event.target)) setOpen(false);
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    window.addEventListener("scroll", onScroll, true);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      window.removeEventListener("scroll", onScroll, true);
-    };
-  }, [open]);
-
-  const onKeyDown = (event) => {
-    const { key } = event;
-
-    if (!open) {
-      if (key === "ArrowDown" || key === "ArrowUp" || key === "Enter" || key === " ") {
-        event.preventDefault();
-        openList();
-      }
-      return;
-    }
-
-    if (key === "Escape" || key === "Tab") {
-      setOpen(false);
-      if (key === "Escape") event.preventDefault();
-      return;
-    }
-
-    if (key === "ArrowDown" || key === "ArrowUp") {
-      event.preventDefault();
-      setActiveIndex((current) => {
-        const step = key === "ArrowDown" ? 1 : -1;
-        const next = current + step;
-        if (next < 0) return options.length - 1;
-        if (next >= options.length) return 0;
-        return next;
-      });
-      return;
-    }
-
-    if (key === "Home" || key === "End") {
-      event.preventDefault();
-      setActiveIndex(key === "Home" ? 0 : options.length - 1);
-      return;
-    }
-
-    if (key === "Enter" || key === " ") {
-      event.preventDefault();
-      if (options[activeIndex]) commit(options[activeIndex]);
-      return;
-    }
-
-    // Typeahead: printable characters jump to the first matching label.
-    if (key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
-      window.clearTimeout(typeahead.current.timer);
-      typeahead.current.term += key;
-      typeahead.current.timer = window.setTimeout(() => {
-        typeahead.current.term = "";
-      }, 600);
-
-      const match = findByPrefix(options, typeahead.current.term, Math.max(activeIndex, 0));
-      if (match) setActiveIndex(options.indexOf(match));
-    }
-  };
+  // Past a handful of options, scanning beats reading: turn on filtering.
+  const searchable = options.length > 8;
 
   return (
     <Field label={label} hint={hint} error={error} required={required} htmlFor={inputId}>
-      <div className="relative" ref={wrapperRef}>
-        <button
-          ref={triggerRef}
+      <div className="relative">
+        <AntdSelect
           id={inputId}
-          type="button"
-          role="combobox"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-controls={open ? listId : undefined}
-          aria-activedescendant={open && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
-          aria-invalid={Boolean(error) || undefined}
-          aria-required={required || undefined}
+          value={value === "" || value === undefined ? undefined : value}
+          onChange={(next) =>
+            onChange?.({
+              target: { value: next, name },
+              currentTarget: { value: next, name },
+            })
+          }
+          options={options}
+          placeholder={placeholder}
           disabled={disabled}
-          onClick={() => (open ? setOpen(false) : openList())}
-          onKeyDown={onKeyDown}
-          className={controlClasses(
-            error,
-            cn(
-              "flex items-center justify-between gap-2 pl-3 pr-2 text-left cursor-pointer",
-              SIZES[size] || SIZES.md,
-              // An open list keeps the focused border, matching the text inputs.
-              open && !error && "border-accent bg-surface",
-              className
-            )
-          )}
+          status={error ? "error" : undefined}
+          size={size === "sm" ? "small" : size === "lg" ? "large" : "middle"}
+          className={cn("w-full", className)}
+          popupMatchSelectWidth
+          showSearch={searchable}
+          optionFilterProp="label"
+          suffixIcon={<ChevronDown size={15} className="text-content-muted" />}
+          menuItemSelectedIcon={<Check size={15} />}
           {...props}
-        >
-          <span className={cn("truncate", !selected && "text-content-disabled")}>
-            {selected ? selected.label : placeholder}
-          </span>
-          <ChevronDown
-            size={16}
-            className={cn(
-              "shrink-0 text-content-muted transition-transform duration-150",
-              open && "rotate-180"
-            )}
-            aria-hidden="true"
-          />
-        </button>
+        />
 
         {/*
-          Mirrors the value for native form validation. It sits behind the
-          trigger at full size rather than being hidden outright: a zero-sized
-          or display:none control cannot be focused, and the browser refuses to
-          report a validation message it cannot anchor to anything.
+          Sized to the trigger and transparent rather than hidden outright: a
+          zero-sized or `display:none` control cannot be focused, and the
+          browser refuses to report a validation message it cannot anchor.
         */}
         <select
-          ref={nativeRef}
           tabIndex={-1}
           aria-hidden="true"
           required={required}
@@ -485,7 +337,7 @@ export const Select = ({
           name={name}
           value={value ?? ""}
           onChange={() => {}}
-          className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
         >
           <option value="" />
           {options.map((option) => (
@@ -494,55 +346,6 @@ export const Select = ({
             </option>
           ))}
         </select>
-
-        {open && (
-          <ul
-            ref={listRef}
-            id={listId}
-            role="listbox"
-            aria-labelledby={inputId}
-            className={cn(
-              "absolute z-50 max-h-[17.5rem] w-full overflow-y-auto rounded-md border border-line",
-              "bg-surface-overlay p-1 shadow-lg animate-slide-up",
-              dropUp ? "bottom-full mb-1" : "top-full mt-1"
-            )}
-          >
-            {options.length === 0 && (
-              <li className="px-2.5 py-2 type-caption text-content-muted">No options</li>
-            )}
-
-            {options.map((option, index) => {
-              const isSelected = index === selectedIndex;
-              const isActive = index === activeIndex;
-
-              return (
-                <li
-                  key={option.value}
-                  id={`${listId}-${index}`}
-                  data-index={index}
-                  role="option"
-                  aria-selected={isSelected}
-                  // Pointer down rather than click: the trigger's blur would
-                  // otherwise close the list before the click landed.
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    commit(option);
-                  }}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  className={cn(
-                    "flex cursor-pointer items-center justify-between gap-2 rounded-sm px-2.5 py-2",
-                    "type-body transition-colors",
-                    isActive ? "bg-surface-hover text-content" : "text-content-secondary",
-                    isSelected && "text-accent-text font-medium"
-                  )}
-                >
-                  <span className="truncate">{option.label}</span>
-                  {isSelected && <Check size={15} className="shrink-0" aria-hidden="true" />}
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </div>
     </Field>
   );

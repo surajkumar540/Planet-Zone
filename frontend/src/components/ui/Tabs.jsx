@@ -1,51 +1,34 @@
-import cn from "../../lib/cn";
+import { Tabs as AntdTabs } from "antd";
 
 /**
  * Horizontal tab bar.
  *
- * Scrolls rather than wrapping on narrow screens, so the row height stays
- * predictable and the page never grows a horizontal scrollbar.
+ * Ant Design's Tabs handles the roving focus, arrow-key navigation and the
+ * overflow menu that appears when the set is wider than its container — all
+ * things the previous scrolling row left to the user to solve by dragging.
+ *
+ * The `tabs` contract is unchanged: `{ value, label, icon, count }`.
  */
 const Tabs = ({ tabs, value, onChange, className }) => (
-  <div
-    role="tablist"
-    className={cn("flex gap-1 overflow-x-auto border-b border-line-subtle", className)}
-  >
-    {tabs.map((tab) => {
-      const active = tab.value === value;
-      return (
-        <button
-          key={tab.value}
-          type="button"
-          role="tab"
-          aria-selected={active}
-          onClick={() => onChange(tab.value)}
-          className={cn(
-            "relative px-3.5 py-2.5 type-body-strong whitespace-nowrap transition-colors",
-            "border-b-2 -mb-px",
-            active
-              ? "text-accent-text border-[var(--accent-solid)]"
-              : "text-content-muted border-transparent hover:text-content"
+  <AntdTabs
+    activeKey={value}
+    onChange={onChange}
+    className={className}
+    items={tabs.map((tab) => ({
+      key: tab.value,
+      label: (
+        <span className="flex items-center gap-2">
+          {tab.icon && <tab.icon size={15} aria-hidden="true" />}
+          {tab.label}
+          {tab.count !== undefined && (
+            <span className="rounded-full bg-surface-sunken px-1.5 py-0.5 text-caption text-content-muted">
+              {tab.count}
+            </span>
           )}
-        >
-          <span className="flex items-center gap-2">
-            {tab.icon && <tab.icon size={15} aria-hidden="true" />}
-            {tab.label}
-            {tab.count !== undefined && (
-              <span
-                className={cn(
-                  "px-1.5 py-0.5 rounded-full text-caption",
-                  active ? "bg-accent-subtle text-accent-text" : "bg-surface-sunken text-content-muted"
-                )}
-              >
-                {tab.count}
-              </span>
-            )}
-          </span>
-        </button>
-      );
-    })}
-  </div>
+        </span>
+      ),
+    }))}
+  />
 );
 
 export default Tabs;

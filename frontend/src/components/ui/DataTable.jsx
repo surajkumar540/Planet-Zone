@@ -1,29 +1,34 @@
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
-import Button from "./Button";
-import { SkeletonTable } from "./Skeleton";
+import { useMemo } from "react";
+import { ConfigProvider, Pagination as AntdPagination, Table } from "antd";
+
 import { EmptyState, ErrorState } from "./States";
 import cn from "../../lib/cn";
 
 /**
  * Table for dashboard listings.
  *
- * Columns declare their own rendering, alignment and sort key, so a screen
- * describes its data rather than repeating markup. Owns its loading, error and
- * empty presentation so every list behaves the same way.
+ * Built on Ant Design's Table, which brings sticky headers, column
+ * responsiveness, keyboard-reachable sorters and virtual-free horizontal
+ * scrolling that a hand-rolled `<table>` had to reimplement badly. The column
+ * contract is unchanged, so screens still describe their data rather than
+ * their markup:
  *
- * Responsiveness: the table scrolls horizontally inside its own container on
- * narrow screens, and columns marked `hideBelow` drop out entirely — the page
- * itself never scrolls sideways.
+ *   { key, header, render(row, index), sortKey, align, numeric, hideBelow, width }
+ *
+ * Loading, error and empty presentation stay owned here so every list behaves
+ * the same way.
  */
-const HIDE_CLASSES = {
-  sm: "hidden sm:table-cell",
-  md: "hidden md:table-cell",
-  lg: "hidden lg:table-cell",
-  xl: "hidden xl:table-cell",
+
+/** `hideBelow: "md"` means "show from md up", which is antd's `responsive`. */
+const RESPONSIVE = {
+  sm: ["sm"],
+  md: ["md"],
+  lg: ["lg"],
+  xl: ["xl"],
 };
 
-const alignClass = (align) =>
-  align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
+/** "createdAt:desc" ⇄ antd's "descend". */
+const toAntdOrder = (direction) => (direction === "asc" ? "ascend" : "descend");
 
 const DataTable = ({
   columns,
@@ -40,153 +45,124 @@ const DataTable = ({
   onClearFilters,
   meta,
   onPageChange,
+  size = "middle",
   className,
 }) => {
-  if (loading) return <SkeletonTable rows={6} columns={columns.length} />;
-
-  if (error) {
-    return <ErrorState description={error} onRetry={onRetry} />;
-  }
-
-  if (!rows || rows.length === 0) {
-    return (
-      emptyState || (
-        <EmptyState filtered={filtered} onClear={onClearFilters} title="No records yet" />
-      )
-    );
-  }
-
   const [sortField, sortDirection] = (sort || "").split(":");
 
-  const toggleSort = (field) => {
+  const antdColumns = useMemo(
+    () =>
+      columns.map((column) => ({
+        key: column.key,
+        title: column.header,
+        dataIndex: column.key,
+        align: column.align,
+        width: column.width,
+        ellipsis: column.ellipsis,
+        responsive: column.hideBelow ? RESPONSIVE[column.hideBelow] : undefined,
+        // The sorter is a flag, not a comparator: rows are ordered by the API,
+        // so sorting here would reorder only the page currently in hand.
+        sorter: Boolean(column.sortKey) && Boolean(onSortChange),
+        sortOrder: column.sortKey && sortField === column.sortKey ? toAntdOrder(sortDirection) : null,
+        showSorterTooltip: false,
+        className: cn(column.numeric && "type-numeric"),
+        render: column.render
+          ? (_value, record, index) => column.render(record, index)
+          : undefined,
+      })),
+    [columns, onSortChange, sortDirection, sortField]
+  );
+
+  /**
+   * antd reports the column that changed; translate it back into the
+   * `field:direction` string the list hooks and the URL already speak.
+   */
+  const handleChange = (_pagination, _filters, sorter) => {
     if (!onSortChange) return;
-    const nextDirection = sortField === field && sortDirection === "desc" ? "asc" : "desc";
-    onSortChange(`${field}:${nextDirection}`);
+
+    const changed = Array.isArray(sorter) ? sorter[0] : sorter;
+    const column = columns.find((item) => item.key === changed?.columnKey);
+    if (!column?.sortKey) return;
+
+    // Clearing the sort returns to the column's descending default rather than
+    // to no order at all, which the API cannot express.
+    const direction = changed.order === "ascend" ? "asc" : "desc";
+    onSortChange(`${column.sortKey}:${direction}`);
   };
 
+  if (error) return <ErrorState description={error} onRetry={onRetry} />;
+
+  const pagination =
+    meta && meta.totalPages > 1
+      ? {
+          current: meta.page,
+          pageSize: meta.limit,
+          total: meta.total,
+          showSizeChanger: false,
+          onChange: (page) => onPageChange?.(page),
+          showTotal: (total, [from, to]) => `${from}–${to} of ${total}`,
+          className: "px-4",
+        }
+      : false;
+
   return (
-    <div className={className}>
-      {/* The scroll container is the table's own, so wide tables never push the page. */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-line-subtle">
-              {columns.map((column) => {
-                const isSorted = sortField === column.sortKey;
-                const SortIcon = !isSorted
-                  ? ChevronsUpDown
-                  : sortDirection === "asc"
-                    ? ArrowUp
-                    : ArrowDown;
-
-                return (
-                  <th
-                    key={column.key}
-                    scope="col"
-                    aria-sort={
-                      isSorted ? (sortDirection === "asc" ? "ascending" : "descending") : undefined
-                    }
-                    style={column.width ? { width: column.width } : undefined}
-                    className={cn(
-                      "type-label text-content-muted font-medium px-4 py-3 whitespace-nowrap",
-                      alignClass(column.align),
-                      column.hideBelow && HIDE_CLASSES[column.hideBelow]
-                    )}
-                  >
-                    {column.sortKey && onSortChange ? (
-                      <button
-                        type="button"
-                        onClick={() => toggleSort(column.sortKey)}
-                        className={cn(
-                          "inline-flex items-center gap-1 hover:text-content transition-colors",
-                          isSorted && "text-content"
-                        )}
-                      >
-                        {column.header}
-                        <SortIcon size={13} aria-hidden="true" />
-                      </button>
-                    ) : (
-                      column.header
-                    )}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr
-                key={row[keyField] ?? rowIndex}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={cn(
-                  "border-b border-line-subtle last:border-0 transition-colors",
-                  onRowClick && "cursor-pointer hover:bg-surface-hover"
-                )}
-              >
-                {columns.map((column) => (
-                  <td
-                    key={column.key}
-                    className={cn(
-                      "type-table text-content px-4 py-3",
-                      alignClass(column.align),
-                      column.numeric && "type-numeric",
-                      column.hideBelow && HIDE_CLASSES[column.hideBelow]
-                    )}
-                  >
-                    {column.render ? column.render(row, rowIndex) : row[column.key]}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {meta && meta.totalPages > 1 && (
-        <Pagination meta={meta} onPageChange={onPageChange} />
-      )}
-    </div>
+    <ConfigProvider
+      renderEmpty={() =>
+        emptyState || (
+          <EmptyState filtered={filtered} onClear={onClearFilters} title="No records yet" />
+        )
+      }
+    >
+      <Table
+        className={cn("planet-table", className)}
+        columns={antdColumns}
+        dataSource={rows || []}
+        rowKey={(record) => record[keyField] ?? record.key}
+        loading={loading}
+        size={size}
+        pagination={pagination}
+        onChange={handleChange}
+        // The table scrolls inside its own container, so a wide column set
+        // never pushes the page sideways.
+        scroll={{ x: "max-content" }}
+        onRow={
+          onRowClick
+            ? (record) => ({
+                onClick: () => onRowClick(record),
+                style: { cursor: "pointer" },
+              })
+            : undefined
+        }
+      />
+    </ConfigProvider>
   );
 };
 
-/** Page controls, showing the visible range so the list's size is legible. */
+/**
+ * Standalone pager for lists that are not tables — the product grid, for one.
+ * Tables get theirs from the Table itself.
+ */
 export const Pagination = ({ meta, onPageChange }) => {
-  const { page, limit, total, totalPages, hasNextPage, hasPreviousPage } = meta;
-  const from = total === 0 ? 0 : (page - 1) * limit + 1;
-  const to = Math.min(page * limit, total);
+  if (!meta) return null;
+  const { page, limit, total } = meta;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-line-subtle">
-      <p className="type-caption">
-        Showing <span className="text-content font-medium">{from}</span>–
-        <span className="text-content font-medium">{to}</span> of{" "}
-        <span className="text-content font-medium">{total}</span>
+    <div className="flex flex-col items-center justify-between gap-3 border-t border-line-subtle px-4 py-3 sm:flex-row">
+      <p className="type-caption text-content-muted">
+        Showing{" "}
+        <span className="font-medium text-content">
+          {total === 0 ? 0 : (page - 1) * limit + 1}–{Math.min(page * limit, total)}
+        </span>{" "}
+        of <span className="font-medium text-content">{total}</span>
       </p>
 
-      <div className="flex items-center gap-1.5">
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={ChevronLeft}
-          disabled={!hasPreviousPage}
-          onClick={() => onPageChange?.(page - 1)}
-        >
-          Previous
-        </Button>
-        <span className="type-caption px-2">
-          Page {page} of {totalPages}
-        </span>
-        <Button
-          variant="secondary"
-          size="sm"
-          iconRight={ChevronRight}
-          disabled={!hasNextPage}
-          onClick={() => onPageChange?.(page + 1)}
-        >
-          Next
-        </Button>
-      </div>
+      <AntdPagination
+        current={page}
+        pageSize={limit}
+        total={total}
+        showSizeChanger={false}
+        onChange={(next) => onPageChange?.(next)}
+      />
     </div>
   );
 };

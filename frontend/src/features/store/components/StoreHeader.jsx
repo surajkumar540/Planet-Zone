@@ -47,7 +47,21 @@ const StoreHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [term, setTerm] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const accountRef = useRef(null);
+
+  /*
+   * The bar is glass over the page rather than a solid strip: at the top it is
+   * mostly transparent so the hero reads as full-bleed, and it gains opacity,
+   * a hairline and a shadow once content starts passing underneath — which is
+   * the point at which text needs something to sit against.
+   */
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Route changes close both overlays; leaving one open would hang over the
   // new page with no obvious way back.
@@ -77,7 +91,16 @@ const StoreHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line-subtle bg-surface/95 backdrop-blur">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300",
+        // A menu panel hangs off the bar on mobile, so it takes the solid
+        // treatment while open regardless of scroll position.
+        scrolled || menuOpen
+          ? "border-line-subtle bg-surface/80 shadow-sm backdrop-blur-xl backdrop-saturate-150"
+          : "border-transparent bg-surface/40 backdrop-blur-md"
+      )}
+    >
       <Container className="flex h-16 items-center gap-3">
         <button
           type="button"
@@ -118,7 +141,7 @@ const StoreHeader = () => {
               onChange={(event) => setTerm(event.target.value)}
               placeholder="Search products"
               aria-label="Search products"
-              className="h-control w-full rounded-md border border-line bg-surface-sunken pl-9 pr-3 text-body text-content outline-none transition-colors placeholder:text-content-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-[var(--accent-ring)]"
+              className="h-control w-full rounded-md border-[1.5px] border-line-strong bg-surface-sunken pl-9 pr-3 text-body text-content outline-none transition-colors placeholder:text-content-muted hover:border-content-muted focus:border-accent focus:bg-surface"
             />
           </div>
         </form>
@@ -219,7 +242,7 @@ const StoreHeader = () => {
                   onChange={(event) => setTerm(event.target.value)}
                   placeholder="Search products"
                   aria-label="Search products"
-                  className="h-control w-full rounded-md border border-line bg-surface-sunken pl-9 pr-3 text-body text-content outline-none focus:border-accent"
+                  className="h-control w-full rounded-md border-[1.5px] border-line-strong bg-surface-sunken pl-9 pr-3 text-body text-content outline-none focus:border-accent focus:bg-surface"
                 />
               </div>
             </form>

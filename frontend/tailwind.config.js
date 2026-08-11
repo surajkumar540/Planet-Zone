@@ -3,15 +3,18 @@
  * `src/styles/tokens.css`. Utilities therefore resolve to role tokens, so a
  * class like `bg-surface` is correct in both themes without a `dark:` variant.
  *
- * Preflight is disabled: this app also renders Material UI, whose components
- * rely on the browser defaults Preflight would reset.
+ * Preflight is on. It was previously disabled so Material UI could keep the
+ * browser defaults it relies on, but with MUI gone that setting was actively
+ * harmful: without Preflight the default `border-style` is `none`, so every
+ * `border` utility set a width against no style and drew nothing. Anchors kept
+ * their underline and buttons their platform chrome for the same reason.
  */
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   // Themes are driven by a `data-theme` stamp rather than a class.
   darkMode: ["selector", '[data-theme="dark"]'],
-  corePlugins: { preflight: false },
+
   theme: {
     extend: {
       colors: {

@@ -1,39 +1,13 @@
-import { useMemo } from "react";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider, useTheme } from "./ThemeProvider";
-import { buildMuiTheme } from "./muiTheme";
-import { getPreset } from "./presets";
+import { ThemeProvider } from "./ThemeProvider";
 
 /**
- * Feeds the resolved appearance into Material UI so the storefront and the
- * dashboard share one theme.
+ * Single entry point for appearance.
+ *
+ * This used to bridge the resolved theme into Material UI as well. Nothing
+ * renders MUI components any more — the legacy storefront was the last caller
+ * — so the bridge and its `CssBaseline` are gone, which is also what let
+ * Tailwind's Preflight be turned back on.
  */
-const MuiBridge = ({ children }) => {
-  const { resolvedMode, appearance } = useTheme();
-
-  const theme = useMemo(
-    () =>
-      buildMuiTheme({
-        mode: resolvedMode,
-        accent: getPreset(appearance.accentColor)[resolvedMode],
-      }),
-    [resolvedMode, appearance.accentColor]
-  );
-
-  return (
-    <MuiThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </MuiThemeProvider>
-  );
-};
-
-/** Single entry point: owns appearance state and wires it into both systems. */
-const AppThemeProvider = ({ children }) => (
-  <ThemeProvider>
-    <MuiBridge>{children}</MuiBridge>
-  </ThemeProvider>
-);
+const AppThemeProvider = ({ children }) => <ThemeProvider>{children}</ThemeProvider>;
 
 export default AppThemeProvider;

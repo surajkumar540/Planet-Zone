@@ -102,16 +102,18 @@ const OtpInput = ({ value = "", onChange, length = 6, invalid, disabled, autoFoc
           onKeyDown={handleKeyDown(index)}
           onFocus={(event) => event.target.select()}
           className={cn(
-            "h-14 w-full min-w-0 rounded-md border bg-surface text-center outline-none",
+            "h-14 w-full min-w-0 rounded-md border-[1.5px] text-center outline-none",
             "type-numeric text-[1.375rem] font-semibold text-content",
-            "transition-[border-color,box-shadow,background-color] duration-150",
+            "transition-[border-color,background-color] duration-150",
             "disabled:opacity-60 disabled:bg-surface-sunken",
             invalid
-              ? "border-status-critical focus:ring-2 focus:ring-status-critical-bg"
+              ? "border-status-critical bg-surface"
               : cn(
-                  "border-line hover:border-line-strong",
-                  "focus:border-accent focus:ring-2 focus:ring-[var(--accent-ring)]",
-                  digit && "border-accent bg-accent-subtle"
+                  "border-line-strong bg-surface-sunken hover:border-content-muted",
+                  // A filled box keeps the accent edge, so progress through the
+                  // code is legible without counting carets.
+                  digit && "border-accent bg-surface",
+                  "focus:border-accent focus:bg-surface"
                 )
           )}
         />

@@ -42,20 +42,33 @@ const SIZES = {
 /**
  * The visual shell every control shares.
  *
- * Focus is a ring plus an accent border rather than a border alone: a colour
- * change on a one-pixel edge is easy to miss, and the ring is what makes the
- * focused control obvious at a glance in both themes. An invalid control keeps
- * its red edge while focused, so the focus state never hides the error.
+ * A field has to read as an editable box before it is focused, so the resting
+ * border is `line-strong` rather than `line`: the subtle step is right for a
+ * divider between blocks of content, but on a control it dissolved into the
+ * card behind it and left the input looking like plain text. The sunken fill
+ * reinforces the same thing, and lifts to the plain surface on focus.
+ *
+ * Focus is carried by the border itself rather than an outer ring. The border
+ * is a constant 1.5px so the accent can take it over on focus without the
+ * control changing size and nudging the layout — the usual failure of a
+ * border-only focus state.
+ *
+ * An invalid control keeps its red edge while focused, so the focus state
+ * never hides the error.
  */
 const controlClasses = (invalid, className) =>
   cn(
-    "w-full bg-surface text-content type-body rounded-md border outline-none",
-    "transition-[color,background-color,border-color,box-shadow] duration-150",
+    "w-full text-content type-body rounded-md border-[1.5px] outline-none",
+    "transition-[color,background-color,border-color] duration-150",
     "placeholder:text-content-disabled",
-    "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:hover:border-line",
+    "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:hover:border-line-strong",
     invalid
-      ? "border-status-critical focus:ring-2 focus:ring-status-critical-bg"
-      : "border-line hover:border-line-strong focus:border-accent focus:ring-2 focus:ring-[var(--accent-ring)]",
+      ? "border-status-critical bg-surface"
+      : cn(
+          "border-line-strong bg-surface-sunken",
+          "hover:border-content-muted",
+          "focus:border-accent focus:bg-surface"
+        ),
     className
   );
 
@@ -437,7 +450,8 @@ export const Select = ({
             cn(
               "flex items-center justify-between gap-2 pl-3 pr-2 text-left cursor-pointer",
               SIZES[size] || SIZES.md,
-              open && !error && "border-accent ring-2 ring-[var(--accent-ring)]",
+              // An open list keeps the focused border, matching the text inputs.
+              open && !error && "border-accent bg-surface",
               className
             )
           )}

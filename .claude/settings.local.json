@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd *)",
+      "Bash(npm -v)",
+      "Bash(npm ping *)",
+      "Bash(node *)",
+      "Bash(python *)",
+      "Bash(npm run *)",
+      "Bash(timeout 500 npx vite build)",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(sort -k2)",
+      "Bash(timeout 400 npm install -D playwright)",
+      "Bash(timeout 500 npx playwright install chromium)",
+      "PowerShell(@\\(4111,5199\\) | ForEach-Object { Get-NetTCPConnection -LocalPort $_ -State Listen -EA SilentlyContinue | Select -Expand OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force } }; \"stopped\")",
+      "Bash(cp features/admin/components/StatusBadge.jsx components/ui/StatusBadge.jsx)",
+      "Bash(sed -i 's#\"../../../components/ui/Badge\"#\"./Badge\"#; s#\"../../../lib/format\"#\"../../lib/format\"#' components/ui/StatusBadge.jsx)",
+      "Bash(grep -rn \"from \\\\\"\\\\.\\\\./\\\\.\\\\./\\\\.\\\\./components/\\\\|from \\\\\"\\\\.\\\\./\\\\.\\\\./components/\" src/features/admin --include=*.jsx)",
+      "Bash(npx vite *)",
+      "Bash(npx eslint *)",
+      "Bash(sed -i '55d' src/features/admin/pages/OrderDetail.jsx)",
+      "Bash(sed -i 's/, Store, Sun, Truck, User }/, Store, Sun, User }/' src/features/admin/pages/Settings.jsx)",
+      "Bash(curl -s \"http://localhost:8123/api/product/65e1b7f73d3724785b44f38e/reviews?limit=5\")",
+      "Bash(pkill -f \"backend/src/server.js\")",
+      "Bash(curl *)",
+      "Bash(sed -i 's#className=\"h-control w-full rounded-md border border-line bg-surface-sunken pl-9 pr-3 text-body text-content outline-none transition-colors placeholder:text-content-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-\\\\[var\\(--accent-ring\\)\\\\]\"#className=\"h-control w-full rounded-md border-[1.5px] border-line-strong bg-surface-sunken pl-9 pr-3 text-body text-content outline-none transition-colors placeholder:text-content-muted hover:border-content-muted focus:border-accent focus:bg-surface\"#' src/features/store/components/StoreHeader.jsx)",
+      "Bash(sed -i 's#className=\"h-control w-full rounded-md border border-line bg-surface-sunken pl-9 pr-3 text-body text-content outline-none focus:border-accent\"#className=\"h-control w-full rounded-md border-[1.5px] border-line-strong bg-surface-sunken pl-9 pr-3 text-body text-content outline-none focus:border-accent focus:bg-surface\"#' src/features/store/components/StoreHeader.jsx)",
+      "Bash(sed -i '/mui: \\\\[\"@mui\\\\/material\"/d' vite.config.js)",
+      "Bash(sed -i 's/^  corePlugins: { preflight: false },$//' tailwind.config.js)"
+    ]
+  }
+}

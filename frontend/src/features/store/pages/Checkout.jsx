@@ -185,7 +185,7 @@ const Checkout = () => {
 
               const response = await createOrderApi({
                 ...payload,
-                paymentId: result.razorpay_payment_id,
+                paymentId: gatewayOrder.id,
               });
               clear();
               toast.success("Payment received", "Your order is confirmed.");

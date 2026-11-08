@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { uuid, idParam } = require("../../utils/schemas");
+const { uuid, idParam, patchSchema } = require("../../utils/schemas");
 
 const seoSchema = z.object({
   title: z.string().trim().max(200).optional().default(""),
@@ -20,8 +20,7 @@ const createCategorySchema = z.object({
   seo: seoSchema.optional(),
 });
 
-const updateCategorySchema = createCategorySchema
-  .partial()
+const updateCategorySchema = patchSchema(createCategorySchema)
   .refine((value) => Object.keys(value).length > 0, {
     message: "Provide at least one field to update",
   });

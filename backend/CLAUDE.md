@@ -78,6 +78,7 @@ Follow the shape of the module you're editing. Use the layered shape for substan
 
 **Requests and responses**
 - Validate with `validate({ params, query, body })`. It replaces those request segments with the parsed Zod output. IDs use `uuid` from `utils/schemas.js`.
+- **Build update bodies with `patchSchema(schema)`, never `.partial()`.** In Zod 4, `.partial()` still applies `.default()` values, so omitted fields would be overwritten with defaults.
 - The database doesn't trim or change case for you, as Mongoose did. Normalise in Zod or the service (coupon, warehouse and tax codes are uppercased; attribute codes are lowercased).
 - Respond through `core/ApiResponse` (`ok`, `created`, `paginated`), which produces `{ status, message, data, meta }`. A few handlers add top-level keys the frontend reads, such as `token`, `isAdmin`, `orderId` and `KEY_ID`; keep them.
 - Throw `AppError.badRequest()`, `.notFound()` and so on from services, and wrap async handlers in `asyncHandler`. Anything else thrown becomes a generic 500. `errorHandler` maps Prisma's unique, foreign key and not-found errors.
@@ -123,8 +124,8 @@ Change stock only through `inventory.service.js`. `reserve` and `release` do not
 
 Found by reading and testing the code on 2026-11-07 and not yet fixed. Remove an entry when it's fixed.
 
-1. **Online checkout fails after the customer is charged.** `frontend/src/features/store/pages/Checkout.jsx` sends `paymentId: razorpay_payment_id`, but `getVerifiedPayment` looks it up by `Payment.id`, which is the Razorpay *order* id. Reproduced at row level: a `pay_` id returns 404 and an `order_` id succeeds, so sending `gatewayOrder.id` should fix it. Not yet tested against the real gateway.
-2. **`PATCH` can wipe fields.** Zod 4's `.partial()` re-applies `.default()` values, so `PATCH /product/:id` with only `price` also resets `discount`, `gst`, `attributes`, `isActive` and more, and sets `variants` to `[]`, deleting them. Coupons, categories, warehouses, tax rates, shipping zones and attributes use the same pattern. Reproduced for product `attributes`.
+1. **Online checkout is fixed in code but untested with real Razorpay.** `Checkout.jsx` now sends the gateway order id (`gatewayOrder.id`) as `paymentId`, which is the key `getVerifiedPayment` uses. Run one sandbox payment with test keys, then remove this entry.
+2. **Only the default warehouse can sell.** Checkout reserves stock from the default warehouse alone, so making a new or empty warehouse the default leaves every product out of stock, even though the old warehouse still holds the stock.
 3. **Most settings aren't enforced.** `autoConfirmOrders`, `orderPrefix`, `allowCashOnDelivery`, `allowOnlinePayment`, `cancellationWindowHours`, `hideOutOfStockProducts`, `trackInventory` and `allowBackorders` are referenced only by the settings code. `TaxRate` records are likewise not used in pricing.
 4. **Refunds don't move money.** `refund.service.js` updates records but never calls Razorpay.
 5. **No order emails.** Only auth flows send mail, although the checkout toast promises a confirmation email.

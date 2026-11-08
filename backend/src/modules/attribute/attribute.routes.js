@@ -8,7 +8,7 @@ const validate = require("../../middlewares/validate");
 const { authenticate } = require("../../middlewares/auth");
 const { requireStaff } = require("../../middlewares/rbac");
 const AppError = require("../../core/AppError");
-const { idParam } = require("../../utils/schemas");
+const { idParam, patchSchema } = require("../../utils/schemas");
 const { slugify } = require("../../utils/slug");
 
 const attributeValue = z.object({
@@ -76,7 +76,7 @@ router.post(
 router.patch(
   "/attributes/:id",
   staffOnly,
-  validate({ params: idParam("id"), body: attributeBody.partial() }),
+  validate({ params: idParam("id"), body: patchSchema(attributeBody) }),
   asyncHandler(async (req, res) => {
     const exists = await prisma.attribute.count({ where: { id: req.params.id } });
     if (!exists) throw AppError.notFound("Attribute not found");

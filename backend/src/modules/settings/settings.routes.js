@@ -12,7 +12,7 @@ const prisma = require("../../db/client");
 const { toSettings, toTaxRate, toShippingZone } = require("../../db/mappers");
 const { SETTINGS_DEFAULTS } = require("./settings.defaults");
 const shippingService = require("../../services/shipping.service");
-const { idParam } = require("../../utils/schemas");
+const { idParam, patchSchema } = require("../../utils/schemas");
 
 /* -------------------------------- Validation ------------------------------- */
 
@@ -251,7 +251,7 @@ router.post(
 router.patch(
   "/tax-rates/:id",
   staffOnly,
-  validate({ params: idParam("id"), body: taxRateBody.partial() }),
+  validate({ params: idParam("id"), body: patchSchema(taxRateBody) }),
   asyncHandler(async (req, res) => {
     const exists = await prisma.taxRate.count({ where: { id: req.params.id } });
     if (!exists) throw AppError.notFound("Tax rate not found");
@@ -311,7 +311,7 @@ router.post(
 router.patch(
   "/shipping-zones/:id",
   staffOnly,
-  validate({ params: idParam("id"), body: shippingZoneBody.partial() }),
+  validate({ params: idParam("id"), body: patchSchema(shippingZoneBody) }),
   asyncHandler(async (req, res) => {
     const exists = await prisma.shippingZone.count({ where: { id: req.params.id } });
     if (!exists) throw AppError.notFound("Shipping zone not found");

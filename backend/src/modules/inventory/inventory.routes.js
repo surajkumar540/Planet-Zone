@@ -10,7 +10,7 @@ const service = require("./inventory.service");
 const prisma = require("../../db/client");
 const { toWarehouse } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
-const { listQuery, idParam, uuid } = require("../../utils/schemas");
+const { listQuery, idParam, uuid, patchSchema } = require("../../utils/schemas");
 const { MOVEMENT_REASON_VALUES } = require("../../constants/inventory");
 
 /* -------------------------------- Validation ------------------------------- */
@@ -111,7 +111,7 @@ router.post(
 router.patch(
   "/warehouses/:id",
   staffOnly,
-  validate({ params: idParam("id"), body: warehouseBody.partial() }),
+  validate({ params: idParam("id"), body: patchSchema(warehouseBody) }),
   asyncHandler(async (req, res) => {
     const data = { ...req.body };
     if (data.code) data.code = data.code.toUpperCase();

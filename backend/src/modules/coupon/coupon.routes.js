@@ -8,7 +8,7 @@ const { requireStaff } = require("../../middlewares/rbac");
 const audit = require("../../services/audit.service");
 const service = require("./coupon.service");
 const pricingService = require("../../services/pricing.service");
-const { listQuery, idParam, uuid } = require("../../utils/schemas");
+const { listQuery, idParam, uuid, patchSchema } = require("../../utils/schemas");
 const { DISCOUNT_TYPE_VALUES } = require("../../constants/discount");
 
 const couponBody = z.object({
@@ -132,7 +132,7 @@ router.post(
 router.patch(
   "/coupons/:id",
   staffOnly,
-  validate({ params: idParam("id"), body: couponBody.partial() }),
+  validate({ params: idParam("id"), body: patchSchema(couponBody) }),
   asyncHandler(async (req, res) => {
     const data = await service.update(req.params.id, req.body);
     await audit.record({

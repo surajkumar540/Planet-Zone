@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { listQuery, idParam, uuid } = require("../../utils/schemas");
+const { listQuery, idParam, uuid, patchSchema } = require("../../utils/schemas");
 
 const percentage = z.coerce.number().min(0).max(100);
 const money = z.coerce.number().min(0);
@@ -29,7 +29,7 @@ const productAttributeSchema = z.object({
 /**
  * Base field set, deliberately unrefined.
  *
- * Zod rejects `.partial()` on a schema carrying refinements, so cross-field
+ * Zod rejects partial schemas built from one carrying refinements, so cross-field
  * rules are attached to the create and update variants separately below.
  */
 const productFields = z.object({
@@ -81,16 +81,14 @@ const uniqueSkuRule = { message: "Variant SKUs must be unique", path: ["variants
 
 const productBodySchema = productFields.refine(uniqueVariantSkus, uniqueSkuRule);
 
-const updateProductSchema = productFields
-  .partial()
+const updateProductSchema = patchSchema(productFields)
   .refine((value) => Object.keys(value).length > 0, {
     message: "Provide at least one field to update",
   })
   .refine(uniqueVariantSkus, uniqueSkuRule);
 
 // Legacy admin form posts the target id in the body instead of the path.
-const legacyUpdateProductSchema = productFields
-  .partial()
+const legacyUpdateProductSchema = patchSchema(productFields)
   .extend({ _id: z.string().trim().min(1, "Product id is required") })
   .refine(uniqueVariantSkus, uniqueSkuRule);
 

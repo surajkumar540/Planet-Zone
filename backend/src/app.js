@@ -3,13 +3,13 @@ const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
-const mongoSanitize = require("express-mongo-sanitize");
 const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
-const mongoose = require("mongoose");
+const prisma = require("./db/client");
 
 const env = require("./config/env");
 const logger = require("./core/logger");
+const asyncHandler = require("./core/asyncHandler");
 const apiRoutes = require("./routes");
 const { errorHandler, notFoundHandler } = require("./middlewares/errorHandler");
 const { apiLimiter } = require("./middlewares/rateLimit");
@@ -53,9 +53,6 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 app.use(compression());
 
-// Strips `$`-prefixed and dotted keys so a request body cannot inject operators
-// into a query.
-app.use(mongoSanitize());
 // Collapses duplicated query parameters, which otherwise arrive as arrays.
 app.use(hpp());
 
@@ -70,17 +67,22 @@ app.use(
 
 /* ---------------------------------- Health --------------------------------- */
 
-app.get("/health", (req, res) => {
-  const dbState = mongoose.connection.readyState;
-  const healthy = dbState === 1;
-  res.status(healthy ? 200 : 503).json({
-    status: healthy,
-    uptime: process.uptime(),
-    environment: env.NODE_ENV,
-    database: healthy ? "connected" : "disconnected",
-    timestamp: new Date().toISOString(),
-  });
-});
+app.get(
+  "/health",
+  asyncHandler(async (req, res) => {
+    const healthy = await prisma.$queryRaw`SELECT 1`.then(
+      () => true,
+      () => false
+    );
+    res.status(healthy ? 200 : 503).json({
+      status: healthy,
+      uptime: process.uptime(),
+      environment: env.NODE_ENV,
+      database: healthy ? "connected" : "disconnected",
+      timestamp: new Date().toISOString(),
+    });
+  })
+);
 
 /* ----------------------------------- API ----------------------------------- */
 

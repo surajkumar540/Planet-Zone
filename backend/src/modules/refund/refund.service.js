@@ -1,26 +1,29 @@
+const prisma = require("../../db/client");
+const { num, toRefund } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const logger = require("../../core/logger");
-const Refund = require("../../models/RefundModel");
-const Order = require("../../models/OrderModel");
-const Payment = require("../../models/PaymentModel");
+const { withTransaction } = require("../../core/transaction");
 const inventoryService = require("../inventory/inventory.service");
 const { REFUND_STATUS, REFUND_OPEN_STATUSES } = require("../../constants/refund");
 const { PAYMENT_STATUS, ORDER_STATUS } = require("../../constants/orderStatus");
 const { MOVEMENT_REASONS } = require("../../constants/inventory");
 const { round } = require("../../utils/money");
-const { parseSort, searchFilter } = require("../../utils/schemas");
+const { parseSort, searchFilter, sortable } = require("../../utils/schemas");
+
+const SORTABLE = sortable("createdAt", "amount", "status", "orderNumber");
+
+const USER_SUMMARY = { id: true, firstName: true, lastName: true, email: true };
 
 /** Amount already refunded or awaiting processing against an order. */
-const committedAmount = async (orderId, excludeId) => {
-  const open = await Refund.find({
-    order: orderId,
-    _id: { $ne: excludeId },
-    status: { $in: [...REFUND_OPEN_STATUSES, REFUND_STATUS.COMPLETED] },
-  })
-    .select("amount")
-    .lean();
-
-  return round(open.reduce((sum, refund) => sum + refund.amount, 0));
+const committedAmount = async (orderId, client = prisma) => {
+  const { _sum } = await client.refund.aggregate({
+    where: {
+      orderId,
+      status: { in: [...REFUND_OPEN_STATUSES, REFUND_STATUS.COMPLETED] },
+    },
+    _sum: { amount: true },
+  });
+  return round(num(_sum.amount) || 0);
 };
 
 /**
@@ -30,10 +33,10 @@ const committedAmount = async (orderId, excludeId) => {
  * repeated partial requests can never exceed what was actually paid.
  */
 const request = async ({ orderId, requester, items = [], amount, reason, customerNote }) => {
-  const order = await Order.findById(orderId);
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) throw AppError.notFound("Order not found");
 
-  if (!requester.isStaff && String(order.User) !== String(requester.userId)) {
+  if (!requester.isStaff && String(order.userId) !== String(requester.userId)) {
     throw AppError.forbidden();
   }
 
@@ -42,7 +45,7 @@ const request = async ({ orderId, requester, items = [], amount, reason, custome
   }
 
   const alreadyCommitted = await committedAmount(orderId);
-  const refundable = round(order.pricing.grandTotal - alreadyCommitted);
+  const refundable = round(num(order.grandTotal) - alreadyCommitted);
 
   if (refundable <= 0) {
     throw AppError.badRequest("This order has already been fully refunded");
@@ -55,17 +58,19 @@ const request = async ({ orderId, requester, items = [], amount, reason, custome
     throw AppError.badRequest(`At most ₹${refundable} can still be refunded on this order`);
   }
 
-  const refund = await Refund.create({
-    order: order._id,
-    orderNumber: order.orderNumber,
-    User: order.User,
-    items,
-    amount: requested,
-    reason,
-    customerNote: customerNote || "",
+  const refund = await prisma.refund.create({
+    data: {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      userId: order.userId,
+      items,
+      amount: requested,
+      reason,
+      customerNote: customerNote || "",
+    },
   });
 
-  return refund.toObject();
+  return toRefund(refund);
 };
 
 /**
@@ -74,130 +79,142 @@ const request = async ({ orderId, requester, items = [], amount, reason, custome
  * as separate steps.
  */
 const review = async ({ refundId, approve, staffNote, actorId }) => {
-  const refund = await Refund.findById(refundId);
+  const refund = await prisma.refund.findUnique({ where: { id: refundId } });
   if (!refund) throw AppError.notFound("Refund not found");
 
   if (refund.status !== REFUND_STATUS.REQUESTED) {
     throw AppError.badRequest(`This refund has already been ${refund.status}`);
   }
 
-  refund.status = approve ? REFUND_STATUS.APPROVED : REFUND_STATUS.REJECTED;
-  refund.staffNote = staffNote || "";
-  refund.reviewedBy = actorId;
-  refund.reviewedAt = new Date();
-  await refund.save();
+  const updated = await prisma.refund.update({
+    where: { id: refundId },
+    data: {
+      status: approve ? REFUND_STATUS.APPROVED : REFUND_STATUS.REJECTED,
+      staffNote: staffNote || "",
+      reviewedById: actorId,
+      reviewedAt: new Date(),
+    },
+  });
 
-  return refund.toObject();
+  return toRefund(updated);
 };
 
 /**
  * Completes an approved refund: records the payout, returns stock if the
- * goods came back, and updates the order's payment status.
+ * goods came back, and updates the order's payment status, all atomically.
  *
  * The gateway call itself is left to an operator for now — the record is
  * marked complete so the money movement is tracked either way.
  */
-const process = async ({ refundId, gatewayRefundId, actorId }) => {
-  const refund = await Refund.findById(refundId);
-  if (!refund) throw AppError.notFound("Refund not found");
+const process = async ({ refundId, gatewayRefundId, actorId }) =>
+  withTransaction(async (tx) => {
+    const refund = await tx.refund.findUnique({ where: { id: refundId } });
+    if (!refund) throw AppError.notFound("Refund not found");
 
-  if (refund.status !== REFUND_STATUS.APPROVED) {
-    throw AppError.badRequest("Only an approved refund can be processed");
-  }
-
-  const order = await Order.findById(refund.order);
-  if (!order) throw AppError.notFound("Order not found");
-
-  refund.status = REFUND_STATUS.COMPLETED;
-  refund.gatewayRefundId = gatewayRefundId || "";
-  refund.completedAt = new Date();
-  await refund.save();
-
-  if (refund.restock && refund.items?.length) {
-    for (const item of refund.items) {
-      await inventoryService
-        .adjustStock({
-          productId: item.product,
-          variantSku: item.variantSku || "",
-          quantity: item.qty,
-          reason: MOVEMENT_REASONS.RETURN,
-          note: `Refund ${refund._id}`,
-          referenceType: "Refund",
-          referenceId: refund._id,
-          performedBy: actorId,
-        })
-        .catch((error) =>
-          logger.error(`Failed to restock refunded item: ${error.message}`, {
-            refund: refund._id,
-            product: item.product,
-          })
-        );
-    }
-  }
-
-  const totalRefunded = await committedAmount(order._id);
-  const fullyRefunded = totalRefunded >= order.pricing.grandTotal;
-
-  order.paymentStatus = fullyRefunded
-    ? PAYMENT_STATUS.REFUNDED
-    : PAYMENT_STATUS.PARTIALLY_REFUNDED;
-
-  // A fully refunded order is closed out, when the lifecycle permits it.
-  if (fullyRefunded && [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(order.status)) {
-    order.status = ORDER_STATUS.REFUNDED;
-    order.statusHistory.push({
-      status: ORDER_STATUS.REFUNDED,
-      note: `Refund ${refund._id} completed`,
-      changedBy: actorId,
+    // Conditional on the status, so a double click cannot process it twice.
+    const { count } = await tx.refund.updateMany({
+      where: { id: refundId, status: REFUND_STATUS.APPROVED },
+      data: {
+        status: REFUND_STATUS.COMPLETED,
+        gatewayRefundId: gatewayRefundId || "",
+        completedAt: new Date(),
+      },
     });
-  }
-  await order.save();
+    if (count === 0) throw AppError.badRequest("Only an approved refund can be processed");
 
-  if (order.paymentRef) {
-    await Payment.updateOne(
-      { _id: order.paymentRef },
-      { $inc: { refundedAmount: refund.amount } }
-    ).catch((error) => logger.error(`Failed to update payment refund total: ${error.message}`));
-  }
+    const order = await tx.order.findUnique({ where: { id: refund.orderId } });
+    if (!order) throw AppError.notFound("Order not found");
 
-  return refund.toObject();
-};
+    if (refund.restock && refund.items?.length) {
+      for (const item of refund.items) {
+        try {
+          await inventoryService.adjustStock({
+            productId: item.product,
+            variantSku: item.variantSku || "",
+            quantity: item.qty,
+            reason: MOVEMENT_REASONS.RETURN,
+            note: `Refund ${refund.id}`,
+            referenceType: "Refund",
+            referenceId: refund.id,
+            performedBy: actorId,
+            tx,
+          });
+        } catch (error) {
+          // Only application errors can be survived; see core/transaction.js.
+          if (!(error instanceof AppError)) throw error;
+          logger.error(`Failed to restock refunded item: ${error.message}`, {
+            refund: refund.id,
+            product: item.product,
+          });
+        }
+      }
+    }
+
+    const totalRefunded = await committedAmount(order.id, tx);
+    const fullyRefunded = totalRefunded >= num(order.grandTotal);
+
+    const orderUpdate = {
+      paymentStatus: fullyRefunded ? PAYMENT_STATUS.REFUNDED : PAYMENT_STATUS.PARTIALLY_REFUNDED,
+    };
+
+    // A fully refunded order is closed out, when the lifecycle permits it.
+    if (fullyRefunded && [ORDER_STATUS.CANCELLED, ORDER_STATUS.RETURNED].includes(order.status)) {
+      orderUpdate.status = ORDER_STATUS.REFUNDED;
+      orderUpdate.history = {
+        create: {
+          sequence: await tx.orderStatusEvent.count({ where: { orderId: order.id } }),
+          status: ORDER_STATUS.REFUNDED,
+          note: `Refund ${refund.id} completed`,
+          changedById: actorId,
+        },
+      };
+    }
+    await tx.order.update({ where: { id: order.id }, data: orderUpdate });
+
+    if (order.paymentRef) {
+      await tx.payment.updateMany({
+        where: { id: order.paymentRef },
+        data: { refundedAmount: { increment: refund.amount } },
+      });
+    }
+
+    return toRefund(await tx.refund.findUnique({ where: { id: refundId } }));
+  });
 
 const list = async ({ page, limit, sort, search, status, userId, isStaff }) => {
-  const filter = {
+  const where = {
     ...(status ? { status } : {}),
     ...searchFilter(search, ["orderNumber", "reason"]),
     // Customers only ever see their own requests.
-    ...(isStaff ? {} : { User: userId }),
+    ...(isStaff ? {} : { userId }),
   };
 
-  const skip = (page - 1) * limit;
-  const [items, total] = await Promise.all([
-    Refund.find(filter)
-      .sort(parseSort(sort))
-      .skip(skip)
-      .limit(limit)
-      .populate("User", "firstName lastName email")
-      .lean(),
-    Refund.countDocuments(filter),
+  const [rows, total] = await Promise.all([
+    prisma.refund.findMany({
+      where,
+      orderBy: parseSort(sort, SORTABLE),
+      skip: (page - 1) * limit,
+      take: limit,
+      include: { user: { select: USER_SUMMARY } },
+    }),
+    prisma.refund.count({ where }),
   ]);
 
-  return { items, total, page, limit };
+  return { items: rows.map(toRefund), total, page, limit };
 };
 
 const getById = async ({ refundId, requester }) => {
-  const refund = await Refund.findById(refundId)
-    .populate("User", "firstName lastName email")
-    .populate("order", "orderNumber pricing status")
-    .lean();
+  const row = await prisma.refund.findUnique({
+    where: { id: refundId },
+    include: { user: { select: USER_SUMMARY }, order: true },
+  });
 
-  if (!refund) throw AppError.notFound("Refund not found");
+  if (!row) throw AppError.notFound("Refund not found");
 
-  const ownerId = refund.User?._id || refund.User;
-  if (!requester.isStaff && String(ownerId) !== String(requester.userId)) {
+  if (!requester.isStaff && String(row.userId) !== String(requester.userId)) {
     throw AppError.forbidden();
   }
-  return refund;
+  return toRefund(row);
 };
 
 module.exports = { request, review, process, list, getById };

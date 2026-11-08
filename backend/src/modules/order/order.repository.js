@@ -1,15 +1,16 @@
 const BaseRepository = require("../../core/BaseRepository");
-const Order = require("../../models/OrderModel");
+const { toOrder } = require("../../db/mappers");
+
+const WITH_LINES = {
+  items: { orderBy: { position: "asc" } },
+  history: { orderBy: { sequence: "asc" } },
+};
 
 class OrderRepository extends BaseRepository {
   constructor() {
-    super(Order);
-  }
-
-  /** Returns only the owner id, for cheap ownership checks. */
-  findOwner(orderId) {
-    return this.model.findById(orderId).select("User").lean();
+    super("order", toOrder, WITH_LINES);
   }
 }
 
 module.exports = new OrderRepository();
+module.exports.WITH_LINES = WITH_LINES;

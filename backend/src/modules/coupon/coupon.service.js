@@ -1,12 +1,27 @@
+const prisma = require("../../db/client");
+const { toCoupon, toRedemption } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const logger = require("../../core/logger");
-const Coupon = require("../../models/CouponModel");
-const CouponRedemption = require("../../models/CouponRedemptionModel");
-const Order = require("../../models/OrderModel");
-const Category = require("../../models/CategoryModel");
 const { DISCOUNT_TYPES } = require("../../constants/discount");
 const { round } = require("../../utils/money");
-const { parseSort, searchFilter } = require("../../utils/schemas");
+const { parseSort, searchFilter, sortable } = require("../../utils/schemas");
+
+const SORTABLE = sortable("createdAt", "code", "value", "usedCount", "startsAt", "expiresAt");
+
+/** Adds the derived status flags, which are computed rather than stored. */
+const withStatus = (coupon) => {
+  const now = Date.now();
+  const isExpired = Boolean(coupon.expiresAt && new Date(coupon.expiresAt).getTime() < now);
+  const isExhausted = Boolean(coupon.usageLimit && coupon.usedCount >= coupon.usageLimit);
+  const hasStarted = !coupon.startsAt || new Date(coupon.startsAt).getTime() <= now;
+
+  return {
+    ...coupon,
+    isExpired,
+    isExhausted,
+    isRedeemable: Boolean(coupon.isActive) && hasStarted && !isExpired && !isExhausted,
+  };
+};
 
 /**
  * Decides which cart lines a coupon covers.
@@ -29,10 +44,11 @@ const selectEligibleItems = async (coupon, items) => {
   if (hasCategoryScope) {
     const scoped = (coupon.appliesToCategories || []).map(String);
     // A parent category implies its descendants.
-    const descendants = await Category.find({ ancestors: { $in: scoped } })
-      .select("_id")
-      .lean();
-    allowedCategories = new Set([...scoped, ...descendants.map((c) => String(c._id))]);
+    const descendants = await prisma.category.findMany({
+      where: { ancestors: { hasSome: scoped } },
+      select: { id: true },
+    });
+    allowedCategories = new Set([...scoped, ...descendants.map((c) => c.id)]);
   }
 
   return candidates.filter(
@@ -51,8 +67,11 @@ const selectEligibleItems = async (coupon, items) => {
  * @returns {Promise<{coupon: object, discountAmount: number, freeShipping: boolean}>}
  */
 const validateForCart = async ({ code, userId, items, itemsSubtotal }) => {
-  const coupon = await Coupon.findOne({ code: String(code).toUpperCase().trim() });
-  if (!coupon) throw AppError.notFound("This coupon code is not valid");
+  const row = await prisma.coupon.findUnique({
+    where: { code: String(code).toUpperCase().trim() },
+  });
+  if (!row) throw AppError.notFound("This coupon code is not valid");
+  const coupon = withStatus(toCoupon(row));
 
   if (!coupon.isActive) throw AppError.badRequest("This coupon is no longer active");
   if (coupon.startsAt && coupon.startsAt.getTime() > Date.now()) {
@@ -67,14 +86,16 @@ const validateForCart = async ({ code, userId, items, itemsSubtotal }) => {
   }
 
   if (coupon.usageLimitPerUser > 0) {
-    const used = await CouponRedemption.countDocuments({ coupon: coupon._id, User: userId });
+    const used = await prisma.couponRedemption.count({
+      where: { couponId: coupon._id, userId },
+    });
     if (used >= coupon.usageLimitPerUser) {
       throw AppError.badRequest("You have already used this coupon");
     }
   }
 
   if (coupon.firstOrderOnly) {
-    const previousOrders = await Order.countDocuments({ User: userId });
+    const previousOrders = await prisma.order.count({ where: { userId } });
     if (previousOrders > 0) {
       throw AppError.badRequest("This coupon is only valid on your first order");
     }
@@ -108,7 +129,7 @@ const validateForCart = async ({ code, userId, items, itemsSubtotal }) => {
     freeShipping = true;
   }
 
-  return { coupon: coupon.toObject(), discountAmount: round(discountAmount), freeShipping };
+  return { coupon, discountAmount: round(discountAmount), freeShipping };
 };
 
 /**
@@ -117,142 +138,113 @@ const validateForCart = async ({ code, userId, items, itemsSubtotal }) => {
  * The counter increment is conditional on the limit not yet being reached, so
  * simultaneous checkouts cannot push a coupon past its cap.
  */
-const redeem = async ({ coupon, userId, orderId, discountAmount, session }) => {
-  const filter = { _id: coupon._id };
-  if (coupon.usageLimit > 0) filter.usedCount = { $lt: coupon.usageLimit };
+const redeem = async ({ coupon, userId, orderId, discountAmount, tx }) => {
+  const { count } = await tx.coupon.updateMany({
+    where: {
+      id: coupon._id,
+      ...(coupon.usageLimit > 0 ? { usedCount: { lt: coupon.usageLimit } } : {}),
+    },
+    data: { usedCount: { increment: 1 } },
+  });
 
-  const updated = await Coupon.findOneAndUpdate(
-    filter,
-    { $inc: { usedCount: 1 } },
-    { new: true, session }
-  );
+  if (count === 0) throw AppError.conflict("This coupon has reached its usage limit");
 
-  if (!updated) throw AppError.conflict("This coupon has reached its usage limit");
-
-  await CouponRedemption.create(
-    [
-      {
-        coupon: coupon._id,
-        code: coupon.code,
-        User: userId,
-        order: orderId,
-        discountAmount,
-      },
-    ],
-    session ? { session } : {}
-  );
-
-  return updated;
+  await tx.couponRedemption.create({
+    data: { couponId: coupon._id, code: coupon.code, userId, orderId, discountAmount },
+  });
 };
 
 /** Reverses a redemption when the order it belonged to is cancelled. */
-const revoke = async ({ orderId }) => {
-  const redemptions = await CouponRedemption.find({ order: orderId });
+const revoke = async ({ orderId, tx }) => {
+  const redemptions = await tx.couponRedemption.findMany({ where: { orderId } });
 
   for (const redemption of redemptions) {
-    try {
-      await Coupon.updateOne({ _id: redemption.coupon }, { $inc: { usedCount: -1 } });
-      await CouponRedemption.deleteOne({ _id: redemption._id });
-    } catch (error) {
-      logger.error(`Failed to revoke coupon redemption: ${error.message}`, { orderId });
-    }
+    await tx.coupon.update({
+      where: { id: redemption.couponId },
+      data: { usedCount: { decrement: 1 } },
+    });
+    await tx.couponRedemption.delete({ where: { id: redemption.id } });
   }
+
+  if (redemptions.length) logger.info("Coupon redemptions revoked", { orderId });
   return { revoked: redemptions.length };
-};
-
-/**
- * Adds the derived status flags to a plain object.
- *
- * `lean()` skips virtuals, so list endpoints compute them here rather than
- * paying for full document hydration.
- */
-const withStatus = (coupon) => {
-  const now = Date.now();
-  const isExpired = Boolean(coupon.expiresAt && new Date(coupon.expiresAt).getTime() < now);
-  const isExhausted = Boolean(coupon.usageLimit && coupon.usedCount >= coupon.usageLimit);
-  const hasStarted = !coupon.startsAt || new Date(coupon.startsAt).getTime() <= now;
-
-  return {
-    ...coupon,
-    isExpired,
-    isExhausted,
-    isRedeemable: Boolean(coupon.isActive) && hasStarted && !isExpired && !isExhausted,
-  };
 };
 
 /* -------------------------------- Management ------------------------------- */
 
 const list = async ({ page, limit, sort, search, isActive, status }) => {
   const now = new Date();
-  const filter = {
+  const where = {
     ...searchFilter(search, ["code", "description"]),
     ...(isActive !== undefined ? { isActive } : {}),
   };
 
   if (status === "expired") {
-    filter.expiresAt = { $ne: null, $lt: now };
+    where.expiresAt = { not: null, lt: now };
   } else if (status === "scheduled") {
-    filter.startsAt = { $gt: now };
+    where.startsAt = { gt: now };
   } else if (status === "active") {
-    filter.isActive = true;
-    filter.$and = [
-      { $or: [{ expiresAt: null }, { expiresAt: { $gte: now } }] },
-      { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] },
-    ];
+    where.isActive = true;
+    where.startsAt = { lte: now };
+    where.AND = [{ OR: [{ expiresAt: null }, { expiresAt: { gte: now } }] }];
   }
 
-  const skip = (page - 1) * limit;
-  const [items, total] = await Promise.all([
-    Coupon.find(filter).sort(parseSort(sort)).skip(skip).limit(limit).lean(),
-    Coupon.countDocuments(filter),
+  const [rows, total] = await Promise.all([
+    prisma.coupon.findMany({
+      where,
+      orderBy: parseSort(sort, SORTABLE),
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.coupon.count({ where }),
   ]);
 
-  return { items: items.map(withStatus), total, page, limit };
+  return { items: rows.map((row) => withStatus(toCoupon(row))), total, page, limit };
 };
 
 const create = async (payload, actorId) => {
-  const existing = await Coupon.findOne({ code: payload.code.toUpperCase() });
+  const existing = await prisma.coupon.count({ where: { code: payload.code.toUpperCase() } });
   if (existing) throw AppError.conflict("A coupon with this code already exists");
 
-  const coupon = await Coupon.create({ ...payload, createdBy: actorId });
-  return coupon.toObject();
+  return toCoupon(await prisma.coupon.create({ data: { ...payload, createdById: actorId } }));
 };
 
 const update = async (id, payload) => {
-  const coupon = await Coupon.findByIdAndUpdate(id, payload, {
-    new: true,
-    runValidators: true,
-  }).lean();
-  if (!coupon) throw AppError.notFound("Coupon not found");
-  return coupon;
+  const exists = await prisma.coupon.count({ where: { id } });
+  if (!exists) throw AppError.notFound("Coupon not found");
+
+  return toCoupon(await prisma.coupon.update({ where: { id }, data: payload }));
 };
 
 const remove = async (id) => {
-  const used = await CouponRedemption.countDocuments({ coupon: id });
+  const exists = await prisma.coupon.count({ where: { id } });
+  if (!exists) throw AppError.notFound("Coupon not found");
+
+  const used = await prisma.couponRedemption.count({ where: { couponId: id } });
   if (used > 0) {
     // Historic orders reference it, so it is retired rather than deleted.
-    const coupon = await Coupon.findByIdAndUpdate(id, { isActive: false }, { new: true }).lean();
-    if (!coupon) throw AppError.notFound("Coupon not found");
+    await prisma.coupon.update({ where: { id }, data: { isActive: false } });
     return { deactivated: true, redemptions: used };
   }
 
-  const coupon = await Coupon.findByIdAndDelete(id).lean();
-  if (!coupon) throw AppError.notFound("Coupon not found");
+  await prisma.coupon.delete({ where: { id } });
   return { deleted: true };
 };
 
 const getById = async (id) => {
-  const coupon = await Coupon.findById(id).lean();
-  if (!coupon) throw AppError.notFound("Coupon not found");
+  const row = await prisma.coupon.findUnique({ where: { id } });
+  if (!row) throw AppError.notFound("Coupon not found");
 
-  const redemptions = await CouponRedemption.find({ coupon: id })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .populate("User", "firstName lastName email")
-    .lean();
+  const rows = await prisma.couponRedemption.findMany({
+    where: { couponId: id },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } },
+  });
+  const redemptions = rows.map(toRedemption);
 
   const totalDiscount = redemptions.reduce((sum, r) => sum + r.discountAmount, 0);
-  return { ...withStatus(coupon), redemptions, stats: { totalDiscount } };
+  return { ...withStatus(toCoupon(row)), redemptions, stats: { totalDiscount } };
 };
 
 module.exports = { validateForCart, redeem, revoke, list, create, update, remove, getById };

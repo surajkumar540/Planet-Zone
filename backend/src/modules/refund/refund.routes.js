@@ -7,19 +7,19 @@ const { authenticate } = require("../../middlewares/auth");
 const { requireStaff } = require("../../middlewares/rbac");
 const audit = require("../../services/audit.service");
 const service = require("./refund.service");
-const { listQuery, idParam, objectId } = require("../../utils/schemas");
+const { listQuery, idParam, uuid } = require("../../utils/schemas");
 const { REFUND_STATUS_VALUES } = require("../../constants/refund");
 const { hasAtLeastRole, ROLES } = require("../../constants/roles");
 
 const requestSchema = z.object({
-  orderId: objectId,
+  orderId: uuid,
   amount: z.coerce.number().min(0).optional(),
   reason: z.string().trim().min(1, "Reason is required").max(500),
   customerNote: z.string().trim().max(1000).optional(),
   items: z
     .array(
       z.object({
-        product: objectId,
+        product: uuid,
         variantSku: z.string().trim().optional().default(""),
         name: z.string().trim().optional().default(""),
         qty: z.coerce.number().int().min(1),

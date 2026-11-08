@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { objectId, listQuery } = require("../../utils/schemas");
+const { uuid, listQuery } = require("../../utils/schemas");
 
 /** `/product/:id/reviews` — public listing for one product. */
 const productReviewsQuery = listQuery.extend({
@@ -17,10 +17,10 @@ const productReviewsQuery = listQuery.extend({
 const moderationQuery = listQuery.extend({
   status: z.enum(["all", "approved", "pending"]).default("all"),
   rating: z.coerce.number().int().min(1).max(5).optional(),
-  productId: objectId.optional(),
+  productId: uuid.optional(),
 });
 
-const reviewParams = z.object({ productId: objectId, reviewId: objectId });
+const reviewParams = z.object({ productId: uuid, reviewId: uuid });
 
 const moderateBody = z.object({ isApproved: z.boolean() });
 

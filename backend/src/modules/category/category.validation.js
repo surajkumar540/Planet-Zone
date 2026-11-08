@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { objectId, idParam } = require("../../utils/schemas");
+const { uuid, idParam } = require("../../utils/schemas");
 
 const seoSchema = z.object({
   title: z.string().trim().max(200).optional().default(""),
@@ -13,7 +13,7 @@ const createCategorySchema = z.object({
   description: z.string().trim().max(2000).optional().default(""),
   image: z.string().trim().max(500).optional().default(""),
   // `null` explicitly means a root category.
-  parent: objectId.nullable().optional(),
+  parent: uuid.nullable().optional(),
   position: z.coerce.number().int().min(0).optional().default(0),
   isActive: z.coerce.boolean().optional().default(true),
   isFeatured: z.coerce.boolean().optional().default(false),
@@ -28,7 +28,7 @@ const updateCategorySchema = createCategorySchema
 
 const listCategoriesQuery = z.object({
   search: z.string().trim().max(200).optional(),
-  parent: objectId.nullable().optional(),
+  parent: uuid.nullable().optional(),
   isActive: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
@@ -41,12 +41,12 @@ const listCategoriesQuery = z.object({
 
 const deleteCategoryQuery = z.object({
   // Where to move products that still reference the category being removed.
-  reassignTo: objectId.optional(),
+  reassignTo: uuid.optional(),
 });
 
 const reorderSchema = z.object({
   items: z
-    .array(z.object({ id: objectId, position: z.coerce.number().int().min(0) }))
+    .array(z.object({ id: uuid, position: z.coerce.number().int().min(0) }))
     .min(1, "Provide at least one category"),
 });
 

@@ -1,4 +1,4 @@
-const AuditLog = require("../models/AuditLogModel");
+const prisma = require("../db/client");
 const logger = require("../core/logger");
 
 /**
@@ -25,17 +25,20 @@ const diff = (before = {}, after = {}) => {
  */
 const record = async ({ req, action, entityType, entityId, changes, status = "success" }) => {
   try {
-    await AuditLog.create({
-      actor: req?.auth?.userId,
-      actorEmail: req?.auth?.email || "",
-      actorRole: req?.auth?.role || "",
-      action,
-      entityType,
-      entityId: entityId ? String(entityId) : undefined,
-      changes: changes || null,
-      ip: req?.ip || "",
-      userAgent: req?.headers?.["user-agent"] || "",
-      status,
+    await prisma.auditLog.create({
+      data: {
+        actorId: req?.auth?.userId,
+        actorEmail: req?.auth?.email || "",
+        actorRole: req?.auth?.role || "",
+        action,
+        entityType,
+        entityId: entityId ? String(entityId) : undefined,
+        // Round-tripped so Dates and undefined become valid JSON.
+        changes: changes ? JSON.parse(JSON.stringify(changes)) : undefined,
+        ip: req?.ip || "",
+        userAgent: req?.headers?.["user-agent"] || "",
+        status,
+      },
     });
   } catch (error) {
     logger.error(`Audit write failed for ${action}: ${error.message}`);

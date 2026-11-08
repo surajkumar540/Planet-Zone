@@ -1,28 +1,17 @@
-const mongoose = require("mongoose");
-const env = require("./env");
+const prisma = require("../db/client");
 const logger = require("../core/logger");
 
-// Reject queries containing paths not declared in the schema.
-mongoose.set("strictQuery", true);
-
+/** Connects eagerly so a bad DATABASE_URL fails at boot, not on the first request. */
 const connectDatabase = async () => {
   try {
-    const connection = await mongoose.connect(env.MONGO_URI, {
-      serverSelectionTimeoutMS: 10000,
-      maxPoolSize: 20,
-      minPoolSize: 2,
-    });
-    logger.info(`MongoDB connected at ${connection.connection.host}`);
-    return connection;
+    await prisma.$connect();
+    logger.info("PostgreSQL connected");
   } catch (error) {
-    logger.error(`MongoDB connection failed: ${error.message}`);
+    logger.error(`PostgreSQL connection failed: ${error.message}`);
     throw error;
   }
 };
 
-const disconnectDatabase = () => mongoose.connection.close(false);
-
-mongoose.connection.on("disconnected", () => logger.warn("MongoDB disconnected"));
-mongoose.connection.on("reconnected", () => logger.info("MongoDB reconnected"));
+const disconnectDatabase = () => prisma.$disconnect();
 
 module.exports = { connectDatabase, disconnectDatabase };

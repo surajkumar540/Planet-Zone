@@ -1,13 +1,12 @@
-const mongoose = require("mongoose");
 const { z } = require("zod");
 
-/** A 24-character hex Mongo ObjectId. */
-const objectId = z
-  .string()
-  .refine((value) => mongoose.Types.ObjectId.isValid(value), "Invalid identifier");
+/** Primary keys are UUIDs, except Payment, which uses the gateway's order id. */
+const uuid = z.uuid("Invalid identifier");
+
+const isUuid = (value) => uuid.safeParse(value).success;
 
 /** `{ id }` route params, e.g. `/products/:id`. */
-const idParam = (key = "id") => z.object({ [key]: objectId });
+const idParam = (key = "id") => z.object({ [key]: uuid });
 
 /**
  * Shared list-endpoint query contract: page, limit, free-text search, and a
@@ -23,24 +22,39 @@ const listQuery = z.object({
     .optional(),
 });
 
-/** Translates the `field:direction` query string into a Mongoose sort object. */
-const parseSort = (sort, fallback = { createdAt: -1 }) => {
-  if (!sort) return fallback;
-  const [field, direction] = sort.split(":");
-  return { [field]: direction === "asc" ? 1 : -1 };
+/**
+ * Translates a `field:direction` query string into a Prisma `orderBy`.
+ *
+ * `allowed` maps API sort keys to columns, so a client can only sort on what a
+ * list explicitly exposes; anything else falls back to the default rather than
+ * reaching the database. The `id` tie-break keeps paging stable when values
+ * repeat.
+ *
+ * @param {string|undefined} sort
+ * @param {Record<string, string>} allowed API sort key to column name
+ * @param {string} [fallback]
+ */
+const parseSort = (sort, allowed, fallback = "createdAt:desc") => {
+  const [field, direction] = (sort || fallback).split(":");
+  const column = Object.hasOwn(allowed, field) ? allowed[field] : null;
+  if (!column) {
+    const [fallbackField, fallbackDirection] = fallback.split(":");
+    return [{ [allowed[fallbackField] || fallbackField]: fallbackDirection }, { id: "asc" }];
+  }
+  return [{ [column]: direction }, { id: "asc" }];
 };
 
-/**
- * Escapes user input before it is used inside a RegExp so that characters
- * like `(` or `*` cannot alter the query or cause catastrophic backtracking.
- */
-const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Turns a list of column names into a `parseSort` allow-list. */
+const sortable = (...columns) => Object.fromEntries(columns.map((column) => [column, column]));
 
-/** Case-insensitive "contains" matcher across the given fields. */
+/** Escapes LIKE wildcards so `%` and `_` in a search match literally. */
+const escapeLike = (value) => String(value).replace(/[\\%_]/g, "\\$&");
+
+/** Case-insensitive "contains" matcher across the given columns. */
 const searchFilter = (search, fields) => {
   if (!search || fields.length === 0) return {};
-  const pattern = new RegExp(escapeRegex(search), "i");
-  return { $or: fields.map((field) => ({ [field]: pattern })) };
+  const pattern = escapeLike(search);
+  return { OR: fields.map((field) => ({ [field]: { contains: pattern, mode: "insensitive" } })) };
 };
 
 const email = z.string().trim().toLowerCase().email("Enter a valid email address");
@@ -51,11 +65,13 @@ const password = z
   .max(128, "Password is too long");
 
 module.exports = {
-  objectId,
+  uuid,
+  isUuid,
   idParam,
   listQuery,
   parseSort,
-  escapeRegex,
+  sortable,
+  escapeLike,
   searchFilter,
   email,
   password,

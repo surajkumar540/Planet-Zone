@@ -1,10 +1,13 @@
+const prisma = require("../../db/client");
+const { num } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const userRepository = require("./user.repository");
-const orderRepository = require("../order/order.repository");
 const { toPublicUser } = require("../auth/auth.service");
-const { parseSort, searchFilter } = require("../../utils/schemas");
+const { parseSort, searchFilter, sortable } = require("../../utils/schemas");
 const { ROLES } = require("../../constants/roles");
 const { REVENUE_STATUSES } = require("../../constants/orderStatus");
+
+const SORTABLE = sortable("createdAt", "firstName", "lastName", "email", "role", "lastLoginAt");
 
 const getProfile = async (userId) => {
   const user = await userRepository.findById(userId);
@@ -20,16 +23,16 @@ const updateProfile = async (userId, payload) => {
 
 /** Paginated customer directory for the dashboard. */
 const listUsers = async ({ page, limit, search, sort, role, isActive }) => {
-  const filter = {
+  const where = {
     ...searchFilter(search, ["firstName", "lastName", "email", "phone"]),
     ...(role ? { role } : {}),
     ...(isActive !== undefined ? { isActive } : {}),
   };
 
-  const result = await userRepository.paginate(filter, {
+  const result = await userRepository.paginate(where, {
     page,
     limit,
-    sort: parseSort(sort),
+    orderBy: parseSort(sort, SORTABLE),
   });
 
   return { ...result, items: result.items.map(toPublicUser) };
@@ -43,25 +46,23 @@ const getUserById = async (id) => {
   const user = await userRepository.findById(id);
   if (!user) throw AppError.notFound("User not found");
 
-  const [stats] = await orderRepository.aggregate([
-    { $match: { User: user._id, status: { $in: REVENUE_STATUSES } } },
-    {
-      $group: {
-        _id: null,
-        orderCount: { $sum: 1 },
-        totalSpent: { $sum: "$pricing.grandTotal" },
-        lastOrderAt: { $max: "$createdAt" },
-      },
-    },
-  ]);
+  const stats = await prisma.order.aggregate({
+    where: { userId: id, status: { in: [...REVENUE_STATUSES] } },
+    _count: { _all: true },
+    _sum: { grandTotal: true },
+    _max: { createdAt: true },
+  });
+
+  const orderCount = stats._count._all;
+  const totalSpent = num(stats._sum.grandTotal) || 0;
 
   return {
     ...toPublicUser(user),
     stats: {
-      orderCount: stats?.orderCount || 0,
-      totalSpent: stats?.totalSpent || 0,
-      averageOrderValue: stats?.orderCount ? stats.totalSpent / stats.orderCount : 0,
-      lastOrderAt: stats?.lastOrderAt || null,
+      orderCount,
+      totalSpent,
+      averageOrderValue: orderCount ? totalSpent / orderCount : 0,
+      lastOrderAt: stats._max.createdAt,
     },
   };
 };
@@ -87,11 +88,7 @@ const updateUser = async (actorId, id, payload) => {
     }
   }
 
-  const update = { ...payload };
-  // Keep the legacy flag consistent with the canonical role.
-  if (payload.role) update.isAdmin = payload.role === ROLES.ADMIN;
-
-  const user = await userRepository.updateById(id, update);
+  const user = await userRepository.updateById(id, payload);
   return toPublicUser(user);
 };
 

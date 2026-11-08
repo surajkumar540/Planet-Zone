@@ -15,7 +15,7 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.coerce.number().int().positive().default(4000),
 
-  MONGO_URI: z.string().min(1, "MONGO_URI is required"),
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   SECRET_KEY: z.string().min(1, "SECRET_KEY is required"),
   JWT_EXPIRES_IN: z.string().default("7d"),
 

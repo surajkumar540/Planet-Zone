@@ -67,7 +67,7 @@ const resolveSellableUnit = (product, variantKey) => {
     totalPrice: variant.totalPrice,
     countInStock: variant.countInStock,
     image: variant.image || product.image,
-    label: [...(variant.options?.entries?.() || [])].map(([, value]) => value).join(" / "),
+    label: Object.values(variant.options || {}).join(" / "),
   };
 };
 
@@ -82,7 +82,7 @@ const priceCart = async (cart) => {
   const lines = normaliseCart(cart);
   const productIds = [...new Set(lines.map((line) => line.productId))];
 
-  const products = await productRepository.find({ _id: { $in: productIds } });
+  const products = await productRepository.find({ id: { in: productIds } });
   if (products.length !== productIds.length) {
     throw AppError.badRequest("One or more products in your cart are no longer available");
   }

@@ -1,50 +1,61 @@
 const { z } = require("zod");
 const express = require("express");
-const User = require("../../models/UserModel");
+const prisma = require("../../db/client");
+const { toProduct } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const asyncHandler = require("../../core/asyncHandler");
 const { ok } = require("../../core/ApiResponse");
 const validate = require("../../middlewares/validate");
 const { authenticate } = require("../../middlewares/auth");
-const Product = require("../../models/ProductModel");
-const { objectId, idParam } = require("../../utils/schemas");
+const { uuid, idParam } = require("../../utils/schemas");
 
 /* -------------------------------- Validation ------------------------------- */
 
-const addBody = z.object({ productId: objectId });
+const addBody = z.object({ productId: uuid });
 
-/**
- * The fields a wishlist card renders. Selecting explicitly keeps the payload
- * small and, more importantly, stops embedded `reviews` arrays from riding
- * along on every request.
- */
-const CARD_FIELDS = "name slug image price totalPrice discount countInStock hasVariants rating numReviews brand category isActive";
+/** The fields a wishlist card renders. Selecting explicitly keeps the payload small. */
+const CARD_FIELDS = {
+  id: true,
+  name: true,
+  slug: true,
+  image: true,
+  price: true,
+  totalPrice: true,
+  discount: true,
+  countInStock: true,
+  hasVariants: true,
+  rating: true,
+  numReviews: true,
+  brand: true,
+  category: true,
+  isActive: true,
+};
 
 /* --------------------------------- Service --------------------------------- */
 
 const listWishlist = async (userId) => {
-  const user = await User.findById(userId).populate({
-    path: "wishlist",
-    select: CARD_FIELDS,
-  });
+  const user = await prisma.user.count({ where: { id: userId } });
   if (!user) throw AppError.notFound("User not found");
 
-  // A product deleted after being saved populates as null; drop those rather
-  // than handing the client holes to defend against.
-  return (user.wishlist || []).filter(Boolean);
+  const rows = await prisma.wishlistItem.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+    include: { product: { select: CARD_FIELDS } },
+  });
+  return rows.map((row) => toProduct(row.product));
 };
 
 const addToWishlist = async (userId, productId) => {
-  const exists = await Product.exists({ _id: productId, isActive: { $ne: false } });
+  const exists = await prisma.product.count({ where: { id: productId, isActive: true } });
   if (!exists) throw AppError.notFound("Product not found");
 
-  // `$addToSet` makes a repeated add idempotent instead of duplicating.
-  await User.updateOne({ _id: userId }, { $addToSet: { wishlist: productId } });
+  // skipDuplicates makes a repeated add idempotent.
+  await prisma.wishlistItem.createMany({ data: [{ userId, productId }], skipDuplicates: true });
   return listWishlist(userId);
 };
 
 const removeFromWishlist = async (userId, productId) => {
-  await User.updateOne({ _id: userId }, { $pull: { wishlist: productId } });
+  await prisma.wishlistItem.deleteMany({ where: { userId, productId } });
   return listWishlist(userId);
 };
 
@@ -86,7 +97,7 @@ router.delete(
   "/wishlist",
   authenticate,
   asyncHandler(async (req, res) => {
-    await User.updateOne({ _id: req.auth.userId }, { $set: { wishlist: [] } });
+    await prisma.wishlistItem.deleteMany({ where: { userId: req.auth.userId } });
     return ok(res, { data: [], message: "Wishlist cleared" });
   })
 );

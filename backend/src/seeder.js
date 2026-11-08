@@ -1,17 +1,17 @@
 /**
  * Development data seeder.
  *
- *   npm run data:import    populate users and products
- *   npm run data:destroy   remove seeded collections
+ *   npm run data:import    wipe every table, then seed users and products
+ *   npm run data:destroy   wipe every table
  *
  * Refuses to run against a production database, since both paths delete data.
  */
 const env = require("./config/env");
 const logger = require("./core/logger");
+const prisma = require("./db/client");
 const { connectDatabase, disconnectDatabase } = require("./config/database");
-const User = require("./models/UserModel");
-const Product = require("./models/ProductModel");
-const Order = require("./models/OrderModel");
+const { hashPassword } = require("./modules/auth/auth.service");
+const productService = require("./modules/product/product.service");
 const users = require("../data/users");
 const products = require("../data/product");
 const { ROLES } = require("./constants/roles");
@@ -23,29 +23,43 @@ const guardEnvironment = () => {
   }
 };
 
+/** Empties every application table, leaving Prisma's migration history alone. */
+const wipeAllTables = async () => {
+  const tables = await prisma.$queryRaw`
+    SELECT tablename FROM pg_tables
+    WHERE schemaname = current_schema() AND tablename <> '_prisma_migrations'`;
+  const names = tables.map(({ tablename }) => `"${tablename}"`).join(", ");
+  if (names) await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${names} CASCADE`);
+};
+
 const importData = async () => {
-  await Product.deleteMany();
-  await User.deleteMany();
+  await wipeAllTables();
 
-  // `create` is used rather than `insertMany` so the model hooks run and each
-  // user's `role` is derived from the legacy `isAdmin` flag.
-  const created = await User.create(
-    users.map((user) => ({
-      ...user,
-      role: user.isAdmin ? ROLES.ADMIN : ROLES.CUSTOMER,
-    }))
-  );
+  const created = [];
+  for (const { isAdmin, password, ...user } of users) {
+    created.push(
+      await prisma.user.create({
+        data: {
+          ...user,
+          password: await hashPassword(password),
+          role: isAdmin ? ROLES.ADMIN : ROLES.CUSTOMER,
+        },
+      })
+    );
+  }
 
-  const adminUserId = created[0]._id;
-  await Product.create(products.map((product) => ({ ...product, User: adminUserId })));
+  const adminUserId = created[0].id;
+  for (const { rating, numReviews, ...product } of products) {
+    // The service also creates each product's inventory row, which checkout needs.
+    const { _id } = await productService.createProduct(adminUserId, product);
+    await prisma.product.update({ where: { id: _id }, data: { rating, numReviews } });
+  }
 
   logger.info(`Imported ${created.length} users and ${products.length} products`);
 };
 
 const destroyData = async () => {
-  await Order.deleteMany();
-  await Product.deleteMany();
-  await User.deleteMany();
+  await wipeAllTables();
   logger.info("Data destroyed successfully");
 };
 

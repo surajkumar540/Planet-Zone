@@ -1,9 +1,10 @@
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
 const env = require("../config/env");
+const prisma = require("../db/client");
+const { toPayment } = require("../db/mappers");
 const AppError = require("../core/AppError");
 const logger = require("../core/logger");
-const Payment = require("../models/PaymentModel");
 const { PAYMENT_STATUS } = require("../constants/orderStatus");
 
 let cachedClient = null;
@@ -38,20 +39,22 @@ const createPaymentIntent = async ({ amount, userId }) => {
     receipt: `txn_${Date.now()}`,
   });
 
-  await Payment.create({
-    _id: order.id,
-    User: userId,
-    entity: order.entity,
-    amount: order.amount,
-    amount_due: order.amount_due,
-    amount_paid: order.amount_paid,
-    currency: order.currency,
-    receipt: order.receipt,
-    offer_id: order.offer_id,
-    status: order.status,
-    attempts: order.attempts,
-    created_at: order.created_at,
-    paymentStatus: PAYMENT_STATUS.PENDING,
+  await prisma.payment.create({
+    data: {
+      id: order.id,
+      userId,
+      entity: order.entity,
+      amount: order.amount,
+      amount_due: order.amount_due,
+      amount_paid: order.amount_paid,
+      currency: order.currency,
+      receipt: order.receipt,
+      offer_id: order.offer_id,
+      status: order.status,
+      attempts: order.attempts,
+      created_at: order.created_at,
+      paymentStatus: PAYMENT_STATUS.PENDING,
+    },
   });
 
   return { order, keyId: env.RAZORPAY_KEY_ID };
@@ -91,10 +94,10 @@ const confirmPayment = async ({
   razorpayPaymentId,
   razorpaySignature,
 }) => {
-  const intent = await Payment.findById(orderCreationId);
+  const intent = await prisma.payment.findUnique({ where: { id: orderCreationId } });
   if (!intent) throw AppError.notFound("Unknown payment reference");
 
-  if (intent.User && String(intent.User) !== String(userId)) {
+  if (intent.userId && String(intent.userId) !== String(userId)) {
     logger.warn("Payment confirmation attempted by a different user", {
       paymentId: orderCreationId,
       userId,
@@ -104,7 +107,7 @@ const confirmPayment = async ({
 
   // Already settled: return the existing result instead of double-processing.
   if (intent.verified) {
-    return intent;
+    return toPayment(intent);
   }
 
   if (orderCreationId !== razorpayOrderId) {
@@ -112,9 +115,13 @@ const confirmPayment = async ({
   }
 
   if (!isSignatureValid({ razorpayOrderId, razorpayPaymentId, razorpaySignature })) {
-    intent.paymentStatus = PAYMENT_STATUS.FAILED;
-    intent.failureReason = "Signature verification failed";
-    await intent.save();
+    await prisma.payment.update({
+      where: { id: orderCreationId },
+      data: {
+        paymentStatus: PAYMENT_STATUS.FAILED,
+        failureReason: "Signature verification failed",
+      },
+    });
 
     logger.error("Razorpay signature verification failed", {
       paymentId: orderCreationId,
@@ -123,30 +130,34 @@ const confirmPayment = async ({
     throw AppError.badRequest("Payment verification failed");
   }
 
-  intent.verified = true;
-  intent.verifiedAt = new Date();
-  intent.paymentStatus = PAYMENT_STATUS.PAID;
-  intent.amount_paid = intent.amount;
-  intent.amount_due = 0;
-  intent.status = "paid";
-  intent.summary = {
-    orderCreationId,
-    razorpayOrderId,
-    razorpayPaymentId,
-    razorpaySignature,
-  };
-  await intent.save();
+  const settled = await prisma.payment.update({
+    where: { id: orderCreationId },
+    data: {
+      verified: true,
+      verifiedAt: new Date(),
+      paymentStatus: PAYMENT_STATUS.PAID,
+      amount_paid: intent.amount,
+      amount_due: 0,
+      status: "paid",
+      summary: {
+        orderCreationId,
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+      },
+    },
+  });
 
-  return intent;
+  return toPayment(settled);
 };
 
 /** Fetches a settled, verified intent belonging to the caller. */
 const getVerifiedPayment = async (paymentId, userId) => {
-  const payment = await Payment.findById(paymentId).lean();
+  const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
   if (!payment) throw AppError.notFound("Unknown payment reference");
-  if (payment.User && String(payment.User) !== String(userId)) throw AppError.forbidden();
+  if (payment.userId && String(payment.userId) !== String(userId)) throw AppError.forbidden();
   if (!payment.verified) throw AppError.badRequest("This payment has not been verified");
-  return payment;
+  return toPayment(payment);
 };
 
 module.exports = {

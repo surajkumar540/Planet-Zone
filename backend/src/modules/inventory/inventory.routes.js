@@ -7,15 +7,16 @@ const { authenticate } = require("../../middlewares/auth");
 const { requireStaff } = require("../../middlewares/rbac");
 const audit = require("../../services/audit.service");
 const service = require("./inventory.service");
-const Warehouse = require("../../models/WarehouseModel");
+const prisma = require("../../db/client");
+const { toWarehouse } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
-const { listQuery, idParam, objectId } = require("../../utils/schemas");
+const { listQuery, idParam, uuid } = require("../../utils/schemas");
 const { MOVEMENT_REASON_VALUES } = require("../../constants/inventory");
 
 /* -------------------------------- Validation ------------------------------- */
 
 const listInventoryQuery = listQuery.extend({
-  warehouse: objectId.optional(),
+  warehouse: uuid.optional(),
   lowStock: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
@@ -23,15 +24,15 @@ const listInventoryQuery = listQuery.extend({
 });
 
 const movementsQuery = listQuery.extend({
-  product: objectId.optional(),
-  warehouse: objectId.optional(),
+  product: uuid.optional(),
+  warehouse: uuid.optional(),
   reason: z.enum(MOVEMENT_REASON_VALUES).optional(),
 });
 
 const adjustSchema = z.object({
-  product: objectId,
+  product: uuid,
   variantSku: z.string().trim().optional().default(""),
-  warehouse: objectId.optional(),
+  warehouse: uuid.optional(),
   // Signed: negative removes stock, positive adds it.
   quantity: z.coerce.number().int().refine((value) => value !== 0, "Quantity cannot be zero"),
   reason: z.enum(MOVEMENT_REASON_VALUES).optional(),
@@ -39,9 +40,9 @@ const adjustSchema = z.object({
 });
 
 const setStockSchema = z.object({
-  product: objectId,
+  product: uuid,
   variantSku: z.string().trim().optional().default(""),
-  warehouse: objectId.optional(),
+  warehouse: uuid.optional(),
   onHand: z.coerce.number().int().min(0),
   note: z.string().trim().max(500).optional(),
 });
@@ -69,13 +70,20 @@ const warehouseBody = z.object({
 const router = express.Router();
 const staffOnly = [authenticate, requireStaff];
 
+const clearOtherDefaults = (keepId) =>
+  prisma.warehouse.updateMany({ where: { id: { not: keepId } }, data: { isDefault: false } });
+
 /* -------------------------------- Warehouses ------------------------------- */
 
 router.get(
   "/warehouses",
   staffOnly,
   asyncHandler(async (req, res) =>
-    ok(res, { data: await Warehouse.find({}).sort({ isDefault: -1, name: 1 }).lean() })
+    ok(res, {
+      data: (
+        await prisma.warehouse.findMany({ orderBy: [{ isDefault: "desc" }, { name: "asc" }] })
+      ).map(toWarehouse),
+    })
   )
 );
 
@@ -84,21 +92,19 @@ router.post(
   staffOnly,
   validate({ body: warehouseBody }),
   asyncHandler(async (req, res) => {
-    const warehouse = await Warehouse.create(req.body);
+    const row = await prisma.warehouse.create({
+      data: { ...req.body, code: req.body.code.toUpperCase() },
+    });
     // Only one location can be the default.
-    if (warehouse.isDefault) {
-      await Warehouse.updateMany(
-        { _id: { $ne: warehouse._id } },
-        { $set: { isDefault: false } }
-      );
-    }
+    if (row.isDefault) await clearOtherDefaults(row.id);
+    const warehouse = toWarehouse(row);
     await audit.record({
       req,
       action: "warehouse.create",
       entityType: "Warehouse",
       entityId: warehouse._id,
     });
-    return created(res, { data: warehouse.toObject(), message: "Warehouse created" });
+    return created(res, { data: warehouse, message: "Warehouse created" });
   })
 );
 
@@ -107,16 +113,15 @@ router.patch(
   staffOnly,
   validate({ params: idParam("id"), body: warehouseBody.partial() }),
   asyncHandler(async (req, res) => {
-    const warehouse = await Warehouse.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    }).lean();
-    if (!warehouse) throw AppError.notFound("Warehouse not found");
+    const data = { ...req.body };
+    if (data.code) data.code = data.code.toUpperCase();
 
-    if (req.body.isDefault) {
-      await Warehouse.updateMany({ _id: { $ne: warehouse._id } }, { $set: { isDefault: false } });
-    }
-    return ok(res, { data: warehouse, message: "Warehouse updated" });
+    const existing = await prisma.warehouse.findUnique({ where: { id: req.params.id } });
+    if (!existing) throw AppError.notFound("Warehouse not found");
+    const row = await prisma.warehouse.update({ where: { id: req.params.id }, data });
+
+    if (req.body.isDefault) await clearOtherDefaults(row.id);
+    return ok(res, { data: toWarehouse(row), message: "Warehouse updated" });
   })
 );
 

@@ -1,82 +1,80 @@
+const { Prisma } = require("@prisma/client");
+const prisma = require("../db/client");
+
+const isNotFound = (error) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
+
 /**
- * Thin persistence wrapper around a Mongoose model.
+ * Thin persistence wrapper around a Prisma model.
  *
- * Services depend on repositories rather than models directly, which keeps
- * query construction out of business logic and gives every collection a
- * consistent pagination contract.
+ * Every read returns the API shape produced by `map`, and the same pagination
+ * contract applies to every table. Methods accept an optional `tx` so they can
+ * take part in a transaction.
  */
 class BaseRepository {
-  constructor(model) {
-    this.model = model;
-  }
-
-  create(payload, options = {}) {
-    return this.model.create([payload], options).then(([doc]) => doc);
-  }
-
-  findById(id, { select, populate, lean = true } = {}) {
-    let query = this.model.findById(id);
-    if (select) query = query.select(select);
-    if (populate) query = query.populate(populate);
-    return lean ? query.lean() : query;
-  }
-
-  findOne(filter, { select, populate, lean = true } = {}) {
-    let query = this.model.findOne(filter);
-    if (select) query = query.select(select);
-    if (populate) query = query.populate(populate);
-    return lean ? query.lean() : query;
-  }
-
-  find(filter = {}, { select, populate, sort, limit, skip, lean = true } = {}) {
-    let query = this.model.find(filter);
-    if (select) query = query.select(select);
-    if (populate) query = query.populate(populate);
-    if (sort) query = query.sort(sort);
-    if (typeof skip === "number") query = query.skip(skip);
-    if (typeof limit === "number") query = query.limit(limit);
-    return lean ? query.lean() : query;
-  }
-
   /**
-   * Runs the filtered page query and its matching count in parallel.
-   * Returns `{ items, total, page, limit }` ready for ApiResponse.paginated.
+   * @param {string} modelName Prisma delegate name, e.g. "product"
+   * @param {(row: object) => object} map row-to-API mapper
+   * @param {object} [include] relations loaded by default
    */
-  async paginate(filter = {}, { page = 1, limit = 20, sort = { createdAt: -1 }, select, populate } = {}) {
-    const skip = (page - 1) * limit;
+  constructor(modelName, map, include) {
+    this.modelName = modelName;
+    this.map = map;
+    this.defaultInclude = include;
+  }
+
+  delegate(tx) {
+    return (tx || prisma)[this.modelName];
+  }
+
+  async findById(id, { include = this.defaultInclude, tx } = {}) {
+    return this.map(await this.delegate(tx).findUnique({ where: { id }, include }));
+  }
+
+  async findOne(where, { include = this.defaultInclude, orderBy, tx } = {}) {
+    return this.map(await this.delegate(tx).findFirst({ where, include, orderBy }));
+  }
+
+  async find(where = {}, { include = this.defaultInclude, orderBy, take, skip, tx } = {}) {
+    const rows = await this.delegate(tx).findMany({ where, include, orderBy, take, skip });
+    return rows.map((row) => this.map(row));
+  }
+
+  /** Returns `{ items, total, page, limit }`, ready for ApiResponse.paginated. */
+  async paginate(where = {}, { page = 1, limit = 20, orderBy, include = this.defaultInclude } = {}) {
     const [items, total] = await Promise.all([
-      this.find(filter, { select, populate, sort, limit, skip }),
-      this.model.countDocuments(filter),
+      this.find(where, { include, orderBy, take: limit, skip: (page - 1) * limit }),
+      this.delegate().count({ where }),
     ]);
     return { items, total, page, limit };
   }
 
-  updateById(id, update, options = {}) {
-    return this.model
-      .findByIdAndUpdate(id, update, { new: true, runValidators: true, ...options })
-      .lean();
+  async create(data, { include = this.defaultInclude, tx } = {}) {
+    return this.map(await this.delegate(tx).create({ data, include }));
   }
 
-  updateOne(filter, update, options = {}) {
-    return this.model
-      .findOneAndUpdate(filter, update, { new: true, runValidators: true, ...options })
-      .lean();
+  /** Resolves to null, rather than throwing, when the row does not exist. */
+  async updateById(id, data, { include = this.defaultInclude, tx } = {}) {
+    try {
+      return this.map(await this.delegate(tx).update({ where: { id }, data, include }));
+    } catch (error) {
+      if (isNotFound(error)) return null;
+      throw error;
+    }
   }
 
-  deleteById(id, options = {}) {
-    return this.model.findByIdAndDelete(id, options).lean();
+  /** Resolves to null, rather than throwing, when the row does not exist. */
+  async deleteById(id, { tx } = {}) {
+    try {
+      return this.map(await this.delegate(tx).delete({ where: { id } }));
+    } catch (error) {
+      if (isNotFound(error)) return null;
+      throw error;
+    }
   }
 
-  exists(filter) {
-    return this.model.exists(filter);
-  }
-
-  count(filter = {}) {
-    return this.model.countDocuments(filter);
-  }
-
-  aggregate(pipeline, options = {}) {
-    return this.model.aggregate(pipeline, options);
+  count(where = {}, { tx } = {}) {
+    return this.delegate(tx).count({ where });
   }
 }
 

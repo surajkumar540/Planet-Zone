@@ -3,6 +3,7 @@ const env = require("../config/env");
 const AppError = require("../core/AppError");
 const asyncHandler = require("../core/asyncHandler");
 const { ROLES } = require("../constants/roles");
+const { isUuid } = require("../utils/schemas");
 
 const extractToken = (req) => {
   const header = req.headers.authorization;
@@ -31,6 +32,9 @@ const authenticate = asyncHandler(async (req, res, next) => {
     throw AppError.unauthorized("Unauthorized user");
   }
 
+  // Tokens issued before the Postgres migration carry a Mongo id.
+  if (!isUuid(payload.id)) throw AppError.unauthorized("Unauthorized user");
+
   req.auth = {
     userId: payload.id,
     role: payload.role || (payload.admin ? ROLES.ADMIN : ROLES.CUSTOMER),
@@ -52,6 +56,7 @@ const optionalAuthenticate = asyncHandler(async (req, res, next) => {
   if (!token) return next();
   try {
     const payload = jwt.verify(token, env.SECRET_KEY);
+    if (!isUuid(payload.id)) return next();
     req.auth = {
       userId: payload.id,
       role: payload.role || (payload.admin ? ROLES.ADMIN : ROLES.CUSTOMER),

@@ -1,12 +1,29 @@
+const prisma = require("../../db/client");
 const AppError = require("../../core/AppError");
 const logger = require("../../core/logger");
-const Category = require("../../models/CategoryModel");
+const { withTransaction } = require("../../core/transaction");
 const productRepository = require("./product.repository");
 const inventoryService = require("../inventory/inventory.service");
-const { parseSort, searchFilter } = require("../../utils/schemas");
-const { LOW_STOCK_EXPR } = require("../../constants/inventory");
+const { parseSort, searchFilter, sortable } = require("../../utils/schemas");
+const { slugify } = require("../../utils/slug");
+const { deriveTotalPrice } = require("../../utils/money");
 
-/** Translates the validated list query into a Mongo filter. */
+const { lowStockFilter, WITH_VARIANTS } = productRepository;
+
+const SORTABLE = sortable(
+  "createdAt",
+  "updatedAt",
+  "name",
+  "price",
+  "totalPrice",
+  "countInStock",
+  "rating",
+  "numReviews",
+  "brand",
+  "category"
+);
+
+/** Translates the validated list query into a Prisma filter. */
 const buildFilter = ({
   search,
   category,
@@ -21,48 +38,53 @@ const buildFilter = ({
   hasVariants,
   includeInactive,
 }) => {
-  const filter = {};
+  const where = {};
 
   // Inactive products are hidden from the storefront; the dashboard opts in.
-  // Matched with `$ne: false` rather than `true` so products created before
-  // this field existed are still returned.
-  if (!includeInactive) filter.isActive = { $ne: false };
+  if (!includeInactive) where.isActive = true;
 
-  if (search) Object.assign(filter, searchFilter(search, ["name", "brand", "category", "sku"]));
-  if (category) filter.category = category;
-  if (categoryRef) filter.categoryRef = categoryRef;
-  if (brand) filter.brand = brand;
-  if (isFeatured !== undefined) filter.isFeatured = isFeatured;
-  if (hasVariants !== undefined) filter.hasVariants = hasVariants;
-  if (minRating !== undefined) filter.rating = { $gte: minRating };
+  if (search) Object.assign(where, searchFilter(search, ["name", "brand", "category", "sku"]));
+  if (category) where.category = category;
+  if (categoryRef) where.categoryRefId = categoryRef;
+  if (brand) where.brand = brand;
+  if (isFeatured !== undefined) where.isFeatured = isFeatured;
+  if (hasVariants !== undefined) where.hasVariants = hasVariants;
+  if (minRating !== undefined) where.rating = { gte: minRating };
 
   if (minPrice !== undefined || maxPrice !== undefined) {
-    filter.totalPrice = {};
-    if (minPrice !== undefined) filter.totalPrice.$gte = minPrice;
-    if (maxPrice !== undefined) filter.totalPrice.$lte = maxPrice;
+    where.totalPrice = {};
+    if (minPrice !== undefined) where.totalPrice.gte = minPrice;
+    if (maxPrice !== undefined) where.totalPrice.lte = maxPrice;
   }
 
-  if (inStock === true) filter.countInStock = { $gt: 0 };
-  if (inStock === false) filter.countInStock = { $lte: 0 };
-  if (lowStock) filter.$expr = LOW_STOCK_EXPR;
+  // Held in AND because both of these constrain countInStock.
+  const stock = [];
+  if (inStock === true) stock.push({ countInStock: { gt: 0 } });
+  if (inStock === false) stock.push({ countInStock: { lte: 0 } });
+  if (lowStock) stock.push(lowStockFilter());
+  if (stock.length) where.AND = stock;
 
-  return filter;
+  return where;
 };
 
 const listProducts = async (query) => {
-  const filter = buildFilter(query);
-  return productRepository.paginate(filter, {
+  const where = buildFilter(query);
+  return productRepository.paginate(where, {
     page: query.page,
     limit: query.limit,
-    sort: parseSort(query.sort),
-    // Review bodies are large and unused in list views.
-    select: "-reviews",
+    orderBy: parseSort(query.sort, SORTABLE),
   });
 };
 
 const getProductById = async (id) => {
   const product = await productRepository.findById(id, {
-    populate: { path: "reviews.User", select: "firstName lastName avatar" },
+    include: {
+      ...WITH_VARIANTS,
+      reviews: {
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
+      },
+    },
   });
   if (!product) throw AppError.notFound("Product not found");
   return product;
@@ -77,43 +99,119 @@ const getProductById = async (id) => {
 const syncCategoryName = async (payload) => {
   if (!payload.categoryRef) return payload;
 
-  const category = await Category.findById(payload.categoryRef).select("name").lean();
+  const category = await prisma.category.findUnique({
+    where: { id: payload.categoryRef },
+    select: { name: true },
+  });
   if (!category) throw AppError.badRequest("Category not found");
   return { ...payload, category: category.name };
 };
 
+/**
+ * Computes the derived fields, so a stored total can never drift from the
+ * values it came from: the slug follows the name, every tax-inclusive price is
+ * recomputed, and a product with variants reports their summed stock.
+ */
+const deriveFields = (merged, { nameChanged }) => {
+  const variants = (merged.variants || []).map((variant, position) => {
+    // Variants inherit the product's tax rate unless they set their own.
+    const gst = variant.gst === undefined || variant.gst === null ? merged.gst || 0 : variant.gst;
+    return {
+      position,
+      sku: String(variant.sku).trim().toUpperCase(),
+      options: variant.options,
+      price: variant.price,
+      discount: variant.discount || 0,
+      gst,
+      totalPrice: deriveTotalPrice(variant.price, variant.discount, gst),
+      countInStock: variant.countInStock || 0,
+      lowStockThreshold: variant.lowStockThreshold ?? 5,
+      image: variant.image || "",
+      barcode: variant.barcode || "",
+      weightGrams: variant.weightGrams || 0,
+      isActive: variant.isActive !== false,
+    };
+  });
+
+  const hasVariants = variants.length > 0;
+
+  return {
+    variants,
+    columns: {
+      slug: nameChanged || !merged.slug ? slugify(merged.name) : merged.slug,
+      totalPrice: deriveTotalPrice(merged.price, merged.discount, merged.gst),
+      hasVariants,
+      // With variants, product-level stock is the sum of its active children.
+      countInStock: hasVariants
+        ? variants.filter((v) => v.isActive).reduce((sum, v) => sum + v.countInStock, 0)
+        : merged.countInStock,
+    },
+  };
+};
+
+/** Splits a validated payload into plain column values. */
+const toColumns = ({ categoryRef, variants, ...rest }) => ({
+  ...rest,
+  ...(categoryRef !== undefined ? { categoryRefId: categoryRef } : {}),
+});
+
 const createProduct = async (userId, payload) => {
-  // totalPrice is derived by the model, never accepted from the client.
+  // totalPrice is derived here, never accepted from the client.
   const body = await syncCategoryName(payload);
-  const product = await productRepository.model.create({ ...body, User: userId });
+  const { variants, columns } = deriveFields(body, { nameChanged: true });
+
+  const product = await productRepository.create({
+    ...toColumns(body),
+    ...columns,
+    userId,
+    variants: { create: variants },
+  });
 
   // Give the new product an inventory row so it is immediately sellable.
   await inventoryService
     .syncInventoryFromProduct(product)
     .catch((error) => logger.error(`Failed to seed inventory: ${error.message}`));
 
-  return product.toObject();
+  return product;
 };
 
 /**
- * Applies a partial update.
+ * Applies a partial update, recomputing derived fields from the merged result.
  *
- * Uses a document save rather than an atomic update so the model's pre-validate
- * hook recomputes `totalPrice` and `slug` from the new inputs.
+ * Variants are matched by SKU so a kept variant retains its id, while any SKU
+ * missing from the payload is removed.
  */
 const updateProduct = async (id, payload) => {
-  const product = await productRepository.model.findById(id);
-  if (!product) throw AppError.notFound("Product not found");
+  const existing = await productRepository.findById(id);
+  if (!existing) throw AppError.notFound("Product not found");
 
   const body = await syncCategoryName(payload);
-  Object.assign(product, body);
-  await product.save();
+  const { variants, columns } = deriveFields(
+    { ...existing, ...body },
+    { nameChanged: body.name !== undefined && body.name !== existing.name }
+  );
+
+  const product = await withTransaction(async (tx) => {
+    if (body.variants !== undefined) {
+      await tx.productVariant.deleteMany({
+        where: { productId: id, sku: { notIn: variants.map((variant) => variant.sku) } },
+      });
+      for (const variant of variants) {
+        await tx.productVariant.upsert({
+          where: { productId_sku: { productId: id, sku: variant.sku } },
+          create: { ...variant, productId: id },
+          update: variant,
+        });
+      }
+    }
+    return productRepository.updateById(id, { ...toColumns(body), ...columns }, { tx });
+  });
 
   await inventoryService
     .syncInventoryFromProduct(product)
     .catch((error) => logger.error(`Failed to sync inventory: ${error.message}`));
 
-  return product.toObject();
+  return product;
 };
 
 const deleteProduct = async (id) => {
@@ -124,43 +222,34 @@ const deleteProduct = async (id) => {
 
 /** Adds or replaces the caller's review and refreshes the rating summary. */
 const upsertReview = async ({ productId, user, rating, comment }) => {
-  const product = await productRepository.model.findById(productId);
+  const product = await productRepository.count({ id: productId });
   if (!product) throw AppError.notFound("Product not found");
 
-  const existing = product.reviews.find(
-    (review) => String(review.User) === String(user._id)
-  );
-
-  if (existing) {
-    existing.rating = rating;
-    existing.comment = comment;
-  } else {
-    product.reviews.push({
-      User: user._id,
-      name: [user.firstName, user.lastName].filter(Boolean).join(" "),
-      rating,
-      comment,
+  return withTransaction(async (tx) => {
+    await tx.review.upsert({
+      where: { productId_userId: { productId, userId: user._id } },
+      create: {
+        productId,
+        userId: user._id,
+        name: [user.firstName, user.lastName].filter(Boolean).join(" "),
+        rating,
+        comment,
+      },
+      update: { rating, comment },
     });
-  }
-
-  product.recalculateRating();
-  await product.save();
-  return { rating: product.rating, numReviews: product.numReviews };
+    return productRepository.refreshRating(productId, tx);
+  });
 };
 
 const deleteReview = async ({ productId, reviewUserId }) => {
-  const product = await productRepository.model.findById(productId);
+  const product = await productRepository.count({ id: productId });
   if (!product) throw AppError.notFound("Product not found");
 
-  const before = product.reviews.length;
-  product.reviews = product.reviews.filter(
-    (review) => String(review.User) !== String(reviewUserId)
-  );
-  if (product.reviews.length === before) throw AppError.notFound("Review not found");
-
-  product.recalculateRating();
-  await product.save();
-  return { rating: product.rating, numReviews: product.numReviews };
+  return withTransaction(async (tx) => {
+    const { count } = await tx.review.deleteMany({ where: { productId, userId: reviewUserId } });
+    if (count === 0) throw AppError.notFound("Review not found");
+    return productRepository.refreshRating(productId, tx);
+  });
 };
 
 const getFilterOptions = async () => {

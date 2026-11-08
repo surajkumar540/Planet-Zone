@@ -1,6 +1,7 @@
 const { z } = require("zod");
 const express = require("express");
-const Address = require("../../models/AddressModel");
+const prisma = require("../../db/client");
+const { toAddress } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const asyncHandler = require("../../core/asyncHandler");
 const { ok, created } = require("../../core/ApiResponse");
@@ -24,57 +25,61 @@ const addressBody = z.object({
 
 /* --------------------------------- Service --------------------------------- */
 
+const PREFERRED_FIRST = [{ isDefault: "desc" }, { updatedAt: "desc" }];
+
 /** Clears the default flag from every other address of the same user. */
 const clearOtherDefaults = (userId, keepId) =>
-  Address.updateMany(
-    { User: userId, ...(keepId ? { _id: { $ne: keepId } } : {}) },
-    { $set: { isDefault: false } }
-  );
+  prisma.address.updateMany({
+    where: { userId, ...(keepId ? { id: { not: keepId } } : {}) },
+    data: { isDefault: false },
+  });
 
-const listAddresses = (userId) =>
-  Address.find({ User: userId }).sort({ isDefault: -1, updatedAt: -1 }).lean();
+const listAddresses = async (userId) => {
+  const rows = await prisma.address.findMany({ where: { userId }, orderBy: PREFERRED_FIRST });
+  return rows.map(toAddress);
+};
 
-const createAddress = async (userId, { label, isDefault, ...shippingAddress }) => {
-  const isFirst = (await Address.countDocuments({ User: userId })) === 0;
+const createAddress = async (userId, { isDefault, phoneNo, ...fields }) => {
+  const isFirst = (await prisma.address.count({ where: { userId } })) === 0;
   // The first address a customer saves becomes their default automatically.
   const shouldDefault = isDefault || isFirst;
 
-  const doc = await Address.create({
-    User: userId,
-    label,
-    shippingAddress,
-    isDefault: shouldDefault,
+  const row = await prisma.address.create({
+    data: { ...fields, userId, phoneNo: String(phoneNo), isDefault: shouldDefault },
   });
-  if (shouldDefault) await clearOtherDefaults(userId, doc._id);
+  if (shouldDefault) await clearOtherDefaults(userId, row.id);
 
-  return doc.toObject();
+  return toAddress(row);
 };
 
-const updateAddress = async (userId, id, { label, isDefault, ...shippingAddress }) => {
-  const doc = await Address.findOneAndUpdate(
-    { _id: id, User: userId },
-    { label, shippingAddress, ...(isDefault !== undefined ? { isDefault } : {}) },
-    { new: true, runValidators: true }
-  ).lean();
+const updateAddress = async (userId, id, { isDefault, phoneNo, ...fields }) => {
+  const existing = await prisma.address.findFirst({ where: { id, userId }, select: { id: true } });
+  if (!existing) throw AppError.notFound("Address not found");
 
-  if (!doc) throw AppError.notFound("Address not found");
+  const row = await prisma.address.update({
+    where: { id },
+    data: { ...fields, phoneNo: String(phoneNo), ...(isDefault !== undefined ? { isDefault } : {}) },
+  });
+
   if (isDefault) await clearOtherDefaults(userId, id);
-  return doc;
+  return toAddress(row);
 };
 
 const deleteAddress = async (userId, id) => {
-  const doc = await Address.findOneAndDelete({ _id: id, User: userId }).lean();
-  if (!doc) throw AppError.notFound("Address not found");
+  const existing = await prisma.address.findFirst({ where: { id, userId } });
+  if (!existing) throw AppError.notFound("Address not found");
+
+  await prisma.address.delete({ where: { id } });
 
   // Promote another address so the customer always has a default.
-  if (doc.isDefault) {
-    const next = await Address.findOne({ User: userId }).sort({ updatedAt: -1 });
-    if (next) {
-      next.isDefault = true;
-      await next.save();
-    }
+  if (existing.isDefault) {
+    const next = await prisma.address.findFirst({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+    });
+    if (next) await prisma.address.update({ where: { id: next.id }, data: { isDefault: true } });
   }
-  return doc;
+  return toAddress(existing);
 };
 
 /* -------------------------------- Controllers ------------------------------ */
@@ -94,10 +99,11 @@ router.get(
   "/shipping",
   authenticate,
   asyncHandler(async (req, res) => {
-    const [preferred] = await Address.find({ User: req.auth.userId })
-      .sort({ isDefault: -1, updatedAt: -1 })
-      .limit(1)
-      .lean();
+    const row = await prisma.address.findFirst({
+      where: { userId: req.auth.userId },
+      orderBy: PREFERRED_FIRST,
+    });
+    const preferred = toAddress(row);
 
     return res.status(200).json({
       status: Boolean(preferred),
@@ -115,9 +121,13 @@ router.post(
   authenticate,
   validate({ body: addressBody }),
   asyncHandler(async (req, res) => {
-    const existing = await Address.findOne({ User: req.auth.userId }).sort({ isDefault: -1 });
+    const existing = await prisma.address.findFirst({
+      where: { userId: req.auth.userId },
+      orderBy: { isDefault: "desc" },
+      select: { id: true },
+    });
     const data = existing
-      ? await updateAddress(req.auth.userId, existing._id, { ...req.body, isDefault: true })
+      ? await updateAddress(req.auth.userId, existing.id, { ...req.body, isDefault: true })
       : await createAddress(req.auth.userId, { ...req.body, isDefault: true });
 
     return ok(res, { data, message: "Shipping address saved successfully" });

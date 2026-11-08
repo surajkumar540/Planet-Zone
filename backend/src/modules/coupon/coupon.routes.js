@@ -8,7 +8,7 @@ const { requireStaff } = require("../../middlewares/rbac");
 const audit = require("../../services/audit.service");
 const service = require("./coupon.service");
 const pricingService = require("../../services/pricing.service");
-const { listQuery, idParam, objectId } = require("../../utils/schemas");
+const { listQuery, idParam, uuid } = require("../../utils/schemas");
 const { DISCOUNT_TYPE_VALUES } = require("../../constants/discount");
 
 const couponBody = z.object({
@@ -28,10 +28,10 @@ const couponBody = z.object({
   expiresAt: z.coerce.date().nullable().optional(),
   usageLimit: z.coerce.number().int().min(0).optional().default(0),
   usageLimitPerUser: z.coerce.number().int().min(0).optional().default(1),
-  appliesToProducts: z.array(objectId).optional().default([]),
-  appliesToCategories: z.array(objectId).optional().default([]),
-  excludedProducts: z.array(objectId).optional().default([]),
-  restrictedToUsers: z.array(objectId).optional().default([]),
+  appliesToProducts: z.array(uuid).optional().default([]),
+  appliesToCategories: z.array(uuid).optional().default([]),
+  excludedProducts: z.array(uuid).optional().default([]),
+  restrictedToUsers: z.array(uuid).optional().default([]),
   firstOrderOnly: z.coerce.boolean().optional().default(false),
   isActive: z.coerce.boolean().optional().default(true),
 });
@@ -60,8 +60,8 @@ const applyCouponSchema = z.object({
   cart: z
     .array(
       z.object({
-        _id: objectId.optional(),
-        product: objectId.optional(),
+        _id: uuid.optional(),
+        product: uuid.optional(),
         variantSku: z.string().trim().optional(),
         qty: z.coerce.number().int().min(1),
       })

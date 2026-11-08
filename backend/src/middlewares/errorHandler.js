@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const { Prisma } = require("@prisma/client");
 const { ZodError } = require("zod");
 const AppError = require("../core/AppError");
 const logger = require("../core/logger");
@@ -23,26 +23,27 @@ const normalize = (error) => {
     );
   }
 
-  if (error instanceof mongoose.Error.ValidationError) {
-    return AppError.unprocessable(
-      "Validation failed",
-      Object.values(error.errors).map((fieldError) => ({
-        field: fieldError.path,
-        message: fieldError.message,
-      }))
-    );
-  }
-
-  if (error instanceof mongoose.Error.CastError) {
-    return AppError.badRequest(`Invalid value for ${error.path}`);
-  }
-
-  // Duplicate key on a unique index.
-  if (error.code === 11000) {
-    const fields = Object.keys(error.keyValue || {});
-    return AppError.conflict(
-      fields.length ? `${fields.join(", ")} already in use` : "Resource already exists"
-    );
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      // Unique constraint.
+      case "P2002": {
+        const fields = [].concat(error.meta?.target || []);
+        return AppError.conflict(
+          fields.length ? `${fields.join(", ")} already in use` : "Resource already exists"
+        );
+      }
+      // Foreign key: the row is still referenced, or points at nothing.
+      case "P2003":
+        return AppError.conflict("This record is still linked to other data");
+      // Malformed value for the column, such as a bad UUID.
+      case "P2023":
+        return AppError.badRequest("Invalid identifier");
+      // Update or delete matched no row.
+      case "P2025":
+        return AppError.notFound();
+      default:
+        return null;
+    }
   }
 
   if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {

@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const env = require("../../config/env");
 const AppError = require("../../core/AppError");
@@ -8,6 +9,11 @@ const mailService = require("../../services/mail");
 const { ROLES } = require("../../constants/roles");
 
 const OTP_PURPOSE = { REGISTER: "register", RESET: "reset" };
+
+const PASSWORD_HASH_ROUNDS = 12;
+
+/** Every password write must go through this; nothing stores plaintext. */
+const hashPassword = (password) => bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
 
 /** Signs an access token carrying the caller's identity and role. */
 const signToken = (user) =>
@@ -42,22 +48,22 @@ const signup = async ({ firstName, lastName, email, password }) => {
     throw AppError.conflict("An account with this email already exists");
   }
 
-  let user = existing;
-  if (user) {
-    // Unverified signup being retried: refresh the details and credentials.
-    user.firstName = firstName;
-    user.lastName = lastName;
-    user.password = password; // Re-hashed by the model's pre-save hook.
-    await user.save();
-  } else {
-    user = await userRepository.model.create({
-      firstName,
-      lastName,
-      email,
-      password,
-      role: ROLES.CUSTOMER,
-    });
-  }
+  const passwordHash = await hashPassword(password);
+
+  // An unverified signup being retried refreshes its details and credentials.
+  const user = existing
+    ? await userRepository.updateById(existing._id, {
+        firstName,
+        lastName,
+        password: passwordHash,
+      })
+    : await userRepository.create({
+        firstName,
+        lastName,
+        email,
+        password: passwordHash,
+        role: ROLES.CUSTOMER,
+      });
 
   const { otp, expiresInMinutes } = await otpService.issue(email, OTP_PURPOSE.REGISTER);
   await mailService.sendVerificationOtp({ to: email, name: firstName, otp, expiresInMinutes });
@@ -77,10 +83,9 @@ const verifyEmail = async ({ email, otp }) => {
 
   await otpService.verify(email, OTP_PURPOSE.REGISTER, otp);
 
-  user.emailVerify = true;
-  await user.save();
+  const verified = await userRepository.updateById(user._id, { emailVerify: true });
 
-  return { token: signToken(user), user: toPublicUser(user), alreadyVerified: false };
+  return { token: signToken(verified), user: toPublicUser(verified), alreadyVerified: false };
 };
 
 const login = async ({ email, password }) => {
@@ -88,7 +93,7 @@ const login = async ({ email, password }) => {
 
   // A single generic message for both unknown email and wrong password, so the
   // endpoint cannot be used to enumerate registered addresses.
-  if (!user || !(await user.comparePassword(password))) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     throw AppError.unauthorized("Invalid email or password");
   }
 
@@ -99,8 +104,7 @@ const login = async ({ email, password }) => {
     throw AppError.forbidden("This account has been deactivated");
   }
 
-  user.lastLoginAt = new Date();
-  await user.save({ validateBeforeSave: false });
+  await userRepository.updateById(user._id, { lastLoginAt: new Date() });
 
   return { token: signToken(user), user: toPublicUser(user) };
 };
@@ -138,10 +142,11 @@ const resetPassword = async ({ email, otp, password }) => {
 
   await otpService.verify(email, OTP_PURPOSE.RESET, otp);
 
-  user.password = password;
-  // Completing a reset also proves ownership of the address.
-  user.emailVerify = true;
-  await user.save();
+  await userRepository.updateById(user._id, {
+    password: await hashPassword(password),
+    // Completing a reset also proves ownership of the address.
+    emailVerify: true,
+  });
 
   await mailService.sendPasswordChanged({ to: email, name: user.firstName });
   return { updated: true };
@@ -149,15 +154,14 @@ const resetPassword = async ({ email, otp, password }) => {
 
 /** Changes the password of an already authenticated user. */
 const changePassword = async ({ userId, currentPassword, password }) => {
-  const user = await userRepository.model.findById(userId).select("+password");
+  const user = await userRepository.findByIdWithPassword(userId);
   if (!user) throw AppError.notFound("User not found");
 
-  if (!(await user.comparePassword(currentPassword))) {
+  if (!(await bcrypt.compare(currentPassword, user.password))) {
     throw AppError.badRequest("Your current password is incorrect");
   }
 
-  user.password = password;
-  await user.save();
+  await userRepository.updateById(userId, { password: await hashPassword(password) });
 
   await mailService.sendPasswordChanged({ to: user.email, name: user.firstName });
   return { updated: true };
@@ -187,4 +191,5 @@ module.exports = {
   verifySession,
   signToken,
   toPublicUser,
+  hashPassword,
 };

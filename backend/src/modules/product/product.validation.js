@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { listQuery, idParam, objectId } = require("../../utils/schemas");
+const { listQuery, idParam, uuid } = require("../../utils/schemas");
 
 const percentage = z.coerce.number().min(0).max(100);
 const money = z.coerce.number().min(0);
@@ -36,7 +36,7 @@ const productFields = z.object({
   name: z.string().trim().min(2, "Name is required").max(200),
   brand: z.string().trim().min(1, "Brand is required").max(100),
   category: z.string().trim().min(1, "Category is required").max(100),
-  categoryRef: objectId.nullable().optional(),
+  categoryRef: uuid.nullable().optional(),
   description: z.string().trim().min(1, "Description is required").max(5000),
   shortDescription: z.string().trim().max(500).optional().default(""),
   image: z.string().trim().min(1, "Image is required"),
@@ -101,7 +101,7 @@ const booleanFlag = z
 
 const listProductsQuery = listQuery.extend({
   category: z.string().trim().optional(),
-  categoryRef: objectId.optional(),
+  categoryRef: uuid.optional(),
   brand: z.string().trim().optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),

@@ -1,104 +1,73 @@
-const mongoose = require("mongoose");
+const prisma = require("../../db/client");
 const AppError = require("../../core/AppError");
-const Product = require("../../models/ProductModel");
-const { parseSort, escapeRegex } = require("../../utils/schemas");
+const { withTransaction } = require("../../core/transaction");
+const productRepository = require("../product/product.repository");
+const { parseSort, escapeLike, sortable } = require("../../utils/schemas");
 
-/**
- * Reviews are embedded in products rather than stored in their own
- * collection, so every read here unwinds `products.reviews` and reshapes the
- * result into a flat, review-shaped document. Doing it in the database keeps
- * paging honest: the alternative — loading products and slicing in Node —
- * pages over products, not over reviews.
- */
+const SORTABLE = sortable("createdAt", "updatedAt", "rating", "name");
 
-/** Reviews written before moderation existed carry no flag; treat them as approved. */
-const APPROVED_MATCH = { $ne: false };
-
-const statusMatch = (status) => {
-  if (status === "approved") return { "reviews.isApproved": APPROVED_MATCH };
-  if (status === "pending") return { "reviews.isApproved": false };
-  return {};
+const WITH_PRODUCT = {
+  product: { select: { id: true, name: true, image: true, slug: true } },
 };
 
 /** The flat shape returned to clients, identical for both listings. */
-const REVIEW_PROJECTION = {
-  _id: "$reviews._id",
-  rating: "$reviews.rating",
-  comment: "$reviews.comment",
-  name: "$reviews.name",
-  isApproved: { $ne: ["$reviews.isApproved", false] },
-  createdAt: "$reviews.createdAt",
-  updatedAt: "$reviews.updatedAt",
-  user: "$reviews.User",
+const toFlatReview = (row) => ({
+  _id: row.id,
+  rating: row.rating,
+  comment: row.comment,
+  name: row.name,
+  isApproved: row.isApproved,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+  user: row.userId,
   product: {
-    _id: "$_id",
-    name: "$name",
-    image: "$image",
-    slug: "$slug",
+    _id: row.product.id,
+    name: row.product.name,
+    image: row.product.image,
+    slug: row.product.slug,
   },
-};
+});
 
-/**
- * Runs the shared unwind/sort/paginate pipeline.
- *
- * `$facet` keeps the page and its total count in a single round trip, so the
- * two can never disagree about the state of the data.
- */
-const runReviewPipeline = async ({ preMatch, postMatch, sort, page, limit }) => {
-  const [result] = await Product.aggregate([
-    { $match: preMatch },
-    { $unwind: "$reviews" },
-    ...(Object.keys(postMatch).length > 0 ? [{ $match: postMatch }] : []),
-    { $project: REVIEW_PROJECTION },
-    {
-      $facet: {
-        items: [{ $sort: sort }, { $skip: (page - 1) * limit }, { $limit: limit }],
-        total: [{ $count: "value" }],
-      },
-    },
+const paginate = async (where, { sort, page, limit }) => {
+  const [rows, total] = await Promise.all([
+    prisma.review.findMany({
+      where,
+      include: WITH_PRODUCT,
+      orderBy: parseSort(sort, SORTABLE),
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.review.count({ where }),
   ]);
-
-  return {
-    items: result?.items ?? [],
-    total: result?.total?.[0]?.value ?? 0,
-    page,
-    limit,
-  };
+  return { items: rows.map(toFlatReview), total, page, limit };
 };
 
 /** Approved reviews for one product, newest first by default. */
 const listProductReviews = async (productId, { page, limit, sort, rating }) => {
-  const exists = await Product.exists({ _id: productId });
+  const exists = await productRepository.count({ id: productId });
   if (!exists) throw AppError.notFound("Product not found");
 
-  return runReviewPipeline({
-    preMatch: { _id: new mongoose.Types.ObjectId(productId) },
-    postMatch: {
-      "reviews.isApproved": APPROVED_MATCH,
-      ...(rating !== undefined ? { "reviews.rating": rating } : {}),
-    },
-    sort: parseSort(sort, { createdAt: -1 }),
-    page,
-    limit,
-  });
+  return paginate(
+    { productId, isApproved: true, ...(rating !== undefined ? { rating } : {}) },
+    { sort, page, limit }
+  );
 };
 
 /** The rating histogram a product page shows next to its average. */
 const getProductReviewSummary = async (productId) => {
-  const buckets = await Product.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(productId) } },
-    { $unwind: "$reviews" },
-    { $match: { "reviews.isApproved": APPROVED_MATCH } },
-    { $group: { _id: "$reviews.rating", count: { $sum: 1 } } },
-  ]);
+  const buckets = await prisma.review.groupBy({
+    by: ["rating"],
+    where: { productId, isApproved: true },
+    _count: { _all: true },
+  });
 
   const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   let total = 0;
   let weighted = 0;
   for (const bucket of buckets) {
-    distribution[bucket._id] = bucket.count;
-    total += bucket.count;
-    weighted += bucket._id * bucket.count;
+    distribution[bucket.rating] = bucket._count._all;
+    total += bucket._count._all;
+    weighted += bucket.rating * bucket._count._all;
   }
 
   return {
@@ -110,64 +79,57 @@ const getProductReviewSummary = async (productId) => {
 
 /** Moderation queue: every review across every product, including inactive ones. */
 const listAllReviews = async ({ page, limit, sort, search, status, rating, productId }) => {
-  const postMatch = {
-    ...statusMatch(status),
-    ...(rating !== undefined ? { "reviews.rating": rating } : {}),
+  const where = {
+    ...(status === "approved" ? { isApproved: true } : {}),
+    ...(status === "pending" ? { isApproved: false } : {}),
+    ...(rating !== undefined ? { rating } : {}),
+    ...(productId ? { productId } : {}),
   };
 
   if (search) {
-    const pattern = new RegExp(escapeRegex(search), "i");
-    postMatch.$or = [{ "reviews.comment": pattern }, { "reviews.name": pattern }, { name: pattern }];
+    const contains = { contains: escapeLike(search), mode: "insensitive" };
+    where.OR = [{ comment: contains }, { name: contains }, { product: { name: contains } }];
   }
 
-  return runReviewPipeline({
-    preMatch: {
-      "reviews.0": { $exists: true },
-      ...(productId ? { _id: new mongoose.Types.ObjectId(productId) } : {}),
-    },
-    postMatch,
-    sort: parseSort(sort, { createdAt: -1 }),
-    page,
-    limit,
-  });
+  return paginate(where, { sort, page, limit });
 };
 
-/** Loads the parent product and the embedded review, or fails with 404. */
-const locateReview = async (productId, reviewId) => {
-  const product = await Product.findById(productId);
-  if (!product) throw AppError.notFound("Product not found");
+/** Confirms the review belongs to the product, or fails with 404. */
+const assertReviewExists = async (productId, reviewId) => {
+  const exists = await productRepository.count({ id: productId });
+  if (!exists) throw AppError.notFound("Product not found");
 
-  const review = product.reviews.id(reviewId);
+  const review = await prisma.review.findFirst({
+    where: { id: reviewId, productId },
+    select: { id: true },
+  });
   if (!review) throw AppError.notFound("Review not found");
-
-  return { product, review };
 };
 
 /**
  * Approves or hides a review.
  *
- * The rating summary is recomputed because `recalculateRating` counts only
- * approved reviews — hiding one has to move the product's average with it.
+ * The rating summary is recomputed because it counts only approved reviews —
+ * hiding one has to move the product's average with it.
  */
 const moderateReview = async ({ productId, reviewId, isApproved }) => {
-  const { product, review } = await locateReview(productId, reviewId);
+  await assertReviewExists(productId, reviewId);
 
-  review.isApproved = isApproved;
-  product.recalculateRating();
-  await product.save();
-
-  return { rating: product.rating, numReviews: product.numReviews, isApproved };
+  return withTransaction(async (tx) => {
+    await tx.review.update({ where: { id: reviewId }, data: { isApproved } });
+    const summary = await productRepository.refreshRating(productId, tx);
+    return { ...summary, isApproved };
+  });
 };
 
 /** Removes a review outright. Used by staff; customers delete their own elsewhere. */
 const removeReview = async ({ productId, reviewId }) => {
-  const { product, review } = await locateReview(productId, reviewId);
+  await assertReviewExists(productId, reviewId);
 
-  review.deleteOne();
-  product.recalculateRating();
-  await product.save();
-
-  return { rating: product.rating, numReviews: product.numReviews };
+  return withTransaction(async (tx) => {
+    await tx.review.delete({ where: { id: reviewId } });
+    return productRepository.refreshRating(productId, tx);
+  });
 };
 
 module.exports = {

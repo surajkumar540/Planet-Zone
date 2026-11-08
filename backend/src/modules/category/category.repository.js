@@ -1,40 +1,27 @@
 const BaseRepository = require("../../core/BaseRepository");
-const Category = require("../../models/CategoryModel");
+const { toCategory } = require("../../db/mappers");
 
 class CategoryRepository extends BaseRepository {
   constructor() {
-    super(Category);
+    super("category", toCategory);
   }
 
-  findBySlug(slug) {
-    return this.model.findOne({ slug }).lean();
-  }
-
-  slugExists(slug, excludeId) {
-    return this.model
-      .exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })
-      .then(Boolean);
+  async slugExists(slug, excludeId) {
+    const count = await this.count({ slug, ...(excludeId ? { id: { not: excludeId } } : {}) });
+    return count > 0;
   }
 
   /** Direct children of a node, in display order. */
-  findChildren(parentId) {
-    return this.model
-      .find({ parent: parentId })
-      .sort({ position: 1, name: 1 })
-      .lean();
-  }
-
-  /** Every descendant at any depth, found through the cached ancestors list. */
-  findDescendants(categoryId) {
-    return this.model.find({ ancestors: categoryId }).lean();
+  findChildren(parentId, options = {}) {
+    return this.find({ parentId }, { orderBy: [{ position: "asc" }, { name: "asc" }], ...options });
   }
 
   countChildren(categoryId) {
-    return this.model.countDocuments({ parent: categoryId });
+    return this.count({ parentId: categoryId });
   }
 
-  findAllOrdered(filter = {}) {
-    return this.model.find(filter).sort({ depth: 1, position: 1, name: 1 }).lean();
+  findAllOrdered(where = {}) {
+    return this.find(where, { orderBy: [{ depth: "asc" }, { position: "asc" }, { name: "asc" }] });
   }
 }
 

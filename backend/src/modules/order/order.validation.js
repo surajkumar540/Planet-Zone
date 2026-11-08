@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { listQuery, idParam, objectId } = require("../../utils/schemas");
+const { listQuery, idParam, uuid } = require("../../utils/schemas");
 const { ORDER_STATUS_VALUES, PAYMENT_STATUS_VALUES } = require("../../constants/orderStatus");
 
 /**
@@ -7,11 +7,11 @@ const { ORDER_STATUS_VALUES, PAYMENT_STATUS_VALUES } = require("../../constants/
  * up server-side, so any money fields the client sends are ignored.
  */
 const cartLineSchema = z.object({
-  _id: objectId.optional(),
-  product: objectId.optional(),
+  _id: uuid.optional(),
+  product: uuid.optional(),
   /** Selects a variant when the product has them. */
   variantSku: z.string().trim().max(60).optional(),
-  variantId: objectId.optional(),
+  variantId: uuid.optional(),
   qty: z.coerce.number().int().min(1).max(100),
 });
 
@@ -31,7 +31,7 @@ const createOrderSchema = z
     shippingAddress: shippingAddressSchema,
     onlinePayment: z.coerce.boolean().default(false),
     couponCode: z.string().trim().max(40).optional(),
-    shippingRateId: objectId.optional(),
+    shippingRateId: uuid.optional(),
     // The checkout screen sends `{}` for cash on delivery; normalise any
     // non-string placeholder to "absent".
     paymentId: z.preprocess(
@@ -60,7 +60,7 @@ const quoteOrderSchema = z.object({
   cart: z.array(cartLineSchema).min(1, "Your cart is empty"),
   couponCode: z.string().trim().max(40).optional(),
   shippingAddress: shippingAddressSchema.partial().optional(),
-  shippingRateId: objectId.optional(),
+  shippingRateId: uuid.optional(),
 });
 
 const listOrdersQuery = listQuery.extend({

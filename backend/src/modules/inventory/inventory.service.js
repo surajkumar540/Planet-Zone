@@ -1,43 +1,55 @@
-const mongoose = require("mongoose");
+const { Prisma } = require("@prisma/client");
+const prisma = require("../../db/client");
+const { toInventory, toStockMovement } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const logger = require("../../core/logger");
-const Inventory = require("../../models/InventoryModel");
-const StockMovement = require("../../models/StockMovementModel");
-const Warehouse = require("../../models/WarehouseModel");
-const Product = require("../../models/ProductModel");
+const { withTransaction, inTransaction } = require("../../core/transaction");
 const { MOVEMENT_REASONS } = require("../../constants/inventory");
-const { parseSort, searchFilter } = require("../../utils/schemas");
+const { escapeLike } = require("../../utils/schemas");
 
 /**
  * Returns the default warehouse, creating one on first use.
  *
  * A store that has never configured locations still needs somewhere to book
- * stock against, so the first call establishes a "Main Warehouse".
+ * stock against, so the first call establishes a "Main Warehouse". The insert
+ * tolerates a concurrent first call instead of aborting its transaction.
  */
-const getDefaultWarehouse = async () => {
-  let warehouse = await Warehouse.findOne({ isDefault: true, isActive: true });
-  if (warehouse) return warehouse;
+const getDefaultWarehouse = async (tx) => {
+  const client = tx || prisma;
 
-  warehouse = await Warehouse.findOne({ isActive: true });
-  if (warehouse) return warehouse;
+  const existing =
+    (await client.warehouse.findFirst({ where: { isDefault: true, isActive: true } })) ||
+    (await client.warehouse.findFirst({ where: { isActive: true } }));
+  if (existing) return existing;
 
   logger.info("No warehouse configured; creating the default location");
-  return Warehouse.create({ name: "Main Warehouse", code: "MAIN", isDefault: true });
+  await client.warehouse.createMany({
+    data: [{ name: "Main Warehouse", code: "MAIN", isDefault: true }],
+    skipDuplicates: true,
+  });
+  return client.warehouse.findUnique({ where: { code: "MAIN" } });
 };
 
 /** Finds or creates the inventory row for a sellable unit at a location. */
-const ensureRecord = async ({ productId, variantSku = "", warehouseId, session }) => {
-  const warehouse = warehouseId || (await getDefaultWarehouse())._id;
+const ensureRecord = async ({ productId, variantSku = "", warehouseId, tx }) => {
+  const client = tx || prisma;
+  const warehouse = warehouseId || (await getDefaultWarehouse(tx)).id;
+  const unit = { productId, variantSku: variantSku || "", warehouseId: warehouse };
 
-  const existing = await Inventory.findOneAndUpdate(
-    { product: productId, variantSku: variantSku || "", warehouse },
-    { $setOnInsert: { onHand: 0, reserved: 0 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true, session }
-  );
-  return existing;
+  // skipDuplicates keeps a concurrent first reservation from aborting the transaction.
+  await client.inventory.createMany({ data: [unit], skipDuplicates: true });
+
+  return client.inventory.findUnique({
+    where: { productId_variantSku_warehouseId: unit },
+  });
 };
 
-/** Writes a ledger entry. Never throws into the caller's transaction. */
+/**
+ * Writes a ledger entry.
+ *
+ * Inside a transaction a failed insert aborts everything, so the error has to
+ * propagate there. Outside one, a ledger failure must not undo a completed change.
+ */
 const recordMovement = async ({
   productId,
   variantSku = "",
@@ -49,29 +61,81 @@ const recordMovement = async ({
   referenceType,
   referenceId,
   performedBy,
-  session,
+  tx,
 }) => {
+  const data = {
+    productId,
+    variantSku,
+    warehouseId,
+    quantity,
+    balanceAfter,
+    reason,
+    note: note || "",
+    referenceType: referenceType || "",
+    referenceId: referenceId ? String(referenceId) : "",
+    performedById: performedBy,
+  };
+
+  if (tx) {
+    await tx.stockMovement.create({ data });
+    return;
+  }
+
   try {
-    await StockMovement.create(
-      [
-        {
-          product: productId,
-          variantSku,
-          warehouse: warehouseId,
-          quantity,
-          balanceAfter,
-          reason,
-          note: note || "",
-          referenceType: referenceType || "",
-          referenceId: referenceId ? String(referenceId) : "",
-          performedBy,
-        },
-      ],
-      session ? { session } : {}
-    );
+    await prisma.stockMovement.create({ data });
   } catch (error) {
     logger.error(`Failed to write stock movement: ${error.message}`, { productId, reason });
   }
+};
+
+/**
+ * Mirrors the inventory totals back onto the product row.
+ *
+ * The product's `countInStock` is what the storefront and existing clients
+ * read, so it is kept as a cached sum of the inventory rows behind it.
+ */
+const syncProductStock = async (productId, tx) => {
+  const client = tx || prisma;
+
+  const rows = await client.inventory.groupBy({
+    by: ["variantSku"],
+    where: { productId },
+    _sum: { onHand: true, reserved: true },
+  });
+  if (!rows.length) return;
+
+  const product = await client.product.findUnique({
+    where: { id: productId },
+    select: { hasVariants: true, variants: { select: { id: true, sku: true, isActive: true, countInStock: true } } },
+  });
+  if (!product) return;
+
+  const available = new Map(
+    rows.map((row) => [row.variantSku, Math.max(0, row._sum.onHand - row._sum.reserved)])
+  );
+
+  if (!product.hasVariants) {
+    if (available.has("")) {
+      await client.product.update({
+        where: { id: productId },
+        data: { countInStock: available.get("") },
+      });
+    }
+    return;
+  }
+
+  let total = 0;
+  for (const variant of product.variants) {
+    const count = available.has(variant.sku) ? available.get(variant.sku) : variant.countInStock;
+    if (available.has(variant.sku)) {
+      await client.productVariant.update({
+        where: { id: variant.id },
+        data: { countInStock: count },
+      });
+    }
+    if (variant.isActive) total += count;
+  }
+  await client.product.update({ where: { id: productId }, data: { countInStock: total } });
 };
 
 /**
@@ -90,259 +154,227 @@ const adjustStock = async ({
   referenceType,
   referenceId,
   performedBy,
-  session,
-}) => {
-  const record = await ensureRecord({ productId, variantSku, warehouseId, session });
+  tx,
+}) =>
+  inTransaction(tx, async (client) => {
+    const record = await ensureRecord({ productId, variantSku, warehouseId, tx: client });
 
-  const filter = { _id: record._id };
-  // Guard only on the way down; adding stock has no lower bound to violate.
-  if (quantity < 0) filter.onHand = { $gte: Math.abs(quantity) };
+    // Guard only on the way down; adding stock has no lower bound to violate.
+    const { count } = await client.inventory.updateMany({
+      where: { id: record.id, ...(quantity < 0 ? { onHand: { gte: Math.abs(quantity) } } : {}) },
+      data: { onHand: { increment: quantity } },
+    });
+    if (count === 0) throw AppError.conflict("Insufficient stock at this location");
 
-  const updated = await Inventory.findOneAndUpdate(
-    filter,
-    { $inc: { onHand: quantity } },
-    { new: true, session }
-  );
+    const updated = await client.inventory.findUnique({ where: { id: record.id } });
 
-  if (!updated) {
-    throw AppError.conflict("Insufficient stock at this location");
-  }
+    await recordMovement({
+      productId,
+      variantSku,
+      warehouseId: updated.warehouseId,
+      quantity,
+      balanceAfter: updated.onHand,
+      reason,
+      note,
+      referenceType,
+      referenceId,
+      performedBy,
+      tx: client,
+    });
 
-  await recordMovement({
-    productId,
-    variantSku,
-    warehouseId: updated.warehouse,
-    quantity,
-    balanceAfter: updated.onHand,
-    reason,
-    note,
-    referenceType,
-    referenceId,
-    performedBy,
-    session,
+    await syncProductStock(productId, client);
+    return toInventory(updated);
   });
-
-  await syncProductStock(productId, session);
-  return updated;
-};
-
-/**
- * Mirrors the inventory totals back onto the product document.
- *
- * The product's `countInStock` is what the storefront and existing clients
- * read, so it is kept as a cached sum of the inventory rows behind it.
- */
-const syncProductStock = async (productId, session) => {
-  // Aggregation does not cast automatically, so the id is converted explicitly.
-  const productObjectId = new mongoose.Types.ObjectId(String(productId));
-
-  const rows = await Inventory.aggregate([
-    { $match: { product: productObjectId } },
-    {
-      $group: {
-        _id: "$variantSku",
-        onHand: { $sum: "$onHand" },
-        reserved: { $sum: "$reserved" },
-      },
-    },
-  ]).session(session || null);
-
-  if (!rows.length) return;
-
-  const product = await Product.findById(productId).session(session || null);
-  if (!product) return;
-
-  const totals = new Map(rows.map((row) => [row._id || "", row]));
-
-  if (product.hasVariants) {
-    for (const variant of product.variants) {
-      const row = totals.get(variant.sku);
-      if (row) variant.countInStock = Math.max(0, row.onHand - row.reserved);
-    }
-  } else {
-    const row = totals.get("");
-    if (row) product.countInStock = Math.max(0, row.onHand - row.reserved);
-  }
-
-  await product.save({ session });
-};
 
 /**
  * Promises stock to an order without removing it from the shelf.
  *
- * Reservation is conditional on enough unreserved stock existing, so the same
- * unit cannot be sold twice while an order is being paid for.
+ * The reservation is conditional on enough unreserved stock existing, checked
+ * by the UPDATE itself, so the same unit cannot be sold twice while an order
+ * is being paid for. Comparing two columns with an expression needs raw SQL.
  */
-const reserve = async ({ productId, variantSku = "", warehouseId, qty, referenceId, session }) => {
-  const record = await ensureRecord({ productId, variantSku, warehouseId, session });
+const reserve = async ({ productId, variantSku = "", warehouseId, qty, referenceId, tx }) =>
+  inTransaction(tx, async (client) => {
+    const record = await ensureRecord({ productId, variantSku, warehouseId, tx: client });
 
-  const updated = await Inventory.findOneAndUpdate(
-    { _id: record._id, $expr: { $gte: [{ $subtract: ["$onHand", "$reserved"] }, qty] } },
-    { $inc: { reserved: qty } },
-    { new: true, session }
-  );
+    const [updated] = await client.$queryRaw`
+      UPDATE inventory
+      SET reserved = reserved + ${qty}::int, "updatedAt" = NOW()
+      WHERE id = ${record.id}::uuid AND "onHand" - reserved >= ${qty}::int
+      RETURNING "onHand", reserved, "warehouseId"::text AS "warehouseId"`;
 
-  if (!updated) throw AppError.conflict("Insufficient stock available");
+    if (!updated) throw AppError.conflict("Insufficient stock available");
 
-  await recordMovement({
-    productId,
-    variantSku,
-    warehouseId: updated.warehouse,
-    quantity: -qty,
-    balanceAfter: updated.onHand - updated.reserved,
-    reason: MOVEMENT_REASONS.RESERVATION,
-    referenceType: "Order",
-    referenceId,
-    session,
+    await recordMovement({
+      productId,
+      variantSku,
+      warehouseId: updated.warehouseId,
+      quantity: -qty,
+      balanceAfter: updated.onHand - updated.reserved,
+      reason: MOVEMENT_REASONS.RESERVATION,
+      referenceType: "Order",
+      referenceId,
+      tx: client,
+    });
+
+    return updated;
   });
-
-  return updated;
-};
 
 /** Releases a reservation, e.g. when an order is cancelled. */
-const release = async ({ productId, variantSku = "", warehouseId, qty, referenceId, session }) => {
-  const record = await ensureRecord({ productId, variantSku, warehouseId, session });
+const release = async ({ productId, variantSku = "", warehouseId, qty, referenceId, tx }) =>
+  inTransaction(tx, async (client) => {
+    const record = await ensureRecord({ productId, variantSku, warehouseId, tx: client });
 
-  const updated = await Inventory.findOneAndUpdate(
-    { _id: record._id },
     // Clamped so a double release cannot drive the counter negative.
-    { $inc: { reserved: -Math.min(qty, record.reserved) } },
-    { new: true, session }
-  );
+    const [updated] = await client.$queryRaw`
+      UPDATE inventory
+      SET reserved = GREATEST(reserved - ${qty}::int, 0), "updatedAt" = NOW()
+      WHERE id = ${record.id}::uuid
+      RETURNING "onHand", reserved, "warehouseId"::text AS "warehouseId"`;
 
-  await recordMovement({
-    productId,
-    variantSku,
-    warehouseId: updated.warehouse,
-    quantity: qty,
-    balanceAfter: updated.onHand - updated.reserved,
-    reason: MOVEMENT_REASONS.RELEASE,
-    referenceType: "Order",
-    referenceId,
-    session,
+    await recordMovement({
+      productId,
+      variantSku,
+      warehouseId: updated.warehouseId,
+      quantity: qty,
+      balanceAfter: updated.onHand - updated.reserved,
+      reason: MOVEMENT_REASONS.RELEASE,
+      referenceType: "Order",
+      referenceId,
+      tx: client,
+    });
+
+    return updated;
   });
-
-  return updated;
-};
 
 /**
  * Converts a reservation into a dispatch: the units leave the shelf and the
  * reservation that held them is discharged.
  */
-const fulfil = async ({ productId, variantSku = "", warehouseId, qty, referenceId, session }) => {
-  const record = await ensureRecord({ productId, variantSku, warehouseId, session });
+const fulfil = async ({ productId, variantSku = "", warehouseId, qty, referenceId, tx }) =>
+  inTransaction(tx, async (client) => {
+    const record = await ensureRecord({ productId, variantSku, warehouseId, tx: client });
 
-  const updated = await Inventory.findOneAndUpdate(
-    { _id: record._id, onHand: { $gte: qty } },
-    { $inc: { onHand: -qty, reserved: -Math.min(qty, record.reserved) } },
-    { new: true, session }
-  );
+    const [updated] = await client.$queryRaw`
+      UPDATE inventory
+      SET "onHand" = "onHand" - ${qty}::int,
+          reserved = GREATEST(reserved - ${qty}::int, 0),
+          "updatedAt" = NOW()
+      WHERE id = ${record.id}::uuid AND "onHand" >= ${qty}::int
+      RETURNING "onHand", reserved, "warehouseId"::text AS "warehouseId"`;
 
-  if (!updated) throw AppError.conflict("Insufficient stock to fulfil");
+    if (!updated) throw AppError.conflict("Insufficient stock to fulfil");
 
-  await recordMovement({
-    productId,
-    variantSku,
-    warehouseId: updated.warehouse,
-    quantity: -qty,
-    balanceAfter: updated.onHand,
-    reason: MOVEMENT_REASONS.SALE,
-    referenceType: "Order",
-    referenceId,
-    session,
+    await recordMovement({
+      productId,
+      variantSku,
+      warehouseId: updated.warehouseId,
+      quantity: -qty,
+      balanceAfter: updated.onHand,
+      reason: MOVEMENT_REASONS.SALE,
+      referenceType: "Order",
+      referenceId,
+      tx: client,
+    });
+
+    await syncProductStock(productId, client);
+    return updated;
   });
-
-  await syncProductStock(productId, session);
-  return updated;
-};
 
 /* --------------------------------- Queries --------------------------------- */
 
+/** Allow-list of sort keys; these are spliced into SQL, so never pass client text. */
+const INVENTORY_SORT = {
+  available: `"onHand" - reserved`,
+  onHand: `i."onHand"`,
+  reserved: `i.reserved`,
+  variantSku: `i."variantSku"`,
+  name: `p.name`,
+  category: `p.category`,
+  warehouseName: `w.name`,
+  createdAt: `i."createdAt"`,
+  updatedAt: `i."updatedAt"`,
+};
+
+/**
+ * Stock rows joined to their product and warehouse.
+ *
+ * Raw SQL because search, the low-stock filter and the default sort all work on
+ * joined or computed columns that the query builder cannot order by.
+ */
 const list = async ({ page, limit, sort, search, warehouse, lowStock }) => {
-  const match = { ...(warehouse ? { warehouse } : {}) };
-  const skip = (page - 1) * limit;
+  const conditions = [];
 
-  const pipeline = [
-    { $match: match },
-    {
-      $lookup: {
-        from: "products",
-        localField: "product",
-        foreignField: "_id",
-        as: "productDoc",
-      },
-    },
-    { $unwind: "$productDoc" },
-    {
-      $lookup: {
-        from: "warehouses",
-        localField: "warehouse",
-        foreignField: "_id",
-        as: "warehouseDoc",
-      },
-    },
-    { $unwind: { path: "$warehouseDoc", preserveNullAndEmptyArrays: true } },
-    {
-      $addFields: {
-        available: { $subtract: ["$onHand", "$reserved"] },
-        name: "$productDoc.name",
-        image: "$productDoc.image",
-        category: "$productDoc.category",
-        warehouseName: "$warehouseDoc.name",
-      },
-    },
-  ];
-
+  if (warehouse) conditions.push(Prisma.sql`i."warehouseId" = ${warehouse}::uuid`);
   if (search) {
-    pipeline.push({ $match: searchFilter(search, ["name", "variantSku", "category"]) });
+    const pattern = `%${escapeLike(search)}%`;
+    conditions.push(
+      Prisma.sql`(p.name ILIKE ${pattern} OR i."variantSku" ILIKE ${pattern} OR p.category ILIKE ${pattern})`
+    );
   }
-  if (lowStock) {
-    pipeline.push({ $match: { $expr: { $lte: ["$available", "$reorderPoint"] } } });
-  }
+  if (lowStock) conditions.push(Prisma.sql`i."onHand" - i.reserved <= i."reorderPoint"`);
 
-  pipeline.push({
-    $project: { productDoc: 0, warehouseDoc: 0 },
-  });
+  const where = conditions.length
+    ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
 
-  const [result] = await Inventory.aggregate([
-    ...pipeline,
-    {
-      $facet: {
-        items: [{ $sort: parseSort(sort, { available: 1 }) }, { $skip: skip }, { $limit: limit }],
-        total: [{ $count: "count" }],
-      },
-    },
+  const [field, direction] = (sort || "available:asc").split(":");
+  const orderColumn = Object.hasOwn(INVENTORY_SORT, field)
+    ? INVENTORY_SORT[field]
+    : INVENTORY_SORT.available;
+  const orderBy = Prisma.raw(`${orderColumn} ${direction === "desc" ? "DESC" : "ASC"}, i.id ASC`);
+
+  const [rows, [{ total }]] = await Promise.all([
+    prisma.$queryRaw`
+      SELECT i.id::text AS "_id",
+             i."productId"::text AS product,
+             i."variantSku",
+             i."warehouseId"::text AS warehouse,
+             i."onHand", i.reserved, i.incoming, i."reorderPoint", i."reorderQuantity",
+             i."binLocation", i."lastCountedAt", i."createdAt", i."updatedAt",
+             i."onHand" - i.reserved AS available,
+             p.name, p.image, p.category,
+             w.name AS "warehouseName"
+      FROM inventory i
+      JOIN products p ON p.id = i."productId"
+      LEFT JOIN warehouses w ON w.id = i."warehouseId"
+      ${where}
+      ORDER BY ${orderBy}
+      OFFSET ${(page - 1) * limit}::int LIMIT ${limit}::int`,
+    prisma.$queryRaw`
+      SELECT COUNT(*)::int AS total
+      FROM inventory i
+      JOIN products p ON p.id = i."productId"
+      LEFT JOIN warehouses w ON w.id = i."warehouseId"
+      ${where}`,
   ]);
 
-  return {
-    items: result?.items || [],
-    total: result?.total?.[0]?.count || 0,
-    page,
-    limit,
-  };
+  return { items: rows, total, page, limit };
 };
 
 const movements = async ({ page, limit, product, warehouse, reason }) => {
-  const filter = {
-    ...(product ? { product } : {}),
-    ...(warehouse ? { warehouse } : {}),
+  const where = {
+    ...(product ? { productId: product } : {}),
+    ...(warehouse ? { warehouseId: warehouse } : {}),
     ...(reason ? { reason } : {}),
   };
-  const skip = (page - 1) * limit;
 
-  const [items, total] = await Promise.all([
-    StockMovement.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate("product", "name image")
-      .populate("warehouse", "name code")
-      .populate("performedBy", "firstName lastName")
-      .lean(),
-    StockMovement.countDocuments(filter),
+  const [rows, total] = await Promise.all([
+    prisma.stockMovement.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        product: { select: { id: true, name: true, image: true } },
+        warehouse: { select: { id: true, name: true, code: true } },
+        performedBy: { select: { id: true, firstName: true, lastName: true } },
+      },
+    }),
+    prisma.stockMovement.count({ where }),
   ]);
 
-  return { items, total, page, limit };
+  return { items: rows.map(toStockMovement), total, page, limit };
 };
 
 /** Sets stock to a counted figure, recording the difference as a stocktake. */
@@ -353,28 +385,34 @@ const setStockLevel = async ({
   onHand,
   note,
   performedBy,
-}) => {
-  const record = await ensureRecord({ productId, variantSku, warehouseId });
-  const delta = onHand - record.onHand;
+}) =>
+  withTransaction(async (tx) => {
+    const record = await ensureRecord({ productId, variantSku, warehouseId, tx });
 
-  record.onHand = onHand;
-  record.lastCountedAt = new Date();
-  await record.save();
+    // Locked so the recorded difference matches the balance it replaced.
+    const [{ onHand: previous }] = await tx.$queryRaw`
+      SELECT "onHand" FROM inventory WHERE id = ${record.id}::uuid FOR UPDATE`;
 
-  await recordMovement({
-    productId,
-    variantSku,
-    warehouseId: record.warehouse,
-    quantity: delta,
-    balanceAfter: onHand,
-    reason: MOVEMENT_REASONS.STOCKTAKE,
-    note,
-    performedBy,
+    const updated = await tx.inventory.update({
+      where: { id: record.id },
+      data: { onHand, lastCountedAt: new Date() },
+    });
+
+    await recordMovement({
+      productId,
+      variantSku,
+      warehouseId: updated.warehouseId,
+      quantity: onHand - previous,
+      balanceAfter: onHand,
+      reason: MOVEMENT_REASONS.STOCKTAKE,
+      note,
+      performedBy,
+      tx,
+    });
+
+    await syncProductStock(productId, tx);
+    return toInventory(updated);
   });
-
-  await syncProductStock(productId);
-  return record;
-};
 
 /**
  * Ensures every sellable unit of a product has an inventory row.
@@ -395,25 +433,22 @@ const syncInventoryFromProduct = async (product) => {
       : [{ variantSku: "", openingStock: product.countInStock || 0 }];
 
   for (const unit of units) {
-    const existing = await Inventory.findOne({
-      product: product._id,
+    const key = {
+      productId: product._id,
       variantSku: unit.variantSku,
-      warehouse: warehouse._id,
+      warehouseId: warehouse.id,
+    };
+    const existing = await prisma.inventory.findUnique({
+      where: { productId_variantSku_warehouseId: key },
     });
     if (existing) continue;
 
-    await Inventory.create({
-      product: product._id,
-      variantSku: unit.variantSku,
-      warehouse: warehouse._id,
-      onHand: unit.openingStock,
-      reserved: 0,
-    });
+    await prisma.inventory.create({ data: { ...key, onHand: unit.openingStock, reserved: 0 } });
 
     await recordMovement({
       productId: product._id,
       variantSku: unit.variantSku,
-      warehouseId: warehouse._id,
+      warehouseId: warehouse.id,
       quantity: unit.openingStock,
       balanceAfter: unit.openingStock,
       reason: MOVEMENT_REASONS.STOCKTAKE,

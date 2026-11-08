@@ -1,23 +1,19 @@
 const BaseRepository = require("../../core/BaseRepository");
-const User = require("../../models/UserModel");
+const { toUser } = require("../../db/mappers");
 
 class UserRepository extends BaseRepository {
   constructor() {
-    super(User);
+    super("user", toUser);
   }
 
-  findByEmail(email, { withPassword = false } = {}) {
-    const query = this.model.findOne({ email: String(email).toLowerCase() });
-    if (withPassword) query.select("+password");
-    return query;
+  /** The password hash is only ever returned when explicitly requested. */
+  async findByEmail(email, { withPassword = false } = {}) {
+    const row = await this.delegate().findUnique({ where: { email: String(email).toLowerCase() } });
+    return toUser(row, { withPassword });
   }
 
-  /** Counts customers created on or after `since`, for dashboard deltas. */
-  countCustomersSince(since) {
-    return this.model.countDocuments({
-      role: "customer",
-      createdAt: { $gte: since },
-    });
+  async findByIdWithPassword(id) {
+    return toUser(await this.delegate().findUnique({ where: { id } }), { withPassword: true });
   }
 }
 

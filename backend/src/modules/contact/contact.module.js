@@ -1,17 +1,27 @@
 const { z } = require("zod");
 const express = require("express");
-const ContactMessage = require("../../models/ContactMessageModel");
+const prisma = require("../../db/client");
+const { toContactMessage } = require("../../db/mappers");
 const AppError = require("../../core/AppError");
 const asyncHandler = require("../../core/asyncHandler");
 const { ok, created, paginated } = require("../../core/ApiResponse");
 const validate = require("../../middlewares/validate");
 const { authenticate } = require("../../middlewares/auth");
 const { requireStaff } = require("../../middlewares/rbac");
-const { listQuery, idParam, email, parseSort, searchFilter } = require("../../utils/schemas");
+const {
+  listQuery,
+  idParam,
+  email,
+  parseSort,
+  searchFilter,
+  sortable,
+} = require("../../utils/schemas");
 
 /** Messages one address may submit within the window below. */
 const MAX_MESSAGES_PER_WINDOW = 5;
 const WINDOW_MS = 60 * 60 * 1000;
+
+const SORTABLE = sortable("createdAt", "name", "email", "city");
 
 const contactBody = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
@@ -40,9 +50,11 @@ router.post(
   "/contactUs",
   validate({ body: contactBody }),
   asyncHandler(async (req, res) => {
-    const recentCount = await ContactMessage.countDocuments({
-      email: req.body.email,
-      createdAt: { $gte: new Date(Date.now() - WINDOW_MS) },
+    const recentCount = await prisma.contactMessage.count({
+      where: {
+        email: req.body.email,
+        createdAt: { gte: new Date(Date.now() - WINDOW_MS) },
+      },
     });
 
     if (recentCount >= MAX_MESSAGES_PER_WINDOW) {
@@ -51,7 +63,7 @@ router.post(
       );
     }
 
-    await ContactMessage.create(req.body);
+    await prisma.contactMessage.create({ data: req.body });
     return created(res, { message: "Message sent successfully" });
   })
 );
@@ -65,18 +77,22 @@ router.get(
   validate({ query: listContactQuery }),
   asyncHandler(async (req, res) => {
     const { page, limit, search, sort, isRead } = req.query;
-    const filter = {
+    const where = {
       ...searchFilter(search, ["name", "email", "city", "message"]),
       ...(isRead !== undefined ? { isRead } : {}),
     };
 
-    const skip = (page - 1) * limit;
-    const [items, total] = await Promise.all([
-      ContactMessage.find(filter).sort(parseSort(sort)).skip(skip).limit(limit).lean(),
-      ContactMessage.countDocuments(filter),
+    const [rows, total] = await Promise.all([
+      prisma.contactMessage.findMany({
+        where,
+        orderBy: parseSort(sort, SORTABLE),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.contactMessage.count({ where }),
     ]);
 
-    return paginated(res, { items, total, page, limit });
+    return paginated(res, { items: rows.map(toContactMessage), total, page, limit });
   })
 );
 
@@ -86,13 +102,14 @@ router.patch(
   requireStaff,
   validate({ params: idParam("id") }),
   asyncHandler(async (req, res) => {
-    const doc = await ContactMessage.findByIdAndUpdate(
-      req.params.id,
-      { isRead: true, handledBy: req.auth.userId },
-      { new: true }
-    ).lean();
-    if (!doc) throw AppError.notFound("Message not found");
-    return ok(res, { data: doc, message: "Marked as read" });
+    const exists = await prisma.contactMessage.count({ where: { id: req.params.id } });
+    if (!exists) throw AppError.notFound("Message not found");
+
+    const row = await prisma.contactMessage.update({
+      where: { id: req.params.id },
+      data: { isRead: true, handledById: req.auth.userId },
+    });
+    return ok(res, { data: toContactMessage(row), message: "Marked as read" });
   })
 );
 
@@ -102,8 +119,8 @@ router.delete(
   requireStaff,
   validate({ params: idParam("id") }),
   asyncHandler(async (req, res) => {
-    const doc = await ContactMessage.findByIdAndDelete(req.params.id).lean();
-    if (!doc) throw AppError.notFound("Message not found");
+    const { count } = await prisma.contactMessage.deleteMany({ where: { id: req.params.id } });
+    if (count === 0) throw AppError.notFound("Message not found");
     return ok(res, { message: "Message deleted" });
   })
 );
@@ -113,8 +130,8 @@ router.delete(
   authenticate,
   requireStaff,
   asyncHandler(async (req, res) => {
-    const { deletedCount } = await ContactMessage.deleteMany({});
-    return ok(res, { message: `${deletedCount} messages deleted` });
+    const { count } = await prisma.contactMessage.deleteMany({});
+    return ok(res, { message: `${count} messages deleted` });
   })
 );
 

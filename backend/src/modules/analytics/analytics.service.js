@@ -1,18 +1,25 @@
-const Order = require("../../models/OrderModel");
-const Product = require("../../models/ProductModel");
-const User = require("../../models/UserModel");
+const { Prisma } = require("@prisma/client");
+const prisma = require("../../db/client");
+const { num, toOrder, toUser } = require("../../db/mappers");
 const productRepository = require("../product/product.repository");
 const { REVENUE_STATUSES, ORDER_STATUS } = require("../../constants/orderStatus");
 const { ROLES } = require("../../constants/roles");
-const { LOW_STOCK_EXPR, ACTIVE_FILTER } = require("../../constants/inventory");
+const { ACTIVE_FILTER } = require("../../constants/inventory");
+
+const { lowStockFilter } = productRepository;
 
 /** Orders that count towards revenue. */
-const revenueMatch = (from, to) => ({
-  status: { $in: REVENUE_STATUSES },
+const revenueWhere = (from, to) => ({
+  status: { in: [...REVENUE_STATUSES] },
   ...(from || to
-    ? { createdAt: { ...(from ? { $gte: from } : {}), ...(to ? { $lte: to } : {}) } }
+    ? { createdAt: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } }
     : {}),
 });
+
+/** The same rule as `revenueWhere`, for raw SQL over an aliased orders table `o`. */
+const revenueSql = (start, end) =>
+  Prisma.sql`o.status::text = ANY(${[...REVENUE_STATUSES]})
+    AND o."createdAt" >= ${start} AND o."createdAt" <= ${end}`;
 
 const DEFAULT_RANGE_DAYS = 30;
 
@@ -36,11 +43,12 @@ const percentChange = (current, previous) => {
 };
 
 const sumRevenue = async (from, to) => {
-  const [result] = await Order.aggregate([
-    { $match: revenueMatch(from, to) },
-    { $group: { _id: null, revenue: { $sum: "$pricing.grandTotal" }, orders: { $sum: 1 } } },
-  ]);
-  return { revenue: result?.revenue || 0, orders: result?.orders || 0 };
+  const result = await prisma.order.aggregate({
+    where: revenueWhere(from, to),
+    _sum: { grandTotal: true },
+    _count: { _all: true },
+  });
+  return { revenue: num(result._sum.grandTotal) || 0, orders: result._count._all };
 };
 
 /**
@@ -58,13 +66,14 @@ const getSummary = async (range) => {
     await Promise.all([
       sumRevenue(start, end),
       sumRevenue(previousStart, start),
-      User.countDocuments({ role: ROLES.CUSTOMER, createdAt: { $gte: start, $lte: end } }),
-      User.countDocuments({
-        role: ROLES.CUSTOMER,
-        createdAt: { $gte: previousStart, $lt: start },
+      prisma.user.count({
+        where: { role: ROLES.CUSTOMER, createdAt: { gte: start, lte: end } },
       }),
-      Product.countDocuments(ACTIVE_FILTER),
-      Product.countDocuments({ ...ACTIVE_FILTER, $expr: LOW_STOCK_EXPR }),
+      prisma.user.count({
+        where: { role: ROLES.CUSTOMER, createdAt: { gte: previousStart, lt: start } },
+      }),
+      prisma.product.count({ where: ACTIVE_FILTER }),
+      prisma.product.count({ where: { ...ACTIVE_FILTER, ...lowStockFilter() } }),
     ]);
 
   return {
@@ -93,6 +102,9 @@ const getSummary = async (range) => {
   };
 };
 
+/** Bucket labels by interval. Timestamps are stored in UTC, so buckets are UTC days. */
+const BUCKET_FORMATS = { day: "YYYY-MM-DD", week: "IYYY-IW", month: "YYYY-MM" };
+
 /**
  * Revenue and order counts bucketed by day, week or month.
  *
@@ -101,34 +113,30 @@ const getSummary = async (range) => {
  */
 const getSalesTrend = async ({ interval = "day", ...range } = {}) => {
   const { start, end } = resolveRange(range);
+  const format = BUCKET_FORMATS[interval] || BUCKET_FORMATS.day;
 
-  const formats = { day: "%Y-%m-%d", week: "%Y-%V", month: "%Y-%m" };
-  const format = formats[interval] || formats.day;
-
-  const rows = await Order.aggregate([
-    { $match: revenueMatch(start, end) },
-    {
-      $group: {
-        _id: { $dateToString: { format, date: "$createdAt" } },
-        revenue: { $sum: "$pricing.grandTotal" },
-        orders: { $sum: 1 },
-      },
-    },
-    { $sort: { _id: 1 } },
-    { $project: { _id: 0, bucket: "$_id", revenue: 1, orders: 1 } },
-  ]);
+  const rows = await prisma.$queryRaw`
+    SELECT to_char(o."createdAt", ${format}) AS bucket,
+           SUM(o."grandTotal")::float8 AS revenue,
+           COUNT(*)::int AS orders
+    FROM orders o
+    WHERE ${revenueSql(start, end)}
+    GROUP BY bucket
+    ORDER BY bucket ASC`;
 
   if (interval !== "day") return rows;
 
   const byBucket = new Map(rows.map((row) => [row.bucket, row]));
   const series = [];
+  // UTC throughout, matching the buckets; local midnight would drop today's
+  // orders on any server east of Greenwich.
   const cursor = new Date(start);
-  cursor.setHours(0, 0, 0, 0);
+  cursor.setUTCHours(0, 0, 0, 0);
 
   while (cursor <= end) {
     const key = cursor.toISOString().slice(0, 10);
     series.push(byBucket.get(key) || { bucket: key, revenue: 0, orders: 0 });
-    cursor.setDate(cursor.getDate() + 1);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
   return series;
 };
@@ -136,12 +144,13 @@ const getSalesTrend = async ({ interval = "day", ...range } = {}) => {
 /** Order counts per lifecycle status, for the distribution donut. */
 const getStatusDistribution = async (range) => {
   const { start, end } = resolveRange(range);
-  const rows = await Order.aggregate([
-    { $match: { createdAt: { $gte: start, $lte: end } } },
-    { $group: { _id: "$status", count: { $sum: 1 } } },
-  ]);
+  const rows = await prisma.order.groupBy({
+    by: ["status"],
+    where: { createdAt: { gte: start, lte: end } },
+    _count: { _all: true },
+  });
 
-  const counts = Object.fromEntries(rows.map((row) => [row._id, row.count]));
+  const counts = Object.fromEntries(rows.map((row) => [row.status, row._count._all]));
   // Every status is present so the legend does not reshuffle between reloads.
   return Object.values(ORDER_STATUS).map((status) => ({
     status,
@@ -152,68 +161,65 @@ const getStatusDistribution = async (range) => {
 /** Best sellers by units sold, with the revenue each generated. */
 const getTopProducts = async ({ limit = 5, ...range } = {}) => {
   const { start, end } = resolveRange(range);
-  return Order.aggregate([
-    { $match: revenueMatch(start, end) },
-    { $unwind: "$orderItems" },
-    {
-      $group: {
-        _id: "$orderItems.product",
-        name: { $first: "$orderItems.name" },
-        image: { $first: "$orderItems.image" },
-        category: { $first: "$orderItems.category" },
-        unitsSold: { $sum: "$orderItems.qty" },
-        revenue: { $sum: "$orderItems.lineTotal" },
-      },
-    },
-    { $sort: { unitsSold: -1 } },
-    { $limit: limit },
-    {
-      $project: {
-        _id: 0,
-        productId: "$_id",
-        name: 1,
-        image: 1,
-        category: 1,
-        unitsSold: 1,
-        revenue: 1,
-      },
-    },
-  ]);
+  return prisma.$queryRaw`
+    SELECT i."productId"::text AS "productId",
+           MIN(i.name) AS name,
+           MIN(i.image) AS image,
+           MIN(i.category) AS category,
+           SUM(i.qty)::int AS "unitsSold",
+           SUM(i."lineTotal")::float8 AS revenue
+    FROM order_items i
+    JOIN orders o ON o.id = i."orderId"
+    WHERE ${revenueSql(start, end)}
+    GROUP BY i."productId"
+    ORDER BY "unitsSold" DESC
+    LIMIT ${limit}::int`;
 };
 
 /** Revenue split by product category, for the category breakdown chart. */
 const getRevenueByCategory = async ({ limit = 8, ...range } = {}) => {
   const { start, end } = resolveRange(range);
-  return Order.aggregate([
-    { $match: revenueMatch(start, end) },
-    { $unwind: "$orderItems" },
-    {
-      $group: {
-        _id: "$orderItems.category",
-        revenue: { $sum: "$orderItems.lineTotal" },
-        unitsSold: { $sum: "$orderItems.qty" },
-      },
-    },
-    { $sort: { revenue: -1 } },
-    { $limit: limit },
-    { $project: { _id: 0, category: "$_id", revenue: 1, unitsSold: 1 } },
-  ]);
+  return prisma.$queryRaw`
+    SELECT i.category AS category,
+           SUM(i."lineTotal")::float8 AS revenue,
+           SUM(i.qty)::int AS "unitsSold"
+    FROM order_items i
+    JOIN orders o ON o.id = i."orderId"
+    WHERE ${revenueSql(start, end)}
+    GROUP BY i.category
+    ORDER BY revenue DESC
+    LIMIT ${limit}::int`;
 };
 
-const getRecentOrders = ({ limit = 5 }) =>
-  Order.find({})
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .select("orderNumber status paymentStatus pricing.grandTotal createdAt orderItems")
-    .populate("User", "firstName lastName email avatar")
-    .lean();
+const getRecentOrders = async ({ limit = 5 }) => {
+  const rows = await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: {
+      items: { orderBy: { position: "asc" } },
+      user: { select: { id: true, firstName: true, lastName: true, email: true, avatar: true } },
+    },
+  });
+  return rows.map(toOrder);
+};
 
-const getRecentCustomers = ({ limit = 5 }) =>
-  User.find({ role: ROLES.CUSTOMER })
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .select("firstName lastName email avatar createdAt")
-    .lean();
+const getRecentCustomers = async ({ limit = 5 }) => {
+  const rows = await prisma.user.findMany({
+    where: { role: ROLES.CUSTOMER },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      avatar: true,
+      createdAt: true,
+      role: true,
+    },
+  });
+  return rows.map((row) => toUser(row));
+};
 
 const getLowStockProducts = ({ limit = 5 }) => productRepository.findLowStock(limit);
 

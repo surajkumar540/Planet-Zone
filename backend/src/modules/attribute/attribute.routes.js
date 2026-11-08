@@ -1,14 +1,15 @@
 const express = require("express");
 const { z } = require("zod");
+const prisma = require("../../db/client");
+const { toAttribute } = require("../../db/mappers");
 const asyncHandler = require("../../core/asyncHandler");
 const { ok, created } = require("../../core/ApiResponse");
 const validate = require("../../middlewares/validate");
 const { authenticate } = require("../../middlewares/auth");
 const { requireStaff } = require("../../middlewares/rbac");
 const AppError = require("../../core/AppError");
-const Attribute = require("../../models/AttributeModel");
-const Product = require("../../models/ProductModel");
 const { idParam } = require("../../utils/schemas");
+const { slugify } = require("../../utils/slug");
 
 const attributeValue = z.object({
   label: z.string().trim().min(1, "Label is required").max(80),
@@ -50,12 +51,14 @@ router.get(
   "/attributes",
   validate({ query: listQuerySchema }),
   asyncHandler(async (req, res) => {
-    const filter = {
-      ...(req.query.variantOnly ? { isVariantAttribute: true } : {}),
-      ...(req.query.isActive !== undefined ? { isActive: req.query.isActive } : {}),
-    };
-    const data = await Attribute.find(filter).sort({ position: 1, name: 1 }).lean();
-    return ok(res, { data });
+    const rows = await prisma.attribute.findMany({
+      where: {
+        ...(req.query.variantOnly ? { isVariantAttribute: true } : {}),
+        ...(req.query.isActive !== undefined ? { isActive: req.query.isActive } : {}),
+      },
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    });
+    return ok(res, { data: rows.map(toAttribute) });
   })
 );
 
@@ -64,8 +67,9 @@ router.post(
   staffOnly,
   validate({ body: attributeBody }),
   asyncHandler(async (req, res) => {
-    const attribute = await Attribute.create(req.body);
-    return created(res, { data: attribute.toObject(), message: "Attribute created" });
+    const code = (req.body.code || slugify(req.body.name)).toLowerCase();
+    const row = await prisma.attribute.create({ data: { ...req.body, code } });
+    return created(res, { data: toAttribute(row), message: "Attribute created" });
   })
 );
 
@@ -74,12 +78,14 @@ router.patch(
   staffOnly,
   validate({ params: idParam("id"), body: attributeBody.partial() }),
   asyncHandler(async (req, res) => {
-    const attribute = await Attribute.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    }).lean();
-    if (!attribute) throw AppError.notFound("Attribute not found");
-    return ok(res, { data: attribute, message: "Attribute updated" });
+    const exists = await prisma.attribute.count({ where: { id: req.params.id } });
+    if (!exists) throw AppError.notFound("Attribute not found");
+
+    const data = { ...req.body };
+    if (data.code) data.code = data.code.toLowerCase();
+
+    const row = await prisma.attribute.update({ where: { id: req.params.id }, data });
+    return ok(res, { data: toAttribute(row), message: "Attribute updated" });
   })
 );
 
@@ -88,16 +94,17 @@ router.delete(
   staffOnly,
   validate({ params: idParam("id") }),
   asyncHandler(async (req, res) => {
-    const attribute = await Attribute.findById(req.params.id).lean();
+    const attribute = await prisma.attribute.findUnique({ where: { id: req.params.id } });
     if (!attribute) throw AppError.notFound("Attribute not found");
 
     // Removing an attribute still used by variants would orphan those options.
-    const inUse = await Product.countDocuments({
-      $or: [
-        { "attributes.code": attribute.code },
-        { [`variants.options.${attribute.code}`]: { $exists: true } },
-      ],
-    });
+    const descriptive = JSON.stringify([{ code: attribute.code }]);
+    const [{ inUse }] = await prisma.$queryRaw`
+      SELECT COUNT(DISTINCT p.id)::int AS "inUse"
+      FROM products p
+      LEFT JOIN product_variants v ON v."productId" = p.id
+      WHERE p.attributes @> ${descriptive}::jsonb
+         OR jsonb_exists(v.options::jsonb, ${attribute.code})`;
 
     if (inUse > 0) {
       throw AppError.conflict(
@@ -105,7 +112,7 @@ router.delete(
       );
     }
 
-    await Attribute.findByIdAndDelete(req.params.id);
+    await prisma.attribute.delete({ where: { id: req.params.id } });
     return ok(res, { message: "Attribute deleted" });
   })
 );

@@ -8,9 +8,9 @@ const { requireStaff, requireAdmin } = require("../../middlewares/rbac");
 const audit = require("../../services/audit.service");
 const AppError = require("../../core/AppError");
 const cache = require("../../core/cache");
-const Settings = require("../../models/SettingsModel");
-const TaxRate = require("../../models/TaxRateModel");
-const ShippingZone = require("../../models/ShippingZoneModel");
+const prisma = require("../../db/client");
+const { toSettings, toTaxRate, toShippingZone } = require("../../db/mappers");
+const { SETTINGS_DEFAULTS } = require("./settings.defaults");
 const shippingService = require("../../services/shipping.service");
 const { idParam } = require("../../utils/schemas");
 
@@ -142,6 +142,27 @@ const staffOnly = [authenticate, requireStaff];
 
 const SETTINGS_CACHE_KEY = "settings:public";
 
+/** Reads the singleton row, creating it with the defaults on first access. */
+const getSettings = async () =>
+  toSettings(
+    await prisma.settings.upsert({
+      where: { key: "default" },
+      create: { key: "default", ...SETTINGS_DEFAULTS },
+      update: {},
+    })
+  );
+
+/** Makes `code` uppercase wherever a payload carries one. */
+const withUpperCode = ({ code, ...rest }) => ({
+  ...rest,
+  ...(code ? { code: code.toUpperCase() } : {}),
+});
+
+const clearOtherDefaultRates = (keepId) =>
+  prisma.taxRate.updateMany({ where: { id: { not: keepId } }, data: { isDefault: false } });
+
+const WITH_RATES = { rates: { orderBy: [{ position: "asc" }, { price: "asc" }] } };
+
 /* -------------------------------- Settings --------------------------------- */
 
 /**
@@ -152,7 +173,7 @@ router.get(
   "/settings/public",
   asyncHandler(async (req, res) => {
     const data = await cache.remember(SETTINGS_CACHE_KEY, 5 * 60 * 1000, async () => {
-      const settings = await Settings.getSettings();
+      const settings = await getSettings();
       return {
         store: settings.store,
         localisation: settings.localisation,
@@ -171,7 +192,7 @@ router.get(
 router.get(
   "/settings",
   staffOnly,
-  asyncHandler(async (req, res) => ok(res, { data: await Settings.getSettings() }))
+  asyncHandler(async (req, res) => ok(res, { data: await getSettings() }))
 );
 
 router.patch(
@@ -180,14 +201,14 @@ router.patch(
   requireAdmin,
   validate({ body: updateSettingsSchema }),
   asyncHandler(async (req, res) => {
-    const settings = await Settings.getSettings();
+    const current = await getSettings();
 
     // Merged section by section so a partial update never drops sibling keys.
+    const data = { updatedById: req.auth.userId };
     for (const [section, values] of Object.entries(req.body)) {
-      settings.set(section, { ...(settings[section]?.toObject?.() ?? settings[section]), ...values });
+      data[section] = { ...current[section], ...values };
     }
-    settings.updatedBy = req.auth.userId;
-    await settings.save();
+    const settings = toSettings(await prisma.settings.update({ where: { id: current._id }, data }));
 
     cache.invalidate("settings:");
     await audit.record({
@@ -198,7 +219,7 @@ router.patch(
       changes: req.body,
     });
 
-    return ok(res, { data: settings.toObject(), message: "Settings updated" });
+    return ok(res, { data: settings, message: "Settings updated" });
   })
 );
 
@@ -208,7 +229,11 @@ router.get(
   "/tax-rates",
   staffOnly,
   asyncHandler(async (req, res) =>
-    ok(res, { data: await TaxRate.find({}).sort({ isDefault: -1, name: 1 }).lean() })
+    ok(res, {
+      data: (
+        await prisma.taxRate.findMany({ orderBy: [{ isDefault: "desc" }, { name: "asc" }] })
+      ).map(toTaxRate),
+    })
   )
 );
 
@@ -217,11 +242,9 @@ router.post(
   staffOnly,
   validate({ body: taxRateBody }),
   asyncHandler(async (req, res) => {
-    const rate = await TaxRate.create(req.body);
-    if (rate.isDefault) {
-      await TaxRate.updateMany({ _id: { $ne: rate._id } }, { $set: { isDefault: false } });
-    }
-    return created(res, { data: rate.toObject(), message: "Tax rate created" });
+    const rate = await prisma.taxRate.create({ data: withUpperCode(req.body) });
+    if (rate.isDefault) await clearOtherDefaultRates(rate.id);
+    return created(res, { data: toTaxRate(rate), message: "Tax rate created" });
   })
 );
 
@@ -230,16 +253,16 @@ router.patch(
   staffOnly,
   validate({ params: idParam("id"), body: taxRateBody.partial() }),
   asyncHandler(async (req, res) => {
-    const rate = await TaxRate.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    }).lean();
-    if (!rate) throw AppError.notFound("Tax rate not found");
+    const exists = await prisma.taxRate.count({ where: { id: req.params.id } });
+    if (!exists) throw AppError.notFound("Tax rate not found");
 
-    if (req.body.isDefault) {
-      await TaxRate.updateMany({ _id: { $ne: rate._id } }, { $set: { isDefault: false } });
-    }
-    return ok(res, { data: rate, message: "Tax rate updated" });
+    const rate = await prisma.taxRate.update({
+      where: { id: req.params.id },
+      data: withUpperCode(req.body),
+    });
+
+    if (req.body.isDefault) await clearOtherDefaultRates(rate.id);
+    return ok(res, { data: toTaxRate(rate), message: "Tax rate updated" });
   })
 );
 
@@ -248,8 +271,8 @@ router.delete(
   staffOnly,
   validate({ params: idParam("id") }),
   asyncHandler(async (req, res) => {
-    const rate = await TaxRate.findByIdAndDelete(req.params.id).lean();
-    if (!rate) throw AppError.notFound("Tax rate not found");
+    const { count } = await prisma.taxRate.deleteMany({ where: { id: req.params.id } });
+    if (count === 0) throw AppError.notFound("Tax rate not found");
     return ok(res, { message: "Tax rate deleted" });
   })
 );
@@ -260,7 +283,14 @@ router.get(
   "/shipping-zones",
   staffOnly,
   asyncHandler(async (req, res) =>
-    ok(res, { data: await ShippingZone.find({}).sort({ position: 1, name: 1 }).lean() })
+    ok(res, {
+      data: (
+        await prisma.shippingZone.findMany({
+          orderBy: [{ position: "asc" }, { name: "asc" }],
+          include: WITH_RATES,
+        })
+      ).map(toShippingZone),
+    })
   )
 );
 
@@ -269,8 +299,12 @@ router.post(
   staffOnly,
   validate({ body: shippingZoneBody }),
   asyncHandler(async (req, res) => {
-    const zone = await ShippingZone.create(req.body);
-    return created(res, { data: zone.toObject(), message: "Shipping zone created" });
+    const { rates, ...fields } = req.body;
+    const zone = await prisma.shippingZone.create({
+      data: { ...fields, rates: { create: rates } },
+      include: WITH_RATES,
+    });
+    return created(res, { data: toShippingZone(zone), message: "Shipping zone created" });
   })
 );
 
@@ -279,12 +313,20 @@ router.patch(
   staffOnly,
   validate({ params: idParam("id"), body: shippingZoneBody.partial() }),
   asyncHandler(async (req, res) => {
-    const zone = await ShippingZone.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    }).lean();
-    if (!zone) throw AppError.notFound("Shipping zone not found");
-    return ok(res, { data: zone, message: "Shipping zone updated" });
+    const exists = await prisma.shippingZone.count({ where: { id: req.params.id } });
+    if (!exists) throw AppError.notFound("Shipping zone not found");
+
+    // A supplied rate list replaces the existing one as a whole.
+    const { rates, ...fields } = req.body;
+    const zone = await prisma.shippingZone.update({
+      where: { id: req.params.id },
+      data: {
+        ...fields,
+        ...(rates !== undefined ? { rates: { deleteMany: {}, create: rates } } : {}),
+      },
+      include: WITH_RATES,
+    });
+    return ok(res, { data: toShippingZone(zone), message: "Shipping zone updated" });
   })
 );
 
@@ -293,8 +335,8 @@ router.delete(
   staffOnly,
   validate({ params: idParam("id") }),
   asyncHandler(async (req, res) => {
-    const zone = await ShippingZone.findByIdAndDelete(req.params.id).lean();
-    if (!zone) throw AppError.notFound("Shipping zone not found");
+    const { count } = await prisma.shippingZone.deleteMany({ where: { id: req.params.id } });
+    if (count === 0) throw AppError.notFound("Shipping zone not found");
     return ok(res, { message: "Shipping zone deleted" });
   })
 );

@@ -1,4 +1,5 @@
-const ShippingZone = require("../models/ShippingZoneModel");
+const prisma = require("../db/client");
+const { toShippingZone } = require("../db/mappers");
 const AppError = require("../core/AppError");
 const { round } = require("../utils/money");
 
@@ -10,8 +11,13 @@ const { round } = require("../utils/money");
  * `isFallback` is used only when nothing else matches.
  */
 const findZoneForAddress = async (address = {}) => {
-  const zones = await ShippingZone.find({ isActive: true }).sort({ position: 1 }).lean();
-  if (zones.length === 0) return null;
+  const rows = await prisma.shippingZone.findMany({
+    where: { isActive: true },
+    orderBy: { position: "asc" },
+    include: { rates: true },
+  });
+  if (rows.length === 0) return null;
+  const zones = rows.map(toShippingZone);
 
   const pinCode = String(address.pinCode || "");
   const state = String(address.state || "").toLowerCase();
@@ -81,7 +87,7 @@ const getShippingOptions = async ({ address, orderAmount }) => {
  * checkout — a store that has not set up shipping can still take orders.
  */
 const resolveShippingCost = async ({ address, orderAmount, rateId }) => {
-  const zoneCount = await ShippingZone.countDocuments({ isActive: true });
+  const zoneCount = await prisma.shippingZone.count({ where: { isActive: true } });
   if (zoneCount === 0) {
     return { cost: 0, rate: null, zone: null };
   }

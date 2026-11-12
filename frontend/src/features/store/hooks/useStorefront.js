@@ -6,6 +6,7 @@ import {
   clearCart,
   removeFromCart,
   updateQuantity,
+  lineKey,
 } from "../../../redux/reducers/cartSlice";
 
 /**
@@ -34,10 +35,23 @@ export const useCart = () => {
     [items]
   );
 
-  /** Flattens a product (and optional variant) into the shape the cart stores. */
+  /**
+   * Adds a product (and optional variant) to the bag.
+   *
+   * Returns `{ added, inBag, stock }`: how many were actually added after the
+   * stock cap, and the line's new quantity, so the caller can say "you already
+   * have all 3" instead of pretending the click worked.
+   */
   const add = useCallback(
     (product, qty = 1, variant = null) => {
       const source = variant || product;
+      const key = lineKey({ _id: product._id, variantSku: variant?.sku });
+      const current = items.find((item) => lineKey(item) === key)?.qty || 0;
+      const stock = Number(source.countInStock);
+      const room = stock > 0 ? Math.max(0, stock - current) : qty;
+      const added = Math.min(qty, room);
+      if (added <= 0) return { added: 0, inBag: current, stock };
+
       dispatch(
         addToCart({
           _id: product._id,
@@ -53,20 +67,22 @@ export const useCart = () => {
           countInStock: source.countInStock,
           variantSku: variant?.sku,
           variantId: variant?._id,
-          qty,
+          qty: added,
         })
       );
+      return { added, inBag: current + added, stock };
     },
-    [dispatch]
+    [dispatch, items]
   );
 
-  const setQty = useCallback((id, qty) => dispatch(updateQuantity({ _id: id, qty })), [dispatch]);
-  const remove = useCallback((id) => dispatch(removeFromCart(id)), [dispatch]);
+  /** `key` is the line's `lineKey` (product id plus variant SKU). */
+  const setQty = useCallback((key, qty) => dispatch(updateQuantity({ key, qty })), [dispatch]);
+  const remove = useCallback((key) => dispatch(removeFromCart(key)), [dispatch]);
   const clear = useCallback(() => dispatch(clearCart()), [dispatch]);
 
-  const findLine = useCallback((id) => items.find((item) => item._id === id), [items]);
+  const findLine = useCallback((key) => items.find((item) => lineKey(item) === key), [items]);
 
-  return { items, count, subtotal, add, setQty, remove, clear, findLine };
+  return { items, count, subtotal, add, setQty, remove, clear, findLine, lineKey };
 };
 
 /** Session state, in the one shape the storefront cares about. */

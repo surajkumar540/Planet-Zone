@@ -17,6 +17,16 @@ const loadCart = () => {
 
 const persist = (items) => localStorage.setItem(CART_KEY, JSON.stringify(items));
 
+/**
+ * A line is one sellable unit: the product, plus the variant when there is
+ * one. Two sizes of the same shirt are two lines, not one overwriting the other.
+ */
+export const lineKey = (item) => `${item._id}::${item.variantSku || ""}`;
+
+/** Most a line may hold: the stock it was added with, when that is known. */
+const stockCap = (line) =>
+  Number.isFinite(line.countInStock) && line.countInStock > 0 ? line.countInStock : Infinity;
+
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -24,14 +34,28 @@ const cartSlice = createSlice({
     status: STATUSES.IDLE,
   },
   reducers: {
+    /**
+     * Adds `qty` of a unit to the bag.
+     *
+     * Adding something already in the bag increases its quantity — it used to
+     * replace the line, so adding 1 more of an item you had 3 of left you with 1.
+     * The total never exceeds the stock the line was added with.
+     */
     addToCart: (state, action) => {
       const line = action.payload;
-      const index = state.data.findIndex((item) => item._id === line._id);
+      const key = lineKey(line);
+      const index = state.data.findIndex((item) => lineKey(item) === key);
 
       if (index === -1) {
-        state.data.push(line);
+        state.data.push({ ...line, qty: Math.min(line.qty, stockCap(line)) });
       } else {
-        state.data[index] = line;
+        const existing = state.data[index];
+        // Fresh catalogue fields (price, stock) win; the quantity accumulates.
+        state.data[index] = {
+          ...existing,
+          ...line,
+          qty: Math.min(existing.qty + line.qty, stockCap(line)),
+        };
       }
       persist(state.data);
     },
@@ -43,16 +67,18 @@ const cartSlice = createSlice({
      * last index it saw, so it always removed the final item regardless of
      * which one was requested.
      */
+    /** Removes one line; the payload is its `lineKey`. */
     removeFromCart: (state, action) => {
-      state.data = state.data.filter((item) => item._id !== action.payload);
+      state.data = state.data.filter((item) => lineKey(item) !== action.payload);
       persist(state.data);
     },
 
+    /** Sets a line's quantity; `key` is its `lineKey`. */
     updateQuantity: (state, action) => {
-      const { _id, qty } = action.payload;
-      const line = state.data.find((item) => item._id === _id);
+      const { key, qty } = action.payload;
+      const line = state.data.find((item) => lineKey(item) === key);
       if (line && qty > 0) {
-        line.qty = qty;
+        line.qty = Math.min(qty, stockCap(line));
         persist(state.data);
       }
     },

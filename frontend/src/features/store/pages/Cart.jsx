@@ -16,7 +16,7 @@ import { useCart, useSession } from "../hooks/useStorefront";
  */
 const Cart = () => {
   const navigate = useNavigate();
-  const { items, subtotal, setQty, remove, clear } = useCart();
+  const { items, subtotal, setQty, remove, clear, lineKey } = useCart();
   const { isLoggedIn } = useSession();
 
   if (items.length === 0) {
@@ -53,7 +53,7 @@ const Cart = () => {
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
         <ul className="divide-y divide-line-subtle overflow-hidden rounded-lg border border-line-subtle bg-surface">
           {items.map((item) => (
-            <li key={`${item._id}-${item.variantSku || ""}`} className="flex gap-4 p-4">
+            <li key={lineKey(item)} className="flex gap-4 p-4">
               <Link
                 to={`/product/${item._id}`}
                 className="h-24 w-24 shrink-0 overflow-hidden rounded-md bg-surface-sunken"
@@ -79,14 +79,14 @@ const Cart = () => {
                 <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
                   <QuantityStepper
                     value={item.qty}
-                    onChange={(qty) => setQty(item._id, qty)}
+                    onChange={(qty) => setQty(lineKey(item), qty)}
                     max={Math.max(1, Math.min(10, item.countInStock || 10))}
                   />
                   <Button
                     variant="ghost"
                     size="sm"
                     icon={Trash2}
-                    onClick={() => remove(item._id)}
+                    onClick={() => remove(lineKey(item))}
                     aria-label={`Remove ${item.name}`}
                   >
                     Remove

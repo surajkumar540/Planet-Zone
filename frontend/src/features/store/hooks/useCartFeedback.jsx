@@ -80,12 +80,12 @@ export const CartFeedbackProvider = ({ children }) => {
   const timer = useRef(null);
 
   const notify = useCallback(
-    ({ product, qty = 1, variant = null, sourceEl = null }) => {
+    ({ product, qty = 1, inBag = qty, variant = null, sourceEl = null }) => {
       const image = variant?.image || product.image;
       if (reduceMotion) window.dispatchEvent(new CustomEvent("cart:bump"));
       else flyToCart(sourceEl, image);
 
-      setAdded({ key: Date.now(), product, qty, variant, image });
+      setAdded({ key: Date.now(), product, qty, inBag, variant, image });
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => setAdded(null), PANEL_MS);
     },
@@ -163,7 +163,8 @@ const AddedPanel = ({ added, onClose, onHold, onRelease }) => {
                 </p>
               )}
               <p className="type-caption type-numeric text-content-secondary">
-                {added.qty} × {formatCurrency((added.variant || added.product).totalPrice)}
+                {added.inBag > added.qty ? `+${added.qty} · ${added.inBag} in bag` : `${added.qty} ×`}{" "}
+                {formatCurrency((added.variant || added.product).totalPrice)}
               </p>
             </div>
           </div>

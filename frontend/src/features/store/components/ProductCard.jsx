@@ -7,6 +7,7 @@ import cn from "../../../lib/cn";
 import { Price, Rating } from "./Primitives";
 import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
+import { useToast } from "../../../components/ui/Toast";
 
 /**
  * The catalogue tile.
@@ -21,6 +22,7 @@ import { useCartFeedback } from "../hooks/useCartFeedback";
 const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
   const { add } = useCart();
   const notifyAdded = useCartFeedback();
+  const toast = useToast();
   const navigate = useNavigate();
   const imageRef = useRef(null);
   const [justAdded, setJustAdded] = useState(false);
@@ -42,8 +44,15 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
       navigate(`/product/${product._id}`);
       return;
     }
-    add(product, 1);
-    notifyAdded({ product, qty: 1, sourceEl: imageRef.current });
+    const result = add(product, 1);
+    if (!result.added) {
+      toast.info(
+        "Already in your bag",
+        `You have all ${result.inBag} in stock in your bag.`
+      );
+      return;
+    }
+    notifyAdded({ product, qty: result.added, inBag: result.inBag, sourceEl: imageRef.current });
     setJustAdded(true);
   };
 

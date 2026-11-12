@@ -8,6 +8,7 @@ import { Doodle, Reveal } from "../../../components/ui/Doodles";
 import { Price, Rating } from "./Primitives";
 import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
+import { useToast } from "../../../components/ui/Toast";
 
 /** Time left until local midnight, as zero-padded [hours, minutes, seconds]. */
 const untilMidnight = () => {
@@ -53,6 +54,7 @@ const Unit = ({ value, label }) => (
 const DealOfTheDay = ({ product }) => {
   const { add } = useCart();
   const notifyAdded = useCartFeedback();
+  const toast = useToast();
   const imageRef = useRef(null);
   const [time, setTime] = useState(untilMidnight);
 
@@ -137,8 +139,12 @@ const DealOfTheDay = ({ product }) => {
               icon={ShoppingBag}
               disabled={soldOut}
               onClick={() => {
-                add(product, 1);
-                notifyAdded({ product, qty: 1, sourceEl: imageRef.current });
+                const result = add(product, 1);
+                if (!result.added) {
+                  toast.info("Already in your bag", `You have all ${result.inBag} in stock in your bag.`);
+                  return;
+                }
+                notifyAdded({ product, qty: result.added, inBag: result.inBag, sourceEl: imageRef.current });
               }}
             >
               {soldOut ? "Sold out" : "Add to bag"}

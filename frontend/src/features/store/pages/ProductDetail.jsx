@@ -32,6 +32,7 @@ import { useCartFeedback } from "../hooks/useCartFeedback";
 import { getErrorMessage } from "../../../lib/apiError";
 const ProductDetail = () => {
   const { pid } = useParams();
+  const toast = useToast();
   const { add } = useCart();
   const notifyAdded = useCartFeedback();
   const imageRef = useRef(null);
@@ -87,8 +88,15 @@ const ProductDetail = () => {
   const outOfStock = stock <= 0;
 
   const handleAdd = () => {
-    add(product, qty, variant);
-    notifyAdded({ product, qty, variant, sourceEl: imageRef.current });
+    const result = add(product, qty, variant);
+    if (!result.added) {
+      toast.info("Already in your bag", `You have all ${result.inBag} in stock in your bag.`);
+      return;
+    }
+    if (result.added < qty) {
+      toast.info(`Only ${result.added} more added`, `That's all the stock we have: ${result.inBag} in your bag.`);
+    }
+    notifyAdded({ product, qty: result.added, inBag: result.inBag, variant, sourceEl: imageRef.current });
   };
 
   return (

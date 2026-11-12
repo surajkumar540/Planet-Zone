@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Phone, ShoppingBag } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
+import Logo from "../../../components/ui/Logo";
 
 import { Container } from "./Primitives";
 
@@ -35,11 +36,8 @@ const StoreFooter = () => (
   <footer className="mt-section border-t border-line-subtle bg-surface-sunken">
     <Container className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
       <div>
-        <Link to="/" className="mb-3 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-on">
-            <ShoppingBag size={17} />
-          </span>
-          <span className="type-section-title text-[1.0625rem] text-content">Planet</span>
+        <Link to="/" className="mb-3 inline-flex" aria-label="Planet Zone home">
+          <Logo size="md" />
         </Link>
         <p className="type-description max-w-[38ch]">
           Everyday essentials, sourced carefully and delivered across India.

@@ -166,7 +166,7 @@ const Checkout = () => {
           key: init.KEY_ID,
           amount: gatewayOrder.amount,
           currency: gatewayOrder.currency || "INR",
-          name: "Planet",
+          name: "Planet Zone",
           description: "Order payment",
           order_id: gatewayOrder.id,
           prefill: {

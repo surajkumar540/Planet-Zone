@@ -39,6 +39,12 @@
 
   /* ---- Fixed status roles, shared by badges, toasts and charts ---- */
   --status-good: #0ca30c;
+
+  /* ---- Brand (logo). Fixed green, independent of the accent preference. ---- */
+  --brand-leaf-from: #22c55e;
+  --brand-leaf-to: #15803d;
+  --brand-vein: #f0fdf4;
+  --brand-text: #15803d;
   --status-good-bg: #e8f7e8;
   --status-warning: #b45309;
   --status-warning-bg: #fef3c7;
@@ -139,6 +145,13 @@
   --border-strong: #414851;
 
   --status-good: #22c55e;
+
+
+  /* ---- Brand: lighter steps so the leaf lifts off the dark canvas. ---- */
+  --brand-leaf-from: #86efac;
+  --brand-leaf-to: #22c55e;
+  --brand-vein: #0f1114;
+  --brand-text: #4ade80;
   --status-good-bg: #14351f;
   --status-warning: #fab219;
   --status-warning-bg: #3d2f0d;
@@ -184,6 +197,13 @@
     --border-strong: #414851;
 
     --status-good: #22c55e;
+
+
+    /* ---- Brand: lighter steps so the leaf lifts off the dark canvas. ---- */
+    --brand-leaf-from: #86efac;
+    --brand-leaf-to: #22c55e;
+    --brand-vein: #0f1114;
+    --brand-text: #4ade80;
     --status-good-bg: #14351f;
     --status-warning: #fab219;
     --status-warning-bg: #3d2f0d;

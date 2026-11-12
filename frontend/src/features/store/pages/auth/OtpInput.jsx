@@ -102,8 +102,8 @@ const OtpInput = ({ value = "", onChange, length = 6, invalid, disabled, autoFoc
           onKeyDown={handleKeyDown(index)}
           onFocus={(event) => event.target.select()}
           className={cn(
-            "h-14 w-full min-w-0 rounded-md border-[1.5px] text-center outline-none",
-            "type-numeric text-[1.375rem] font-semibold text-content",
+            "h-12 w-full min-w-0 rounded-md border-[1.5px] text-center outline-none",
+            "type-numeric text-[1.25rem] font-semibold text-content",
             "transition-[border-color,background-color] duration-150",
             "disabled:opacity-60 disabled:bg-surface-sunken",
             invalid

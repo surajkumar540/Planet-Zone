@@ -1,234 +1,100 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ShieldCheck, ShoppingBag, Star, Truck, Undo2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import cn from "../../../../lib/cn";
+import Logo, { LogoMark } from "../../../../components/ui/Logo";
 
 /**
  * Shared frame for the sign-in, sign-up, OTP and password screens.
  *
- * Two fields side by side: a dark showcase column that carries the brand, and
- * a lit column holding the form on a raised card. The dark side is a constant
- * neutral in both themes — `surface-inverse` flips to near-white on the dark
- * theme, and filling it with the accent turned most of the viewport into
- * saturated colour. Here the accent does the lighting, not the covering.
- */
-
-const HIGHLIGHTS = [
-  { icon: Truck, title: "Free delivery", body: "On orders above ₹499" },
-  { icon: ShieldCheck, title: "Secure checkout", body: "Card, UPI, net banking" },
-  { icon: Undo2, title: "7-day returns", body: "No explanation needed" },
-];
-
-/** Entrance for the form column: children arrive in sequence, not all at once. */
-export const formStagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
-};
-
-export const formItem = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
-/**
- * Slow-drifting accent light.
+ * One compact card, centred, and nothing competing with it. The previous
+ * layout gave half of every desktop screen to a marketing column, and its
+ * card did not fit a phone without scrolling; this one fits a 390 × 844
+ * viewport with the keyboard closed.
  *
- * Two blurred blobs on long, offset loops. The movement is barely perceptible
- * by design — enough that the panel is not a flat rectangle, not so much that
- * it pulls attention from the form.
+ * The backdrop is a soft brand-green glow plus one large, faint leaf. Both
+ * use the --brand-* tokens, so they shift with the theme instead of being
+ * painted for light mode only.
  */
-const AmbientLight = () => (
+
+/** Entrance for the card: one gentle rise, not a staggered sequence. */
+const rise = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const Backdrop = () => (
   <>
-    <motion.div
+    <div
       aria-hidden="true"
-      className="pointer-events-none absolute -left-28 -top-24 h-[30rem] w-[30rem] rounded-full opacity-30 blur-[100px]"
-      style={{ background: "var(--accent-solid)" }}
-      animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
-      transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      className="pointer-events-none absolute inset-0"
+      style={{
+        background:
+          "radial-gradient(52rem 26rem at 50% -8%, color-mix(in srgb, var(--brand-leaf-from) 16%, transparent), transparent 70%)",
+      }}
     />
-    <motion.div
-      aria-hidden="true"
-      className="pointer-events-none absolute -bottom-32 -right-24 h-[26rem] w-[26rem] rounded-full opacity-20 blur-[100px]"
-      style={{ background: "var(--accent-solid)" }}
-      animate={{ x: [0, -30, 0], y: [0, -25, 0] }}
-      transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+    <LogoMark
+      size={420}
+      className="pointer-events-none absolute -bottom-24 -right-24 hidden opacity-[0.05] md:block"
     />
   </>
 );
 
-const AuthShell = ({ title, description, children, footer, badge }) => (
-  <div className="grid min-h-screen bg-surface-canvas lg:grid-cols-[minmax(0,27rem)_1fr] xl:grid-cols-[minmax(0,32rem)_1fr]">
-    {/* ------------------------------- Showcase ------------------------------- */}
-    <aside className="relative hidden overflow-hidden border-r border-white/10 bg-[#0b0f14] lg:flex lg:flex-col lg:justify-between lg:p-10 xl:p-12">
-      <AmbientLight />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
-        style={{
-          backgroundImage:
-            "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+const AuthShell = ({ title, description, children, footer }) => (
+  <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-surface-canvas px-4 py-6 sm:py-10">
+    <Backdrop />
 
-      <Link to="/" className="relative z-10 flex w-fit items-center gap-2.5">
-        <span
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-accent-on shadow-lg"
-          style={{ background: "var(--accent-solid)" }}
+    <motion.div
+      variants={rise}
+      initial="hidden"
+      animate="visible"
+      className="relative z-10 w-full max-w-[23rem]"
+    >
+      <div className="mb-4 flex items-center justify-between">
+        <Link to="/" aria-label="Planet Zone home" className="rounded-md">
+          <Logo size="md" />
+        </Link>
+        <Link
+          to="/"
+          className="group inline-flex items-center gap-1 type-caption text-content-muted transition-colors hover:text-content"
         >
-          <ShoppingBag size={18} />
-        </span>
-        <span className="text-[1.125rem] font-semibold tracking-tight text-white">Planet</span>
-      </Link>
-
-      <div className="relative z-10 my-12">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-[2rem] font-semibold leading-[1.2] tracking-tight text-white xl:text-[2.25rem]"
-        >
-          A smaller catalogue,
-          <br />
-          <span className="text-white/45">chosen with care.</span>
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-4 max-w-[34ch] text-[0.9375rem] leading-relaxed text-white/60"
-        >
-          We stock fewer things so we can stand behind every one of them.
-        </motion.p>
-
-        {/* Glass cards: the same three promises, given enough weight to be read
-            rather than skimmed past as a bullet list. */}
-        <ul className="mt-10 space-y-3">
-          {HIGHLIGHTS.map((item, index) => (
-            <motion.li
-              key={item.title}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                duration: 0.5,
-                delay: 0.25 + index * 0.09,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-sm"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
-                <item.icon size={16} />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[0.875rem] font-medium text-white">{item.title}</span>
-                {/* White at 60% clears 4.5:1 on this field. */}
-                <span className="block text-[0.8125rem] text-white/60">{item.body}</span>
-              </span>
-            </motion.li>
-          ))}
-        </ul>
+          <ArrowLeft size={13} className="transition-transform group-hover:-translate-x-0.5" />
+          Shop
+        </Link>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-        className="relative z-10 flex items-center gap-3"
-      >
-        <div className="flex -space-x-2" aria-hidden="true">
-          {["#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6"].map((colour, index) => (
-            <span
-              key={colour}
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#0b0f14] text-[0.625rem] font-semibold text-white"
-              style={{ background: colour }}
-            >
-              {["A", "R", "M", "K"][index]}
-            </span>
-          ))}
-        </div>
-        <div>
-          <span className="flex items-center gap-0.5" aria-hidden="true">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} size={11} className="fill-amber-400 text-amber-400" />
-            ))}
-          </span>
-          <p className="text-[0.75rem] text-white/55">
-            <span className="font-medium text-white/80">4.6 out of 5</span> from 40,000 shoppers
-          </p>
-        </div>
-      </motion.div>
-    </aside>
-
-    {/* --------------------------------- Form --------------------------------- */}
-    <div className="relative flex items-center justify-center overflow-hidden px-5 py-12 sm:px-8">
-      {/* A single wash of accent behind the card, so the lit side is not a flat
-          slab of canvas and the card has something to lift off. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full opacity-[0.07] blur-[110px]"
-        style={{ background: "var(--accent-solid)" }}
-      />
-
-      <motion.div
-        variants={formStagger}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 w-full max-w-[26rem]"
-      >
-        <motion.div variants={formItem} className="mb-5 flex items-center justify-between gap-3">
-          <Link
-            to="/"
-            className="group inline-flex items-center gap-1.5 type-caption text-content-muted transition-colors hover:text-accent-text"
-          >
-            <ArrowLeft
-              size={14}
-              className="transition-transform duration-200 group-hover:-translate-x-0.5"
-            />
-            Back to shop
-          </Link>
-
-          {badge && (
-            <span className="rounded-full bg-accent-subtle px-2.5 py-1 type-caption font-medium text-accent-text">
-              {badge}
-            </span>
-          )}
-        </motion.div>
-
-        <motion.div
-          variants={formItem}
-          className="rounded-2xl border border-line bg-surface p-7 shadow-xl sm:p-8"
-        >
-          {/* The mark repeats inside the card on narrow layouts, where the
-              showcase column is not rendered at all. */}
-          <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-on shadow-sm lg:hidden">
-            <ShoppingBag size={19} />
-          </span>
-
-          <h1 className="text-[1.625rem] font-semibold leading-tight tracking-tight text-content">
-            {title}
-          </h1>
-          {description && <p className="type-description mt-2">{description}</p>}
-
-          <div className="mt-7">{children}</div>
-        </motion.div>
-
-        {footer && (
-          <motion.div
-            variants={formItem}
-            className="mt-6 text-center type-body text-content-secondary"
-          >
-            {footer}
-          </motion.div>
+      <div className="rounded-xl border border-line bg-surface p-5 shadow-md sm:p-6">
+        <h1 className="text-[1.25rem] font-semibold leading-tight tracking-tight text-content">
+          {title}
+        </h1>
+        {description && (
+          <p className="mt-1 type-caption leading-relaxed text-content-muted">{description}</p>
         )}
-      </motion.div>
-    </div>
+        <div className="mt-5">{children}</div>
+      </div>
+
+      {footer && (
+        <p className="mt-4 text-center type-caption text-content-secondary">{footer}</p>
+      )}
+    </motion.div>
   </div>
+);
+
+/** Error banner shared by every auth form; compact so it does not push the form down far. */
+export const AuthError = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, height: 0 }}
+    animate={{ opacity: 1, height: "auto", x: [0, -5, 5, -3, 3, 0] }}
+    exit={{ opacity: 0, height: 0 }}
+    transition={{ x: { duration: 0.35 }, height: { duration: 0.2 } }}
+    role="alert"
+    className="overflow-hidden"
+  >
+    <p className="rounded-md border border-status-critical bg-status-critical-bg px-3 py-2 type-caption text-status-critical">
+      {children}
+    </p>
+  </motion.div>
 );
 
 /** The inline link style used in every auth footer. */

@@ -20,7 +20,7 @@ const STEPS = [
 
 /** Two dots and a connecting line — enough to show there is an end in sight. */
 const StepIndicator = ({ current }) => (
-  <ol className="mb-7 flex items-center gap-3">
+  <ol className="mb-5 flex items-center gap-3">
     {STEPS.map((step, index) => {
       const active = STEPS.findIndex((item) => item.id === current) === index;
       const done = STEPS.findIndex((item) => item.id === current) > index;
@@ -117,12 +117,11 @@ const ForgotPassword = () => {
 
   return (
     <AuthShell
-      badge="Reset"
-      title="Reset your password"
+      title="Reset password"
       description={
         step === "request"
-          ? "Tell us the email on your account and we will send a code."
-          : "Enter the code we emailed you, then choose a new password."
+          ? "Enter your account email and we'll send a code."
+          : "Enter the emailed code and choose a new password."
       }
       footer={
         <>
@@ -139,10 +138,10 @@ const ForgotPassword = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             role="alert"
-            className="mb-4 flex items-start gap-2.5 overflow-hidden rounded-md border border-status-critical bg-status-critical-bg px-3.5 py-3"
+            className="mb-3.5 flex items-start gap-2 overflow-hidden rounded-md border border-status-critical bg-status-critical-bg px-3 py-2"
           >
             <AlertCircle size={16} className="mt-px shrink-0 text-status-critical" />
-            <p className="type-body text-status-critical">{error}</p>
+            <p className="type-caption text-status-critical">{error}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -153,10 +152,10 @@ const ForgotPassword = () => {
             key="request"
             {...slide}
             onSubmit={requestCode}
-            className="space-y-5"
+            className="space-y-3.5"
           >
             <Input
-              label="Email address"
+              label="Email"
               type="email"
               icon={Mail}
               required
@@ -178,7 +177,7 @@ const ForgotPassword = () => {
             </Button>
           </motion.form>
         ) : (
-          <motion.form key="reset" {...slide} onSubmit={submitReset} className="space-y-5">
+          <motion.form key="reset" {...slide} onSubmit={submitReset} className="space-y-3.5">
             <div>
               <span className="type-label mb-1.5 flex items-center gap-1.5 text-content-secondary">
                 <KeyRound size={13} />
@@ -202,7 +201,7 @@ const ForgotPassword = () => {
               onChange={(event) => setForm({ ...form, password: event.target.value })}
             />
             <PasswordInput
-              label="Confirm new password"
+              label="Confirm password"
               icon={Lock}
               required
               autoComplete="new-password"

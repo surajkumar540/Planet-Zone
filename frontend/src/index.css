@@ -20,6 +20,12 @@ img.img-fallback {
   background: var(--surface-sunken);
 }
 
+/* Edge adds its own password-reveal and clear buttons; PasswordInput has its own toggle. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
 body {
   background: var(--surface-canvas);
   color: var(--text-primary);

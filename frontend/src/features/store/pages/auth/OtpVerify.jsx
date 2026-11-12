@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ArrowRight, MailCheck, RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
 
 import { otpVerify, signup } from "../../../../api/userApi";
 import { useMutation } from "../../../../hooks/useApi";
+import { getErrorMessage } from "../../../../lib/apiError";
 import Button from "../../../../components/ui/Button";
 import { useToast } from "../../../../components/ui/Toast";
 import { setProfile, setUserLogged } from "../../../../redux/reducers/userSlice";
@@ -13,7 +14,6 @@ import { setSession } from "../../../../utils/functions";
 import AuthShell, { AuthLink } from "./AuthShell";
 import OtpInput from "./OtpInput";
 
-import { getErrorMessage } from "../../../../lib/apiError";
 const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 
@@ -45,7 +45,7 @@ const OtpVerify = () => {
     return () => window.clearTimeout(timer);
   }, [seconds]);
 
-  // Typing the last digit clears a stale error so the boxes stop looking wrong
+  // Editing the code clears a stale error so the boxes stop looking wrong
   // while the customer is fixing them.
   useEffect(() => {
     if (code.length < CODE_LENGTH) setError("");
@@ -90,16 +90,18 @@ const OtpVerify = () => {
     }
   };
 
-  const progress = ((RESEND_SECONDS - seconds) / RESEND_SECONDS) * 100;
-
   return (
     <AuthShell
-      badge="Almost there"
-      title="Verify your email"
+      title="Check your email"
       description={
         <>
-          Enter the {CODE_LENGTH}-digit code we sent to{" "}
-          <span className="font-medium text-content">{email}</span>.
+          Enter the {CODE_LENGTH}-digit code sent to{" "}
+          <span className="font-medium text-content break-all">{email}</span>
+        </>
+      }
+      footer={
+        <>
+          Wrong email? <AuthLink to="/signup">Start over</AuthLink>
         </>
       }
     >
@@ -108,22 +110,13 @@ const OtpVerify = () => {
           event.preventDefault();
           confirm(code);
         }}
-        className="space-y-5"
+        className="space-y-3.5"
       >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-accent-subtle text-accent-text"
-        >
-          <MailCheck size={22} />
-        </motion.div>
-
         <motion.div
           // A rejected code shakes the whole row rather than colouring one box,
           // since the customer cannot know which digit was wrong.
-          animate={error ? { x: [0, -8, 8, -5, 5, 0] } : { x: 0 }}
-          transition={{ duration: 0.4 }}
+          animate={error ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
+          transition={{ duration: 0.35 }}
         >
           <OtpInput
             value={code}
@@ -142,9 +135,8 @@ const OtpVerify = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               role="alert"
-              className="flex items-center justify-center gap-1.5 type-caption text-status-critical"
+              className="text-center type-caption text-status-critical"
             >
-              <AlertCircle size={13} />
               {error}
             </motion.p>
           )}
@@ -159,34 +151,27 @@ const OtpVerify = () => {
           disabled={code.length < CODE_LENGTH}
           iconRight={ArrowRight}
         >
-          Verify and continue
+          Verify
         </Button>
 
-        <div className="text-center">
+        <div className="flex h-7 items-center justify-center">
           {seconds > 0 ? (
-            <div className="flex flex-col items-center gap-2">
-              <p className="type-caption text-content-muted">
-                Didn&apos;t get it? You can ask for a new code in {seconds}s
-              </p>
-              {/* A filling bar reads faster than a number counting down alone. */}
-              <div className="h-0.5 w-32 overflow-hidden rounded-full bg-line">
-                <div
-                  className="h-full rounded-full bg-accent transition-[width] duration-1000 ease-linear"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+            <p className="type-caption text-content-muted">
+              Resend code in <span className="tabular-nums">{seconds}s</span>
+            </p>
           ) : (
-            <Button variant="link" icon={RotateCcw} onClick={sendAgain} loading={resend.loading}>
+            <Button
+              variant="link"
+              size="sm"
+              icon={RotateCcw}
+              onClick={sendAgain}
+              loading={resend.loading}
+            >
               Send a new code
             </Button>
           )}
         </div>
       </form>
-
-      <p className="mt-6 text-center type-caption text-content-muted">
-        Wrong address? <AuthLink to="/signup">Start over</AuthLink>
-      </p>
     </AuthShell>
   );
 };

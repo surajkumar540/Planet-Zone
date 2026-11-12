@@ -14,6 +14,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import Logo from "../../../components/ui/Logo";
 
 import cn from "../../../lib/cn";
 import Button from "../../../components/ui/Button";
@@ -112,13 +113,8 @@ const StoreHeader = () => {
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-on">
-            <ShoppingBag size={17} />
-          </span>
-          <span className="type-section-title text-[1.0625rem] tracking-tight text-content">
-            Planet
-          </span>
+        <Link to="/" className="flex items-center shrink-0" aria-label="Planet Zone home">
+          <Logo size="md" />
         </Link>
 
         <nav className="ml-4 hidden items-center lg:flex" aria-label="Primary">

@@ -20,6 +20,7 @@ import {
 import { useTheme } from "../../../theme/ThemeProvider";
 import Button from "../../../components/ui/Button";
 import cn from "../../../lib/cn";
+import Logo from "../../../components/ui/Logo";
 
 /**
  * Navigation is grouped by the job being done rather than by data model, so
@@ -117,12 +118,7 @@ const Sidebar = ({ mobileOpen, onCloseMobile }) => {
           isCollapsed && "justify-center px-0"
         )}
       >
-        <span className="w-8 h-8 rounded-md bg-accent text-accent-on grid place-items-center font-bold shrink-0">
-          P
-        </span>
-        {!isCollapsed && (
-          <span className="type-section-title text-content truncate">Planet</span>
-        )}
+        <Logo size="md" showText={!isCollapsed} />
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3 px-2.5 space-y-4" aria-label="Dashboard">

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Planet Zone leaf. Follows the browser's own light/dark tab colour. -->
+  <style>
+    .stop-tip { stop-color: #22c55e; }
+    .stop-base, .stem { stop-color: #15803d; stroke: #15803d; }
+    .vein { stroke: #f0fdf4; }
+    @media (prefers-color-scheme: dark) {
+      .stop-tip { stop-color: #86efac; }
+      .stop-base, .stem { stop-color: #22c55e; stroke: #22c55e; }
+      .vein { stroke: #14532d; }
+    }
+  </style>
+  <defs>
+    <linearGradient id="leaf" x1="6" y1="26" x2="27" y2="5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" class="stop-base" />
+      <stop offset="1" class="stop-tip" />
+    </linearGradient>
+  </defs>
+  <path class="stem" d="M8 24 L4.5 27.5" stroke-width="2.6" stroke-linecap="round" />
+  <path d="M8 24 C6.5 13.5 13.5 5.5 27 5 C26.5 18.5 18.5 25.5 8 24 Z" fill="url(#leaf)" />
+  <path class="vein" d="M8 24 C12.5 19.5 17 14.5 22 9.5" stroke-width="1.9" stroke-linecap="round" />
+</svg>

@@ -2,18 +2,18 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ArrowRight, Check, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Check, Lock, Mail } from "lucide-react";
 
 import { signup } from "../../../../api/userApi";
 import { useMutation } from "../../../../hooks/useApi";
+import { getErrorMessage } from "../../../../lib/apiError";
 import Button from "../../../../components/ui/Button";
 import { Input, PasswordInput } from "../../../../components/ui/Field";
 import { useToast } from "../../../../components/ui/Toast";
 import { createAccount } from "../../../../redux/reducers/userSlice";
 import cn from "../../../../lib/cn";
-import AuthShell, { AuthLink } from "./AuthShell";
+import AuthShell, { AuthError, AuthLink } from "./AuthShell";
 
-import { getErrorMessage } from "../../../../lib/apiError";
 const EMPTY = {
   firstName: "",
   lastName: "",
@@ -22,19 +22,12 @@ const EMPTY = {
   confirmPassword: "",
 };
 
-/**
- * Password strength, scored on the rules the API actually enforces plus the
- * two that matter most in practice.
- *
- * Deliberately not a percentage: a bar that creeps to 63% invites the customer
- * to wonder what the missing 37% is. Four named steps, each tied to a rule the
- * checklist below spells out.
- */
+/** Four named steps, each tied to a rule; the API itself requires only the first. */
 const RULES = [
-  { id: "length", label: "At least 8 characters", test: (value) => value.length >= 8 },
-  { id: "case", label: "Upper and lower case", test: (value) => /[a-z]/.test(value) && /[A-Z]/.test(value) },
-  { id: "number", label: "A number", test: (value) => /\d/.test(value) },
-  { id: "symbol", label: "A symbol", test: (value) => /[^A-Za-z0-9]/.test(value) },
+  { id: "length", hint: "use 8+ characters", test: (value) => value.length >= 8 },
+  { id: "case", hint: "mix upper and lower case", test: (value) => /[a-z]/.test(value) && /[A-Z]/.test(value) },
+  { id: "number", hint: "add a number", test: (value) => /\d/.test(value) },
+  { id: "symbol", hint: "add a symbol", test: (value) => /[^A-Za-z0-9]/.test(value) },
 ];
 
 const STRENGTH = [
@@ -45,9 +38,13 @@ const STRENGTH = [
   { label: "Strong", tone: "bg-status-good", text: "text-status-good" },
 ];
 
+/**
+ * One line instead of a four-item checklist: the bar, its label, and only the
+ * next thing to fix. The checklist took four rows to say what one hint can.
+ */
 const PasswordMeter = ({ value }) => {
-  const passed = useMemo(() => RULES.filter((rule) => rule.test(value)), [value]);
-  const score = passed.length;
+  const missing = useMemo(() => RULES.filter((rule) => !rule.test(value)), [value]);
+  const score = RULES.length - missing.length;
   const level = STRENGTH[score];
 
   return (
@@ -55,50 +52,32 @@ const PasswordMeter = ({ value }) => {
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.2 }}
       className="overflow-hidden"
     >
-      <div className="pt-1">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-1 gap-1" aria-hidden="true">
-            {RULES.map((rule, index) => (
-              <span
-                key={rule.id}
-                className={cn(
-                  "h-1 flex-1 rounded-full transition-colors duration-300",
-                  index < score ? level.tone : "bg-line"
-                )}
-              />
-            ))}
-          </div>
-          <span className={cn("type-caption font-medium", level.text)}>{level.label}</span>
+      <div className="flex items-center gap-2 pt-1.5">
+        <div className="flex flex-1 gap-1" aria-hidden="true">
+          {RULES.map((rule, index) => (
+            <span
+              key={rule.id}
+              className={cn(
+                "h-1 flex-1 rounded-full transition-colors duration-300",
+                index < score ? level.tone : "bg-line"
+              )}
+            />
+          ))}
         </div>
-
-        <ul className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
-          {RULES.map((rule) => {
-            const met = rule.test(value);
-            return (
-              <li
-                key={rule.id}
-                className={cn(
-                  "flex items-center gap-1.5 type-caption transition-colors",
-                  met ? "text-status-good" : "text-content-muted"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-3.5 w-3.5 items-center justify-center rounded-full transition-colors",
-                    met ? "bg-status-good-bg" : "bg-surface-sunken"
-                  )}
-                >
-                  {met && <Check size={9} strokeWidth={3.5} />}
-                </span>
-                {rule.label}
-              </li>
-            );
-          })}
-        </ul>
+        <span className={cn("type-caption font-medium", level.text)}>{level.label}</span>
       </div>
+      <p className="mt-1 type-caption text-content-muted" aria-live="polite">
+        {missing.length ? (
+          <>Tip: {missing[0].hint}</>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-status-good">
+            <Check size={12} strokeWidth={3} /> Great password
+          </span>
+        )}
+      </p>
     </motion.div>
   );
 };
@@ -149,40 +128,25 @@ const SignUp = () => {
     onChange: (event) => setForm({ ...form, [key]: event.target.value }),
   });
 
-  const matches =
-    form.confirmPassword.length > 0 && form.password === form.confirmPassword;
+  const matches = form.confirmPassword.length > 0 && form.password === form.confirmPassword;
 
   return (
     <AuthShell
-      badge="Create account"
-      title="Start shopping in a minute"
-      description="One account for orders, saved items and faster checkout."
+      title="Create your account"
+      description="We'll email you a 6-digit code to confirm it's you."
       footer={
         <>
           Already have an account? <AuthLink to="/login">Sign in</AuthLink>
         </>
       }
     >
-      <form onSubmit={submit} className="space-y-5">
-        <AnimatePresence>
-          {errors.form && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex items-start gap-2.5 overflow-hidden rounded-md border border-status-critical bg-status-critical-bg px-3.5 py-3"
-              role="alert"
-            >
-              <AlertCircle size={16} className="mt-px shrink-0 text-status-critical" />
-              <p className="type-body text-status-critical">{errors.form}</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <form onSubmit={submit} className="space-y-3.5">
+        <AnimatePresence>{errors.form && <AuthError>{errors.form}</AuthError>}</AnimatePresence>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Side by side even on a phone: two short names fit, and it saves a row. */}
+        <div className="grid grid-cols-2 gap-3">
           <Input
             label="First name"
-            icon={User}
             required
             autoFocus
             autoComplete="given-name"
@@ -198,7 +162,7 @@ const SignUp = () => {
         </div>
 
         <Input
-          label="Email address"
+          label="Email"
           type="email"
           icon={Mail}
           required
@@ -213,7 +177,7 @@ const SignUp = () => {
             icon={Lock}
             required
             autoComplete="new-password"
-            placeholder="Choose a strong password"
+            placeholder="At least 8 characters"
             {...field("password")}
           />
           <AnimatePresence>
@@ -226,7 +190,7 @@ const SignUp = () => {
           icon={Lock}
           required
           autoComplete="new-password"
-          placeholder="Type it once more"
+          placeholder="Type it again"
           hint={matches ? "Passwords match" : undefined}
           {...field("confirmPassword")}
         />
@@ -242,10 +206,6 @@ const SignUp = () => {
           Create account
         </Button>
       </form>
-
-      <p className="mt-6 text-center type-caption text-content-muted">
-        We will email you a six-digit code to confirm your address.
-      </p>
     </AuthShell>
   );
 };

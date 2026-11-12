@@ -1,29 +1,17 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ArrowRight, Lock, Mail } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 
 import { login } from "../../../../api/userApi";
 import { useMutation } from "../../../../hooks/useApi";
+import { getErrorMessage } from "../../../../lib/apiError";
 import Button from "../../../../components/ui/Button";
 import { Checkbox, Input, PasswordInput } from "../../../../components/ui/Field";
 import { setAdminLogged, setProfile, setUserLogged } from "../../../../redux/reducers/userSlice";
 import { setSession } from "../../../../utils/functions";
-import AuthShell, { AuthLink } from "./AuthShell";
-
-import { getErrorMessage } from "../../../../lib/apiError";
-/** Shakes the form once when the credentials come back rejected. */
-const shake = {
-  hidden: { opacity: 0, height: 0 },
-  visible: {
-    opacity: 1,
-    height: "auto",
-    x: [0, -6, 6, -4, 4, 0],
-    transition: { x: { duration: 0.4 }, height: { duration: 0.2 } },
-  },
-  exit: { opacity: 0, height: 0, transition: { duration: 0.15 } },
-};
+import AuthShell, { AuthError, AuthLink } from "./AuthShell";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -65,34 +53,19 @@ const Login = () => {
 
   return (
     <AuthShell
-      badge="Sign in"
       title="Welcome back"
-      description="Sign in to track orders, save favourites and check out faster."
+      description="Sign in to track orders and check out faster."
       footer={
         <>
-          New to Planet? <AuthLink to="/signup">Create an account</AuthLink>
+          New to Planet Zone? <AuthLink to="/signup">Create an account</AuthLink>
         </>
       }
     >
-      <form onSubmit={submit} className="space-y-5">
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              variants={shake}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="flex items-start gap-2.5 overflow-hidden rounded-md border border-status-critical bg-status-critical-bg px-3.5 py-3"
-              role="alert"
-            >
-              <AlertCircle size={16} className="mt-px shrink-0 text-status-critical" />
-              <p className="type-body text-status-critical">{error}</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <form onSubmit={submit} className="space-y-3.5">
+        <AnimatePresence>{error && <AuthError>{error}</AuthError>}</AnimatePresence>
 
         <Input
-          label="Email address"
+          label="Email"
           type="email"
           icon={Mail}
           required
@@ -108,7 +81,7 @@ const Login = () => {
           icon={Lock}
           required
           autoComplete="current-password"
-          placeholder="Enter your password"
+          placeholder="Your password"
           value={form.password}
           onChange={(event) => setForm({ ...form, password: event.target.value })}
         />
@@ -131,10 +104,6 @@ const Login = () => {
           Sign in
         </Button>
       </form>
-
-      <p className="mt-6 text-center type-caption text-content-muted">
-        By continuing you agree to our terms and privacy policy.
-      </p>
     </AuthShell>
   );
 };

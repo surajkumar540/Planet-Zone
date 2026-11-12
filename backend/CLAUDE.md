@@ -20,6 +20,7 @@ npm run db:studio          # browse the data in Prisma Studio
 npm run data:import        # DESTRUCTIVE: empties every table, then seeds users and products
 npm run data:destroy       # DESTRUCTIVE: empties every table
 npm run data:sample        # adds ~100 sample products with photos
+npm run ai:download        # downloads the free AI models and indexes the catalogue
 ```
 
 There are no backend tests or lint config. To check a change, run the server and call the endpoint. `GET /health` reports database connectivity (it sits outside `/api`).
@@ -122,6 +123,8 @@ Change stock only through `inventory.service.js`. `reserve` and `release` do not
 **Order emails.** `services/orderNotifications.js` sends an order confirmation after `createOrder` commits, and an update on shipped, out_for_delivery, delivered, cancelled and refunded. Both run in the background (a mail failure is logged, never fails the order) and honour Settings → notifications `orderConfirmationEmail` / `orderStatusEmail`. Links use `APP_URL`.
 
 **Smart features.** `modules/smart` (public, read-only, no external AI): `/smart/assistant` parses a question with rules (category synonyms, brands, budgets such as "under 2k", sort words) and searches the catalogue, or answers delivery/payment/order questions from live settings and shipping rules. FAQ answers must describe what checkout really does, since several Settings switches are not enforced. Recommendations: `/smart/similar/:id`, `/smart/alternatives/:id`, `/smart/bought-together/:id` (co-purchases in non-cancelled orders), `/smart/for-you` (wishlist, purchases and the browser-sent `seen` ids, which are never stored), `/smart/products?ids=`.
+
+**Local AI.** `services/ai` runs free open-source models with Transformers.js (no API keys): `all-MiniLM-L6-v2` for search by meaning and `CLIP ViT-B/32` for search by photo. Models (~175 MB) download once into `backend/.cache/models` (`npm run ai:download` fetches them ahead of time); `productIndex.js` keeps text and photo vectors for every active product in memory and in `.cache/ai-index.json`, re-embedding only changed products (checked at most once a minute). `server.js` warms it up in the background; until it is ready, callers fall back to keyword search. `AI_FEATURES=off` disables it on small servers. Endpoints: `/smart/semantic`, `POST /smart/photo-search` (photo analysed in memory, never stored), `/smart/ai-status`; the assistant uses meaning search when no category or brand is recognised, and similar products blend in text and photo similarity. nodemon ignores `.cache`.
 
 **Payment.** `/paymentInit` creates the Razorpay order and a `Payment` row. `/paymentSuccess` verifies the HMAC signature. `/createOrder` then checks that the verified payment matches the computed total. See the first known issue below.
 

@@ -65,7 +65,7 @@ const ToastItem = ({ toast, onDismiss }) => {
       role={toast.tone === "error" ? "alert" : "status"}
       aria-live={toast.tone === "error" ? "assertive" : "polite"}
     >
-      <div className="flex items-center gap-3 px-3.5 py-3">
+      <div className={cn("flex gap-3 px-3.5 py-3", toast.action ? "items-start" : "items-center")}>
         <motion.span
           initial={{ scale: 0, rotate: -45 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -82,24 +82,24 @@ const ToastItem = ({ toast, onDismiss }) => {
         <div className="min-w-0 flex-1">
           <p className="text-[0.875rem] font-semibold leading-snug">{toast.title}</p>
           {toast.description && (
-            <p className="mt-0.5 truncate text-[0.8125rem] leading-snug opacity-70">
+            <p className="mt-0.5 line-clamp-2 text-[0.8125rem] leading-snug opacity-70">
               {toast.description}
             </p>
           )}
+          {/* The action sits under the text, so it never squeezes the message. */}
+          {toast.action && (
+            <button
+              type="button"
+              onClick={() => {
+                toast.action.onClick();
+                onDismiss(toast.id);
+              }}
+              className="mt-2 rounded-full bg-[color-mix(in_srgb,var(--text-inverse)_14%,transparent)] px-3 py-1 text-[0.8125rem] font-semibold transition-colors hover:bg-[color-mix(in_srgb,var(--text-inverse)_24%,transparent)]"
+            >
+              {toast.action.label}
+            </button>
+          )}
         </div>
-
-        {toast.action && (
-          <button
-            type="button"
-            onClick={() => {
-              toast.action.onClick();
-              onDismiss(toast.id);
-            }}
-            className="shrink-0 rounded-md px-2.5 py-1 text-[0.8125rem] font-semibold underline-offset-4 transition-opacity hover:underline hover:opacity-90"
-          >
-            {toast.action.label}
-          </button>
-        )}
 
         <button
           type="button"
@@ -168,7 +168,7 @@ export const ToastProvider = ({ children }) => {
       {children}
       {typeof document !== "undefined" &&
         createPortal(
-          <div className="pointer-events-none fixed inset-x-3 bottom-4 z-[1400] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-5 sm:items-end">
+          <div className="pointer-events-none fixed inset-x-3 bottom-24 z-[1400] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-5 sm:items-end">
             <AnimatePresence initial={false}>
               {toasts.map((toast) => (
                 <div key={toast.id} className="pointer-events-auto w-full sm:w-auto">

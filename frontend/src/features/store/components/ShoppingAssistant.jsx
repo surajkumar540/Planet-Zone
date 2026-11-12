@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Package,
   PackageSearch,
+  ScanSearch,
   RefreshCw,
   RotateCcw,
   ShoppingBag,
@@ -25,6 +26,7 @@ import {
 
 import { askAssistant } from "../../../api/smartApi";
 import { cancelOrder } from "../../../api/orderApi";
+import { openPhotoSearch } from "./PhotoSearch";
 import { useCart, useSession } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
 import { useToast } from "../../../components/ui/Toast";
@@ -50,6 +52,7 @@ const STORE_KEY = "planet.assistant";
 const NUDGE_KEY = "planet.assistant.nudged";
 
 const QUICK = [
+  { label: "Search by photo", icon: ScanSearch, action: "photo" },
   { label: "Track my order", icon: Truck },
   { label: "My orders", icon: Package },
   { label: "What's in my bag?", icon: ShoppingBag },
@@ -98,6 +101,7 @@ const Understood = ({ understood }) => {
     understood.onSale && "On sale",
     understood.inStockOnly && "In stock",
     ...understood.keywords.map((word) => `"${word}"`),
+    understood.ai && "AI: matched by meaning",
   ].filter(Boolean);
   if (!chips.length) return null;
   return (
@@ -603,7 +607,12 @@ const ShoppingAssistant = () => {
                 <button
                   key={action.label}
                   type="button"
-                  onClick={() => ask(action.label)}
+                  onClick={() => {
+                    if (action.action === "photo") {
+                      close();
+                      openPhotoSearch();
+                    } else ask(action.label);
+                  }}
                   disabled={busy}
                   className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface-sunken px-3 py-1.5 text-[0.75rem] font-medium text-content-secondary transition-colors hover:bg-accent-subtle hover:text-accent-text disabled:opacity-50"
                 >

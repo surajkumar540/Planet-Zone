@@ -8,6 +8,7 @@ import { CartFeedbackProvider } from "../hooks/useCartFeedback";
 import { CompareProvider } from "../hooks/useCompare";
 import CompareTray from "./CompareTray";
 import ShoppingAssistant from "./ShoppingAssistant";
+import PhotoSearch from "./PhotoSearch";
 
 /**
  * Storefront shell.
@@ -66,6 +67,7 @@ const StoreLayout = () => {
         <StoreFooter />
         <CompareTray />
         <ShoppingAssistant />
+        <PhotoSearch />
       </div>
       </CompareProvider>
       </CartFeedbackProvider>

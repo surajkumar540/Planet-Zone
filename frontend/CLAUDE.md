@@ -74,7 +74,7 @@ src/
 - `--accent-*` values are written at runtime by `ThemeProvider` from the selected preset, so they have no fixed values in the CSS. Dark mode is driven by `data-theme` on `<html>`; with the `system` setting the attribute is absent and a media query applies.
 - Chart colours come from `theme/chartPalette.js` via `ChartKit`. They deliberately don't follow the accent colour, because colour identifies the series.
 - Join conditional classes with `cn` from `lib/cn.js`, format money and dates with `lib/format.js`, and use `useToast` for notifications.
-- Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` is a lazy route; recommendation rows use `ProductRail`.
+- Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` is a lazy route; recommendation rows use `ProductRail`. `PhotoSearch` (AI photo search) is mounted once in `StoreLayout` and opened with `openPhotoSearch()` (search bar camera, chat chip); `AiMatches` shows meaning-search results on the shop page. Compare only accepts products of the same kind (`sameKind` in `useCompare`).
 - Every data screen handles loading (`Skeleton*`), error (`ErrorState`) and empty (`EmptyState`) states.
 - `features/admin/components/StatusBadge.jsx` only re-exports `components/ui/StatusBadge.jsx`. Edit the shared one.
 

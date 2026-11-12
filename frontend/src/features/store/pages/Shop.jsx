@@ -31,6 +31,8 @@ import SearchBox from "../components/SearchBox";
 import { useWishlistToggle } from "../hooks/useWishlist";
 import useInfiniteProducts from "../hooks/useInfiniteProducts";
 import { useI18n } from "../../../lib/i18n";
+import { searchByMeaning } from "../../../api/smartApi";
+import AiMatches from "../components/AiMatches";
 
 const SORT_OPTIONS = [
   { value: "createdAt:desc", label: "Newest first" },
@@ -136,6 +138,12 @@ const Shop = () => {
   const activeCount = FILTER_KEYS.filter((key) => key !== "search" && params.get(key)).length;
   const department = facets?.departments?.find((dept) => dept._id === params.get("dept"));
   const search = params.get("search");
+  // AI search by meaning runs alongside the keyword search.
+  const meaning = useApi(searchByMeaning, search && search.trim().length >= 2 ? { q: search.trim(), limit: 8 } : null, {
+    enabled: Boolean(search && search.trim().length >= 2),
+    cacheTime: 60 * 1000,
+  });
+  const aiExtra = (meaning.data?.products || []).filter((product) => !(products || []).some((item) => item._id === product._id));
 
   const title = search
     ? t("Results for “{q}”", { q: search })
@@ -405,6 +413,10 @@ const Shop = () => {
               )}
             </div>
 
+            {search && aiExtra.length > 0 && !loading && (
+              <AiMatches query={search} products={aiExtra} keywordCount={total} />
+            )}
+
             {error ? (
               <ErrorState description={error} onRetry={retry} />
             ) : !products && loading ? (
@@ -485,7 +497,7 @@ const Shop = () => {
                   )}
                 </div>
               </>
-            ) : (
+            ) : search && aiExtra.length ? null : (
               <div className="flex flex-col items-center rounded-2xl border border-dashed border-line px-6 py-14 text-center">
                 <div className="relative">
                   <Doodle type="circle" size={84} className="text-accent-text opacity-40" />

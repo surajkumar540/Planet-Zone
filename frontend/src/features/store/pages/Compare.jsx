@@ -8,7 +8,7 @@ import { suggestProducts } from "../../../api/productApi";
 import { useApi, useDebounced } from "../../../hooks/useApi";
 import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
-import { COMPARE_LIMIT, useCompare } from "../hooks/useCompare";
+import { COMPARE_LIMIT, sameKind, useCompare } from "../hooks/useCompare";
 import { useToast } from "../../../components/ui/Toast";
 import Button from "../../../components/ui/Button";
 import { EmptyState, ErrorState } from "../../../components/ui/States";
@@ -158,7 +158,12 @@ const Compare = () => {
   const products = useMemo(() => (ids.length ? (data || []).filter((product) => ids.includes(product._id)) : []), [data, ids]);
   // With room left, suggest close matches to the first product.
   const suggestions = useApi(getSimilar, { id: ids[0], limit: 6 }, { enabled: ids.length > 0 && ids.length < COMPARE_LIMIT });
-  const suggested = (suggestions.data || []).filter((product) => !ids.includes(product._id)).slice(0, ids.length === 1 ? 6 : 3);
+  const firstCategory = products[0]?.category;
+  const suggested = (suggestions.data || [])
+    .filter((product) => !ids.includes(product._id) && sameKind(product.category, firstCategory))
+    .slice(0, ids.length === 1 ? 6 : 3);
+  // Lists saved before the same-kind rule may mix kinds; offer to tidy them.
+  const mixed = products.length > 1 && products.some((product) => !sameKind(product.category, firstCategory));
 
   const scored = useMemo(() => {
     const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0) || 1;
@@ -257,6 +262,18 @@ const Compare = () => {
         </div>
       ) : (
         <div className="space-y-8">
+          {mixed && (
+            <section className="flex flex-wrap items-center gap-3 rounded-2xl border border-status-warning bg-status-warning-bg p-4">
+              <Info size={18} className="shrink-0 text-status-warning" />
+              <p className="min-w-0 flex-1 text-[0.875rem] text-content">
+                These are different kinds of products ({[...new Set(products.map((product) => product.category))].join(", ")}), so a side-by-side score would not mean much.
+              </p>
+              <Button size="sm" variant="primary" onClick={() => compare.keepKind(firstCategory)}>
+                Keep only {firstCategory}
+              </Button>
+            </section>
+          )}
+
           {/* Not enough to compare yet, or room for one more: suggestions. */}
           {suggested.length > 0 && (
             <section className={cn("rounded-2xl border p-5", products.length < 2 ? "border-accent bg-accent-subtle" : "border-line-subtle bg-surface")}>
@@ -292,7 +309,7 @@ const Compare = () => {
             </section>
           )}
 
-          {products.length >= 2 && (<>
+          {products.length >= 2 && !mixed && (<>
           {/* Priorities */}
           <section className="rounded-2xl border border-line-subtle bg-surface p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">

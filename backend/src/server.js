@@ -10,6 +10,8 @@ const start = async () => {
 
   server = app.listen(env.PORT, () => {
     logger.info(`API listening on port ${env.PORT} in ${env.NODE_ENV} mode`);
+    // Load the local AI models and index the catalogue in the background.
+    if (env.AI_FEATURES !== "off") require("./services/ai/productIndex").warmUp();
   });
 };
 

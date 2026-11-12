@@ -35,6 +35,30 @@ router.get(
   asyncHandler(async (req, res) => ok(res, { data: await service.assistant(req.query.q, { userId: req.auth?.userId }) }))
 );
 
+/* ------------------------------ Local AI ------------------------------ */
+
+router.get(
+  "/smart/ai-status",
+  asyncHandler(async (req, res) => ok(res, { data: service.aiStatus() }))
+);
+
+router.get(
+  "/smart/semantic",
+  validate({ query: z.object({ q: z.string().trim().min(2).max(200), limit: z.coerce.number().int().min(1).max(24).default(8) }) }),
+  asyncHandler(async (req, res) => {
+    const result = await service.searchByMeaning(req.query.q, { limit: req.query.limit });
+    return ok(res, { data: result ? { ready: true, ...result } : { ready: false, products: [], best: 0 } });
+  })
+);
+
+// The photo arrives as a small data URL (the browser shrinks it first) and is
+// analysed in memory only.
+router.post(
+  "/smart/photo-search",
+  validate({ body: z.object({ image: z.string().max(1100000) }) }),
+  asyncHandler(async (req, res) => ok(res, { data: await service.searchByPhoto(req.body.image) }))
+);
+
 router.get(
   "/smart/products",
   validate({ query: z.object({ ids: idList(24) }) }),

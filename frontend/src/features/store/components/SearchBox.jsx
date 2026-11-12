@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Clock, Loader2, Search, Sparkles, Tag, X } from "lucide-react";
+import { ArrowUpRight, Clock, Loader2, Search, Sparkles, Tag, X, Camera } from "lucide-react";
 
 import { suggestProducts } from "../../../api/productApi";
 import { getCategoryTree } from "../../../api/storeApi";
@@ -9,6 +9,7 @@ import { useApi, useDebounced } from "../../../hooks/useApi";
 import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { useI18n } from "../../../lib/i18n";
+import { openPhotoSearch } from "./PhotoSearch";
 
 /**
  * Search with live suggestions, used in the header and on the shop page.
@@ -273,7 +274,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
           onBlur={() => setFocused(false)}
           onKeyDown={onKeyDown}
           className={cn(
-            "w-full rounded-full border-0 bg-surface pl-9 pr-9 text-content outline-none transition-all",
+            "w-full rounded-full border-0 bg-surface pl-9 pr-[4.5rem] text-content outline-none transition-all",
             "placeholder:text-content-muted focus:shadow-[0_0_0_4px_var(--accent-subtle)]",
             "[&::-webkit-search-cancel-button]:hidden",
             size === "sm" ? "h-9 text-[0.875rem]" : "h-10 text-[0.9375rem]"
@@ -283,7 +284,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
           <span
             aria-hidden="true"
             className={cn(
-              "pointer-events-none absolute inset-y-0 left-9 right-9 flex items-center overflow-hidden text-content-muted",
+              "pointer-events-none absolute inset-y-0 left-9 right-[4.5rem] flex items-center overflow-hidden text-content-muted",
               size === "sm" ? "text-[0.875rem]" : "text-[0.9375rem]"
             )}
           >
@@ -301,7 +302,16 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
             </AnimatePresence>
           </span>
         )}
-        <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center">
+        <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+          <button
+            type="button"
+            onClick={openPhotoSearch}
+            aria-label="Search by photo"
+            title="Search by photo (AI)"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-content-muted transition-colors hover:bg-accent-subtle hover:text-accent-text"
+          >
+            <Camera size={16} />
+          </button>
           {loading ? (
             <Loader2 size={15} className="animate-spin text-content-muted" />
           ) : value ? (

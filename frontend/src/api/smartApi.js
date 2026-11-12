@@ -18,6 +18,12 @@ export const getSimilar = ({ id, limit = 8 }) => get(`/api/smart/similar/${id}`,
 export const getAlternatives = ({ id, limit = 4 }) => get(`/api/smart/alternatives/${id}`, { limit });
 export const getBoughtTogether = ({ id, limit = 4 }) => get(`/api/smart/bought-together/${id}`, { limit });
 
+/** AI search by meaning (local open-source model on our server). */
+export const searchByMeaning = ({ q, limit = 8 }) => get("/api/smart/semantic", { q, limit });
+
+/** AI search by photo: `image` is a small data URL; the server never stores it. */
+export const searchByPhoto = (image) => axios.post("/api/smart/photo-search", { image }).then((response) => response.data);
+
 /** Personal picks; `seen` is this device's recently viewed ids (not stored by the server). */
 export const getForYou = ({ seen = [], limit = 8 }) =>
   get("/api/smart/for-you", { limit, ...(seen.length ? { seen: seen.join(",") } : {}) });

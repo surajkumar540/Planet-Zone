@@ -35,7 +35,7 @@ import { useCartFeedback } from "../hooks/useCartFeedback";
 import { getErrorMessage } from "../../../lib/apiError";
 import { getAlternatives, getBoughtTogether, getSimilar } from "../../../api/smartApi";
 import { recordView } from "../../../lib/recentlyViewed";
-import { useCompare } from "../hooks/useCompare";
+import { sameKind, useCompare } from "../hooks/useCompare";
 import ProductRail from "../components/ProductRail";
 /**
  * Compare, spelled out: an "Add to compare" button before, and after adding,
@@ -45,6 +45,27 @@ import ProductRail from "../components/ProductRail";
 const CompareBar = ({ product, compare }) => {
   const added = compare.has(product._id);
   const count = compare.items.length;
+  // Another kind is already being compared: offer a fresh comparison instead.
+  if (!added && count && !sameKind(compare.kind, product.category)) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-sunken text-content-muted">
+          <Scale size={17} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[0.875rem] font-semibold text-content">You&apos;re comparing {compare.kind}</span>
+          <span className="block type-caption">This is {product.category}, so it can&apos;t be compared with those.</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => compare.startWith(product)}
+          className="rounded-full border border-accent px-3.5 py-1.5 text-[0.8125rem] font-semibold text-accent-text hover:bg-accent-subtle"
+        >
+          Start a new comparison
+        </button>
+      </div>
+    );
+  }
   if (!added) {
     return (
       <button
@@ -419,6 +440,7 @@ const ProductDetail = () => {
         <ProductRail
           eyebrow={product.category}
           title="Similar products"
+          description="Matched by AI on how they look and how they're described."
           products={similar.data}
           loading={similar.loading}
           error={similar.error}

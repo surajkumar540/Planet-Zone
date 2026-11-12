@@ -6,6 +6,9 @@ const { WITH_VARIANTS } = require("../product/product.repository");
 const { ORDER_STATUS, CUSTOMER_CANCELLABLE } = require("../../constants/orderStatus");
 const { SETTINGS_DEFAULTS } = require("../settings/settings.defaults");
 const env = require("../../config/env");
+const AppError = require("../../core/AppError");
+const aiModels = require("../../services/ai/models");
+const productIndex = require("../../services/ai/productIndex");
 
 /**
  * "Smart" shopping features, all rule-based and computed from the store's own
@@ -24,6 +27,57 @@ const LOST_STATUSES = [ORDER_STATUS.CANCELLED, ORDER_STATUS.REFUNDED, ORDER_STAT
 
 const findProducts = async (where, { take = 12, orderBy } = {}) =>
   (await prisma.product.findMany({ where, take, orderBy, include: WITH_VARIANTS })).map(toProduct);
+
+/* ================================ AI (local) ================================ */
+
+const aiEnabled = () => env.AI_FEATURES !== "off";
+
+/**
+ * Search by meaning with the local text model: the query and every product
+ * become meaning vectors, and the closest products win, even with no words in
+ * common ("stuff for cooking dinner" → wok, oil, spatula). Returns null while
+ * the model is still warming up, so callers fall back to keyword search.
+ */
+const searchByMeaning = async (text, { where = {}, limit = 12, minScore = 0.22 } = {}) => {
+  if (!aiEnabled() || !productIndex.isReady("text")) return null;
+  const [vector] = await aiModels.embedTexts([text]);
+  const ranked = productIndex.rank(vector, "text", { limit: 60, minScore });
+  if (!ranked.length) return { products: [], best: 0 };
+  const rows = await findProducts({ ...ACTIVE, ...where, id: { in: ranked.map((row) => row.id) } }, { take: 60 });
+  const byId = new Map(rows.map((row) => [row._id, row]));
+  const products = ranked
+    .map((row) => byId.get(row.id) && { ...byId.get(row.id), match: Math.round(row.score * 100) / 100 })
+    .filter(Boolean)
+    .slice(0, limit);
+  return { products, best: products[0]?.match || 0 };
+};
+
+const IMAGE_TYPES = /^data:image\/(jpeg|png|webp);base64,/;
+
+/**
+ * Search by photo with the local CLIP model. The image is analysed in memory
+ * and never stored. Scores are cosine similarity between the shopper's photo
+ * and each product photo.
+ */
+const searchByPhoto = async (dataUrl, { limit = 12 } = {}) => {
+  if (!aiEnabled()) throw AppError.badRequest("Photo search is switched off on this store");
+  if (!IMAGE_TYPES.test(dataUrl)) throw AppError.badRequest("Upload a JPG, PNG or WebP photo");
+  const buffer = Buffer.from(dataUrl.replace(IMAGE_TYPES, ""), "base64");
+  if (buffer.length > 800 * 1024) throw AppError.badRequest("That photo is too large");
+  if (!productIndex.isReady("image")) {
+    return { ready: false, products: [], message: "Photo search is still warming up. Please try again in a minute." };
+  }
+  const vector = await aiModels.embedImage(buffer);
+  const ranked = productIndex.rank(vector, "image", { limit: 24, minScore: 0.5 });
+  const products = await getProductsByIds(ranked.map((row) => row.id));
+  const scores = new Map(ranked.map((row) => [row.id, row.score]));
+  return {
+    ready: true,
+    products: products.slice(0, limit).map((product) => ({ ...product, match: Math.round(scores.get(product._id) * 100) / 100 })),
+  };
+};
+
+const aiStatus = () => ({ enabled: aiEnabled(), ...productIndex.getStatus() });
 
 /** Products by id, returned in the order asked for (inactive ones dropped). */
 const getProductsByIds = async (ids) => {
@@ -487,7 +541,25 @@ const assistant = async (rawQuery, { userId } = {}) => {
       .slice(0, 6);
 
   let note = null;
-  let products = rank(await findProducts({ ...base, ...priceFilter, ...(strict ? keywordFilter : {}) }, { take: 24, orderBy }));
+  let products = null;
+  let aiUsed = false;
+
+  // Nothing specific understood but there are describing words ("something
+  // warm", "healthy breakfast"): let the local AI match by meaning.
+  if (strict && keywords.length) {
+    const meaning = await searchByMeaning(q.trim(), { where: { ...base, ...priceFilter }, limit: 6 });
+    if (meaning?.products.length) {
+      products = meaning.products;
+      aiUsed = true;
+      if (sort?.key === "cheapest") products.sort((a, b) => a.totalPrice - b.totalPrice);
+      if (sort?.key === "premium") products.sort((a, b) => b.totalPrice - a.totalPrice);
+      if (sort?.key === "rated") products.sort((a, b) => b.rating - a.rating);
+      if (meaning.best < 0.3) note = "Nothing in the shop matches that closely, so these are the closest by meaning.";
+    }
+  }
+  if (!products) {
+    products = rank(await findProducts({ ...base, ...priceFilter, ...(strict ? keywordFilter : {}) }, { take: 24, orderBy }));
+  }
 
   // Leftover words matched nothing ("gift"): try again without them, and say so.
   if (!products.length && strict && keywords.length && (budget || onSale || sort || inStockOnly)) {
@@ -516,7 +588,8 @@ const assistant = async (rawQuery, { userId } = {}) => {
     sort: sort?.label || null,
     onSale,
     inStockOnly,
-    keywords: strict ? keywords : [],
+    keywords: strict && !aiUsed ? keywords : [],
+    ai: aiUsed,
   };
 
   if (!products.length) {
@@ -575,9 +648,17 @@ const similar = async (productId, limit = 8) => {
     { take: 40 }
   );
   const price = num(base.totalPrice);
+  // When the AI index is ready, products that look alike (photo) and are
+  // described alike (text) rank higher.
+  const baseText = productIndex.vectorFor(productId, "text");
+  const baseImage = productIndex.vectorFor(productId, "image");
   return candidates
     .map((product) => {
+      const text = baseText && productIndex.vectorFor(product._id, "text");
+      const image = baseImage && productIndex.vectorFor(product._id, "image");
       const score =
+        (text ? 3 * aiModels.dot(baseText, text) : 0) +
+        (image ? 2 * aiModels.dot(baseImage, image) : 0) +
         (product.categoryRef === base.categoryRefId ? 3 : 1) +
         (product.brand === base.brand ? 1 : 0) +
         2 * priceCloseness(product.totalPrice, price) +
@@ -728,4 +809,4 @@ const forYou = async ({ userId, seen = [], limit = 8 }) => {
   return { personalised: true, products: scored };
 };
 
-module.exports = { assistant, similar, alternatives, boughtTogether, forYou, getProductsByIds, _parse: { parseBudget, parseSort, toAmount } };
+module.exports = { searchByMeaning, searchByPhoto, aiStatus, assistant, similar, alternatives, boughtTogether, forYou, getProductsByIds, _parse: { parseBudget, parseSort, toAmount } };

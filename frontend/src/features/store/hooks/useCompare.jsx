@@ -10,6 +10,23 @@ import { useToast } from "../../../components/ui/Toast";
 const KEY = "planet.compare";
 export const COMPARE_LIMIT = 3;
 
+/**
+ * Comparing only makes sense between products of the same kind. Same
+ * category always counts; these families also count (a shoe is a shoe).
+ */
+const FAMILIES = [
+  ["Mens Shoes", "Womens Shoes"],
+  ["Mens Watches", "Womens Watches"],
+  ["Mens Shirts", "Tops"],
+  ["Smartphones", "Tablets"],
+  ["Beauty", "Skin Care"],
+];
+const familyOf = (category) => FAMILIES.find((family) => family.includes(category)) || [category];
+
+/** True when `a` and `b` (category names) can be compared fairly. */
+export const sameKind = (a, b) => !a || !b || a === b || familyOf(a).includes(b);
+
+
 const CompareContext = createContext(null);
 
 const load = () => {
@@ -35,25 +52,54 @@ export const CompareProvider = ({ children }) => {
 
   const has = useCallback((id) => items.some((item) => item._id === id), [items]);
 
+  /** Replaces the list with just this product (a fresh comparison). */
+  const startWith = useCallback(
+    (product) => setItems([{ _id: product._id, name: product.name, image: product.image, category: product.category }]),
+    []
+  );
+
   const toggle = useCallback(
     (product) => {
       if (items.some((item) => item._id === product._id)) {
         setItems((current) => current.filter((item) => item._id !== product._id));
         return;
       }
+      // A different kind of product starts a new comparison, if the shopper wants.
+      const other = items.find((item) => !sameKind(item.category, product.category));
+      if (other) {
+        toast.info(
+          "Different kind of product",
+          `You're comparing ${other.category || "other items"}. Compare like with like.`,
+          {
+            duration: 7000,
+            action: {
+              label: "Compare this instead",
+              onClick: () => startWith(product),
+            },
+          }
+        );
+        return;
+      }
       if (items.length >= COMPARE_LIMIT) {
         toast.info("Compare is full", `You can compare up to ${COMPARE_LIMIT} products. Remove one first.`);
         return;
       }
-      setItems((current) => [...current, { _id: product._id, name: product.name, image: product.image }]);
+      setItems((current) => [...current, { _id: product._id, name: product.name, image: product.image, category: product.category }]);
     },
-    [items, toast]
+    [items, toast, startWith]
   );
 
   const remove = useCallback((id) => setItems((current) => current.filter((item) => item._id !== id)), []);
   const clear = useCallback(() => setItems([]), []);
 
-  const value = useMemo(() => ({ items, has, toggle, remove, clear }), [items, has, toggle, remove, clear]);
+  /** Keeps only the products matching `category` (fixes an older mixed list). */
+  const keepKind = useCallback((category) => setItems((current) => current.filter((item) => sameKind(item.category, category))), []);
+  const kind = items.find((item) => item.category)?.category || null;
+
+  const value = useMemo(
+    () => ({ items, has, toggle, remove, clear, keepKind, kind, startWith }),
+    [items, has, toggle, remove, clear, keepKind, kind, startWith]
+  );
   return <CompareContext.Provider value={value}>{children}</CompareContext.Provider>;
 };
 

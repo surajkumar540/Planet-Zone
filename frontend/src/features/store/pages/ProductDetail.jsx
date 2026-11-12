@@ -220,7 +220,7 @@ const ProductDetail = () => {
           <div>
             <ZoomImage
               ref={imageRef}
-              src={img(gallery[activeImage] || product.image, 1200)}
+              src={gallery[activeImage] || product.image}
               alt={product.name}
               className="rounded-2xl border border-line-subtle bg-surface"
             />

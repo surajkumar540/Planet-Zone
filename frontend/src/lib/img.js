@@ -11,13 +11,16 @@
  */
 const API_BASE = import.meta.env.VITE_PUBLIC_URL || "";
 
+/** Already an optimiser address? Then it is used as it is (never wrapped twice). */
+const isOptimised = (src) => src.includes("/api/img?");
+
 export const img = (src, width = 480) =>
-  typeof src === "string" && src.startsWith("https://")
+  typeof src === "string" && src.startsWith("https://") && !isOptimised(src)
     ? `${API_BASE}/api/img?w=${width}&src=${encodeURIComponent(src)}`
     : src;
 
 /** `srcSet` for sharp images on high-density screens (1x and 2x). */
 export const imgSet = (src, width = 480) =>
-  typeof src === "string" && src.startsWith("https://") ? `${img(src, width)} 1x, ${img(src, Math.min(1200, width * 2))} 2x` : undefined;
+  typeof src === "string" && src.startsWith("https://") && !isOptimised(src) ? `${img(src, width)} 1x, ${img(src, Math.min(1200, width * 2))} 2x` : undefined;
 
 export default img;

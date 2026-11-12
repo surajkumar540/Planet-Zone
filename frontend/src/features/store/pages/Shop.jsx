@@ -99,7 +99,8 @@ const Shop = () => {
 
   const query = useMemo(() => ({ sort: params.get("sort") || "createdAt:desc", ...filters }), [params, filters]);
 
-  const { items: products, total, loading, loadingMore, hasMore, error, loadMore, retry } = useInfiniteProducts(query, PAGE_SIZE);
+  const { items: products, total, loading, loadingMore, hasMore, error, moreError, loadMore, retry, retryMore } =
+    useInfiniteProducts(query, PAGE_SIZE);
   const { data: facets } = useApi(getProductFacets, filters);
 
   // Infinite scroll: fetch the next batch when the sentinel nears the viewport.
@@ -108,11 +109,21 @@ const Shop = () => {
     const node = sentinel.current;
     if (!node || !hasMore) return undefined;
     const observer = new IntersectionObserver((entries) => entries[0].isIntersecting && loadMore(), {
-      rootMargin: "600px 0px",
+      // Well ahead of the end, so a fast scroll rarely outruns the next page.
+      rootMargin: "1800px 0px",
     });
     observer.observe(node);
     return () => observer.disconnect();
   }, [hasMore, loadMore, products]);
+
+  // Hold the footer back until the list is complete (see index.css).
+  const feedMore = Boolean(hasMore && !moreError && !error);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (feedMore) root.setAttribute("data-feed-more", "");
+    else root.removeAttribute("data-feed-more");
+    return () => root.removeAttribute("data-feed-more");
+  }, [feedMore]);
 
   // A "back to top" button once the shopper is well down the list.
   const [showTop, setShowTop] = useState(false);
@@ -322,7 +333,7 @@ const Shop = () => {
         <div className="grid gap-7 lg:grid-cols-[260px_minmax(0,1fr)]">
           {/* --------------------------------- Sidebar -------------------------------- */}
           <aside className="hidden lg:block">
-            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-line-subtle bg-surface px-4 py-2 [scrollbar-width:thin]">
+            <div className="sticky top-20 max-h-[calc(100vh-7.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line-subtle bg-surface px-4 py-2 [scrollbar-width:thin]">
               <div className="flex items-center justify-between py-3">
                 <h2 className="flex items-center gap-2 text-[0.9375rem] font-semibold text-content">
                   <SlidersHorizontal size={16} /> {t("Filters")}
@@ -411,31 +422,52 @@ const Shop = () => {
               </div>
             ) : products?.length ? (
               <>
-                <motion.div
-                  layout
+                <div
                   className={cn(
                     "grid grid-cols-2 gap-3 transition-opacity duration-200 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4",
                     loading && "pointer-events-none opacity-55"
                   )}
                 >
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    {products.map((product, index) => (
+                  {products.map((product, index) => (
                       <motion.div
-                        layout
                         key={product._id}
-                        initial={{ opacity: 0, y: 14, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.94, transition: { duration: 0.15 } }}
-                        transition={{ duration: 0.35, delay: Math.min(index, 8) * 0.03, ease: [0.16, 1, 0.3, 1] }}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: Math.min(index % PAGE_SIZE, 8) * 0.03, ease: [0.16, 1, 0.3, 1] }}
                       >
                         <ProductCard product={product} onToggleWishlist={toggle} isWishlisted={isWishlisted(product._id)} />
                       </motion.div>
                     ))}
-                  </AnimatePresence>
-                </motion.div>
+                  {/* Placeholders hold the space while the next page loads, so the grid
+                      (and the sticky filters beside it) never hit the end mid-scroll. */}
+                  {(loadingMore || (hasMore && !moreError)) &&
+                    Array.from({ length: Math.min(PAGE_SIZE, total - products.length, 8) }, (_, index) => (
+                      <div key={`more-${index}`} className="overflow-hidden rounded-2xl border border-line-subtle" aria-hidden="true">
+                        <Skeleton className="aspect-square w-full rounded-none" />
+                        <div className="space-y-2 p-3.5">
+                          <Skeleton className="h-3 w-1/3" />
+                          <Skeleton className="h-4 w-4/5" />
+                          <Skeleton className="h-9 w-full" />
+                        </div>
+                      </div>
+                    ))}
+                </div>
                 {/* Infinite scroll: the sentinel triggers the next batch. */}
-                <div ref={sentinel} className="flex flex-col items-center py-10" aria-live="polite">
-                  {loadingMore ? (
+                <div
+                  ref={sentinel}
+                  aria-live="polite"
+                  className={cn(
+                    "flex min-h-[7.5rem] flex-col items-center justify-start pt-10 [overflow-anchor:none]",
+                    // Room for the observer to fire before the shopper reaches the end.
+                    hasMore && !moreError && "min-h-[40vh]"
+                  )}
+                >
+                  {moreError ? (
+                    <span className="flex flex-col items-center gap-2 type-caption text-content-muted">
+                      {t("Couldn’t load more products.")}
+                      <Button size="sm" variant="secondary" onClick={retryMore}>{t("Try again")}</Button>
+                    </span>
+                  ) : loadingMore ? (
                     <span className="inline-flex items-center gap-2 type-caption text-content-muted">
                       <Loader2 size={16} className="animate-spin" /> {t("Loading more…")}
                     </span>

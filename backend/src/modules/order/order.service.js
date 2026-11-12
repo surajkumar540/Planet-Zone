@@ -6,6 +6,7 @@ const inventoryService = require("../inventory/inventory.service");
 const couponService = require("../coupon/coupon.service");
 const pricingService = require("../../services/pricing.service");
 const paymentService = require("../../services/payment.service");
+const notifications = require("../../services/orderNotifications");
 const { parseSort, escapeLike, sortable } = require("../../utils/schemas");
 const { toMinorUnits } = require("../../utils/money");
 const { MOVEMENT_REASONS } = require("../../constants/inventory");
@@ -144,7 +145,7 @@ const createOrder = async ({
     }
   }
 
-  return withTransaction(async (tx) => {
+  const placed = await withTransaction(async (tx) => {
     await reserveAll(items, paymentId || userId, tx);
 
     const order = await orderRepository.create(
@@ -206,6 +207,10 @@ const createOrder = async ({
 
     return order;
   });
+
+  // Only once the transaction has committed: never email about a rolled-back order.
+  notifications.orderPlaced(placed);
+  return placed;
 };
 
 /** The signed-in customer's own orders. */
@@ -275,14 +280,20 @@ const getOrderById = async ({ orderId, requester }) => {
  * decrement, and cancellation returns the reserved units. The row is locked so
  * two staff updating the same order cannot both apply a stock change.
  */
-const updateOrderStatus = async ({ orderId, status, note, actorId, tracking }) =>
+const updateOrderStatus = async (input) => {
+  const { order, changed } = await applyStatus(input);
+  if (changed) notifications.orderStatusChanged(order);
+  return order;
+};
+
+const applyStatus = async ({ orderId, status, note, actorId, tracking }) =>
   withTransaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM orders WHERE id = ${orderId}::uuid FOR UPDATE`;
 
     const order = await orderRepository.findById(orderId, { tx });
     if (!order) throw AppError.notFound("Order not found");
 
-    if (order.status === status) return order;
+    if (order.status === status) return { order, changed: false };
 
     if (!canTransition(order.status, status)) {
       throw AppError.badRequest(`An order cannot move from ${order.status} to ${status}`);
@@ -371,7 +382,7 @@ const updateOrderStatus = async ({ orderId, status, note, actorId, tracking }) =
       }
     }
 
-    return orderRepository.updateById(orderId, data, { tx });
+    return { order: await orderRepository.updateById(orderId, data, { tx }), changed: true };
   });
 
 /** Customer-initiated cancellation, allowed only before dispatch. */

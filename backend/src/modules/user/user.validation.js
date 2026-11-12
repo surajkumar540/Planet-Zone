@@ -12,7 +12,20 @@ const updateProfileSchema = z
       .regex(/^[0-9+\-\s()]{6,20}$/, "Enter a valid phone number")
       .optional()
       .or(z.literal("")),
-    avatar: z.string().trim().max(500).optional().or(z.literal("")),
+    // An https URL, or a small embedded image (the browser crops and shrinks
+    // uploads to a 256px JPEG first, so ~25 KB is typical).
+    avatar: z
+      .string()
+      .trim()
+      .max(300000, "That image is too large")
+      .refine(
+        (value) =>
+          value === "" ||
+          /^https:\/\/\S+$/.test(value) ||
+          /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value),
+        "Upload a JPG, PNG or WebP image"
+      )
+      .optional(),
   })
   .strict();
 

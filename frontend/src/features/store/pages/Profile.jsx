@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import {
   BadgeCheck,
   Briefcase,
+  Camera,
+  Loader2,
   Check,
   Heart,
   Home,
@@ -27,6 +29,7 @@ import { useApi, useMutation } from "../../../hooks/useApi";
 import { getErrorMessage } from "../../../lib/apiError";
 import { useI18n } from "../../../lib/i18n";
 import { formatDate } from "../../../lib/format";
+import { toAvatarDataUrl } from "../../../lib/imageResize";
 import Button from "../../../components/ui/Button";
 import { Input, PasswordInput } from "../../../components/ui/Field";
 import { Skeleton } from "../../../components/ui/Skeleton";
@@ -46,14 +49,135 @@ const TABS = [
 
 const LABEL_ICONS = { home: Home, work: Briefcase, other: MapPin };
 
+/**
+ * The profile photo, with upload and remove.
+ *
+ * The chosen image is cropped and shrunk in the browser, shown immediately,
+ * and saved; if saving fails the previous photo comes back.
+ */
+const AvatarUploader = ({ user, onSaved }) => {
+  const toast = useToast();
+  const dispatch = useDispatch();
+  const input = useRef(null);
+  const [preview, setPreview] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const shown = preview ?? user?.avatar ?? "";
+  const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "?";
+
+  const save = async (avatar, message) => {
+    setBusy(true);
+    setPreview(avatar);
+    try {
+      const response = await setProfile({ avatar });
+      dispatch(setProfileAction(response?.data || {}));
+      toast.success(message);
+      onSaved();
+    } catch (error) {
+      setPreview(null);
+      toast.error("Photo not saved", getErrorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const choose = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const avatar = await toAvatarDataUrl(file);
+      await save(avatar, "Profile photo updated");
+    } catch (error) {
+      toast.error("Can't use that image", error.message);
+    }
+  };
+
+  return (
+    <div className="relative shrink-0">
+      <motion.button
+        type="button"
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={() => (shown ? setMenuOpen((open) => !open) : input.current?.click())}
+        aria-label={shown ? "Change profile photo" : "Add a profile photo"}
+        className="group relative block h-24 w-24 overflow-hidden rounded-full shadow-lg ring-4 ring-surface"
+      >
+        {shown ? (
+          <img src={shown} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <span
+            className="font-display flex h-full w-full items-center justify-center text-[2rem] font-semibold text-white"
+            style={{ background: "linear-gradient(135deg, var(--brand-leaf-to), var(--brand-leaf-from))" }}
+          >
+            {initials}
+          </span>
+        )}
+        <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/50 text-[0.75rem] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+          <Camera size={18} />
+          {shown ? "Change" : "Add photo"}
+        </span>
+        {busy && (
+          <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+            <Loader2 size={22} className="animate-spin" />
+          </span>
+        )}
+      </motion.button>
+
+      <button
+        type="button"
+        onClick={() => input.current?.click()}
+        aria-label="Upload a new profile photo"
+        className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-on shadow-md ring-2 ring-surface transition-transform hover:scale-110"
+      >
+        <Camera size={15} />
+      </button>
+
+      <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={choose} />
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="absolute left-0 top-full z-20 mt-2 w-44 rounded-xl border border-line bg-surface-overlay p-1 shadow-lg"
+            onMouseLeave={() => setMenuOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                input.current?.click();
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[0.875rem] text-content hover:bg-surface-hover"
+            >
+              <Camera size={15} /> Upload new photo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                save("", "Profile photo removed");
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[0.875rem] text-status-critical hover:bg-status-critical-bg"
+            >
+              <Trash2 size={15} /> Remove photo
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Profile = () => {
   const { t } = useI18n();
   const [tab, setTab] = useState("details");
   const profile = useApi(getProfile, null);
   const { items: wishlist } = useWishlistToggle();
   const user = profile.data;
-
-  const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "?";
 
   return (
     <Container className="py-8">
@@ -72,17 +196,9 @@ const Profile = () => {
 
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
           {profile.loading && !user ? (
-            <Skeleton className="h-20 w-20 rounded-full" />
+            <Skeleton className="h-24 w-24 rounded-full" />
           ) : (
-            <motion.span
-              initial={{ scale: 0.6, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 18 }}
-              className="font-display flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-[1.75rem] font-semibold text-white shadow-lg"
-              style={{ background: "linear-gradient(135deg, var(--brand-leaf-to), var(--brand-leaf-from))" }}
-            >
-              {initials}
-            </motion.span>
+            <AvatarUploader user={user} onSaved={profile.refetch} />
           )}
 
           <div className="min-w-0 flex-1">
@@ -235,12 +351,15 @@ const DetailsTab = ({ profile }) => {
             icon={User}
             required
             autoComplete="given-name"
+            placeholder="e.g. Aditi"
             value={form.firstName}
             onChange={(event) => setForm({ ...form, firstName: event.target.value })}
           />
           <Input
             label={t("Last name")}
+            icon={User}
             autoComplete="family-name"
+            placeholder="e.g. Sharma"
             value={form.lastName}
             onChange={(event) => setForm({ ...form, lastName: event.target.value })}
           />
@@ -478,6 +597,7 @@ const SecurityTab = () => {
           icon={KeyRound}
           required
           autoComplete="current-password"
+          placeholder="Enter your current password"
           value={form.currentPassword}
           onChange={(event) => setForm({ ...form, currentPassword: event.target.value })}
         />
@@ -487,6 +607,7 @@ const SecurityTab = () => {
             icon={Lock}
             required
             autoComplete="new-password"
+            placeholder="At least 8 characters"
             value={form.newPassword}
             onChange={(event) => setForm({ ...form, newPassword: event.target.value })}
           />
@@ -507,6 +628,7 @@ const SecurityTab = () => {
           required
           autoComplete="new-password"
           error={mismatch}
+          placeholder="Type the new password again"
           value={form.confirm}
           onChange={(event) => setForm({ ...form, confirm: event.target.value })}
         />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Package, Truck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Banknote, MapPin, MoreHorizontal, Package } from "lucide-react";
 import { getOrder, updateOrderStatus } from "../../../api/adminApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import { useToast } from "../../../components/ui/Toast";
@@ -13,6 +13,7 @@ import { ErrorState } from "../../../components/ui/States";
 import { SkeletonText } from "../../../components/ui/Skeleton";
 import { OrderStatusBadge, PaymentStatusBadge } from "../components/StatusBadge";
 import { formatCurrency, formatDateTime, humanise } from "../../../lib/format";
+import OrderTracker from "../../store/components/OrderTracker";
 
 import { getErrorMessage } from "../../../lib/apiError";
 /**
@@ -32,6 +33,19 @@ const NEXT_STATUSES = {
   returned: ["refunded"],
   cancelled: ["refunded"],
   refunded: [],
+};
+
+/**
+ * The one obvious next step from each status, as a single button. Anything
+ * else (cancel, return) stays under "More actions".
+ */
+const NEXT_ACTION = {
+  pending: { status: "confirmed", label: "Confirm order" },
+  confirmed: { status: "processing", label: "Start packing" },
+  processing: { status: "packed", label: "Mark as packed" },
+  packed: { status: "shipped", label: "Mark as shipped", needsTracking: true },
+  shipped: { status: "out_for_delivery", label: "Out for delivery" },
+  out_for_delivery: { status: "delivered", label: "Mark as delivered" },
 };
 
 const SummaryRow = ({ label, value, strong }) => (
@@ -61,10 +75,25 @@ const OrderDetail = () => {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [form, setForm] = useState({ status: "", note: "", trackingNumber: "", carrier: "" });
 
-  const openStatusModal = () => {
+  const openStatusModal = (status) => {
     const [firstAllowed] = NEXT_STATUSES[order?.status] || [];
-    setForm({ status: firstAllowed || "", note: "", trackingNumber: "", carrier: "" });
+    setForm({ status: status || firstAllowed || "", note: "", trackingNumber: "", carrier: "" });
     setStatusModalOpen(true);
+  };
+
+  /** Advances to the next step; shipping asks for tracking details first. */
+  const advance = async (next) => {
+    if (next.needsTracking) {
+      openStatusModal(next.status);
+      return;
+    }
+    try {
+      await mutate(id, { status: next.status });
+      toast.success("Order updated", `Now ${humanise(next.status)}.`);
+      refetch();
+    } catch (caught) {
+      toast.error("Could not update order", getErrorMessage(caught));
+    }
   };
 
   const handleStatusChange = async () => {
@@ -105,6 +134,8 @@ const OrderDetail = () => {
   }
 
   const allowedTransitions = NEXT_STATUSES[order.status] || [];
+  const nextAction = NEXT_ACTION[order.status];
+  const isCod = !order.onlinePayment;
   const address = order.shippingAddress || {};
 
   return (
@@ -118,11 +149,18 @@ const OrderDetail = () => {
         title={order.orderNumber}
         description={`Placed ${formatDateTime(order.createdAt)}`}
         actions={
-          allowedTransitions.length > 0 && (
-            <Button variant="primary" icon={Truck} onClick={openStatusModal}>
-              Update status
-            </Button>
-          )
+          <div className="flex flex-wrap gap-2">
+            {allowedTransitions.length > 0 && (
+              <Button variant="secondary" icon={MoreHorizontal} onClick={() => openStatusModal()}>
+                More actions
+              </Button>
+            )}
+            {nextAction && (
+              <Button variant="primary" iconRight={ArrowRight} loading={saving} onClick={() => advance(nextAction)}>
+                {nextAction.status === "delivered" && isCod ? "Delivered & cash collected" : nextAction.label}
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -133,6 +171,19 @@ const OrderDetail = () => {
           {order.onlinePayment ? "Paid online" : "Cash on delivery"}
         </span>
       </div>
+
+      <Card>
+        <CardBody>
+          <OrderTracker order={order} compact />
+          {isCod && order.paymentStatus === "pending" && !["cancelled", "refunded"].includes(order.status) && (
+            <p className="mt-4 flex items-center gap-2 rounded-lg bg-status-warning-bg px-3 py-2 type-caption text-content-secondary">
+              <Banknote size={15} className="shrink-0 text-status-warning" />
+              Cash on delivery: collect {formatCurrency(order.pricing?.grandTotal, { precise: true })} at the door.
+              Marking it delivered records the payment as received.
+            </p>
+          )}
+        </CardBody>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
@@ -260,7 +311,7 @@ const OrderDetail = () => {
       <Modal
         open={statusModalOpen}
         onClose={() => setStatusModalOpen(false)}
-        title="Update order status"
+        title={form.status === "shipped" ? "Ship this order" : "Update order status"}
         description={`Currently ${humanise(order.status)}.`}
         footer={
           <>
@@ -291,7 +342,7 @@ const OrderDetail = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
                 label="Carrier"
-                placeholder="e.g. Delhivery"
+                placeholder="e.g. Delhivery, Blue Dart"
                 value={form.carrier}
                 onChange={(event) => setForm({ ...form, carrier: event.target.value })}
               />

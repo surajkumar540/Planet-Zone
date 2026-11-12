@@ -74,6 +74,105 @@ input::-ms-clear {
   box-shadow: 0 0 0 4px var(--accent-ring);
 }
 
+/* ------------------------------ Inviting motion ------------------------------
+   Small loops that draw the eye to things worth clicking. All of them stop for
+   people who ask their OS for reduced motion (block at the end). */
+
+/* The logo leaf sways from its stem, like in a light breeze. */
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(7deg); }
+}
+.leaf-sway {
+  transform-origin: 18% 86%;
+  animation: leaf-sway 3.8s ease-in-out infinite;
+}
+
+/* A gradient that travels around the search border. @property lets the
+   browser animate the angle; without support the border is simply static. */
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes glow-spin {
+  to { --glow-angle: 360deg; }
+}
+.search-glow {
+  padding: 1.5px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    var(--brand-leaf-to),
+    var(--brand-leaf-from) 18%,
+    var(--border-default) 34%,
+    var(--border-default) 66%,
+    var(--brand-leaf-from) 82%,
+    var(--brand-leaf-to)
+  );
+  animation: glow-spin 5s linear infinite;
+}
+.search-glow:focus-within {
+  animation-play-state: paused;
+  background: var(--accent-solid);
+}
+
+/* The bag gives a short shake every few seconds while it holds something. */
+@keyframes bag-nudge {
+  0%, 84%, 100% { transform: rotate(0deg) scale(1); }
+  87% { transform: rotate(-14deg) scale(1.08); }
+  90% { transform: rotate(11deg) scale(1.08); }
+  93% { transform: rotate(-7deg); }
+  96% { transform: rotate(4deg); }
+}
+.bag-nudge {
+  transform-origin: 50% 15%;
+  animation: bag-nudge 6.5s ease-in-out infinite;
+}
+
+/* A slowly turning ring around the signed-in avatar. */
+.avatar-ring {
+  padding: 2px;
+  border-radius: 9999px;
+  background: conic-gradient(from var(--glow-angle), var(--brand-leaf-to), var(--brand-leaf-from), transparent 60%, var(--brand-leaf-to));
+  animation: glow-spin 6s linear infinite;
+}
+
+/* A light sweep across the Sign in button every few seconds. */
+@keyframes shine-sweep {
+  0%, 70% { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%) skewX(-20deg); }
+}
+.shine {
+  position: relative;
+  overflow: hidden;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: shine-sweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* While /shop still has products to load, the footer waits: reaching it would
+   push the sticky filter panel up and back down as each page arrives. */
+html[data-feed-more] [data-store-footer] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf-sway,
+  .search-glow,
+  .bag-nudge,
+  .avatar-ring,
+  .shine::after {
+    animation: none !important;
+  }
+}
+
 body {
   background: var(--surface-canvas);
   color: var(--text-primary);

@@ -36,7 +36,7 @@ const COLUMNS = [
 const StoreFooter = () => {
   const { t } = useI18n();
   return (
-  <footer className="mt-section border-t border-line-subtle bg-surface-sunken">
+  <footer data-store-footer className="mt-section border-t border-line-subtle bg-surface-sunken">
     <Container className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
       <div>
         <Link to="/" className="mb-3 inline-flex" aria-label="Planet Zone home">

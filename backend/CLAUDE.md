@@ -118,6 +118,8 @@ Change stock only through `inventory.service.js`. `reserve` and `release` do not
 
 **Auth.** Signup creates an unverified user and emails a 6-digit OTP (10-minute expiry, 5 attempts, 5 sends). `/otpVerify` returns the token. Clients send `Authorization: Bearer <jwt>`; cookies aren't used for auth. Expired OTP rows are removed whenever a new code is issued, because Postgres has no TTL index.
 
+**Order emails.** `services/orderNotifications.js` sends an order confirmation after `createOrder` commits, and an update on shipped, out_for_delivery, delivered, cancelled and refunded. Both run in the background (a mail failure is logged, never fails the order) and honour Settings → notifications `orderConfirmationEmail` / `orderStatusEmail`. Links use `APP_URL`.
+
 **Payment.** `/paymentInit` creates the Razorpay order and a `Payment` row. `/paymentSuccess` verifies the HMAC signature. `/createOrder` then checks that the verified payment matches the computed total. See the first known issue below.
 
 ## Known issues
@@ -128,6 +130,5 @@ Found by reading and testing the code on 2026-11-07 and not yet fixed. Remove an
 2. **Only the default warehouse can sell.** Checkout reserves stock from the default warehouse alone, so making a new or empty warehouse the default leaves every product out of stock, even though the old warehouse still holds the stock.
 3. **Most settings aren't enforced.** `autoConfirmOrders`, `orderPrefix`, `allowCashOnDelivery`, `allowOnlinePayment`, `cancellationWindowHours`, `hideOutOfStockProducts`, `trackInventory` and `allowBackorders` are referenced only by the settings code. `TaxRate` records are likewise not used in pricing.
 4. **Refunds don't move money.** `refund.service.js` updates records but never calls Razorpay.
-5. **No order emails.** Only auth flows send mail, although the checkout toast promises a confirmation email.
 6. **`/paymentInit` trusts the client's `amount`.** `createOrder` catches a mismatch, but only after the customer has paid.
 7. **`AuditLog.actorEmail` is always empty**, because `req.auth` has no `email`.

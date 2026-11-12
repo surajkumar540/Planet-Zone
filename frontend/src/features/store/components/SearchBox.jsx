@@ -89,6 +89,21 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
   const { data: tree } = useApi(getCategoryTree, null, { cacheTime: 5 * 60 * 1000 });
   const departments = (tree || []).slice(0, 6);
 
+  // Cycling hints ("Search “Laptops”…") built from real categories, shown only
+  // while the box is empty and idle, so it never moves under someone typing.
+  const [focused, setFocused] = useState(false);
+  const hints = useMemo(() => {
+    const names = (tree || []).flatMap((dept) => (dept.children || []).map((child) => child.name)).slice(0, 8);
+    return [placeholder || t("Search products, brands and more"), ...names.map((name) => `${t("Search")} “${name}”…`)];
+  }, [tree, placeholder, t]);
+  const [hintIndex, setHintIndex] = useState(0);
+  const showHint = !value && !focused;
+  useEffect(() => {
+    if (!showHint || hints.length < 2) return undefined;
+    const timer = setInterval(() => setHintIndex((index) => index + 1), 2600);
+    return () => clearInterval(timer);
+  }, [showHint, hints.length]);
+
   useEffect(() => setValue(initialValue), [initialValue]);
 
   // Fetch suggestions for the settled query.
@@ -230,6 +245,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
 
   return (
     <div ref={rootRef} className={cn("relative", className)}>
+      <div className="search-glow">
       <div className="relative">
         <Search
           size={16}
@@ -245,20 +261,46 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
           aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
           aria-label="Search products"
           value={value}
-          placeholder={placeholder || t("Search products, brands and more")}
+          placeholder={showHint ? "" : placeholder || t("Search products, brands and more")}
           onChange={(event) => {
             setValue(event.target.value);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            setOpen(true);
+            setFocused(true);
+          }}
+          onBlur={() => setFocused(false)}
           onKeyDown={onKeyDown}
           className={cn(
-            "w-full rounded-full border-[1.5px] border-line bg-surface-sunken pl-9 pr-9 text-content outline-none transition-all",
-            "placeholder:text-content-muted hover:border-line-strong focus:border-accent focus:bg-surface focus:shadow-[0_0_0_4px_var(--accent-subtle)]",
+            "w-full rounded-full border-0 bg-surface pl-9 pr-9 text-content outline-none transition-all",
+            "placeholder:text-content-muted focus:shadow-[0_0_0_4px_var(--accent-subtle)]",
             "[&::-webkit-search-cancel-button]:hidden",
             size === "sm" ? "h-9 text-[0.875rem]" : "h-10 text-[0.9375rem]"
           )}
         />
+        {showHint && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-y-0 left-9 right-9 flex items-center overflow-hidden text-content-muted",
+              size === "sm" ? "text-[0.875rem]" : "text-[0.9375rem]"
+            )}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={hintIndex}
+                initial={{ y: 14, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -14, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="truncate"
+              >
+                {hints[hintIndex % hints.length]}
+              </motion.span>
+            </AnimatePresence>
+          </span>
+        )}
         <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center">
           {loading ? (
             <Loader2 size={15} className="animate-spin text-content-muted" />
@@ -276,6 +318,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
             </button>
           ) : null}
         </span>
+      </div>
       </div>
 
       <AnimatePresence>

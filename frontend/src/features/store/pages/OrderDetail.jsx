@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Package, Truck, XCircle } from "lucide-react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowLeft, Banknote, CalendarClock, MapPin, Package, PartyPopper, Star, Truck, XCircle } from "lucide-react";
 
 import { cancelOrder, getSingleOrder } from "../../../api/orderApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
@@ -13,15 +14,22 @@ import { useToast } from "../../../components/ui/Toast";
 import { formatCurrency, formatDateTime, humanise } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { Container } from "../components/Primitives";
+import OrderTracker from "../components/OrderTracker";
+import { Doodle } from "../../../components/ui/Doodles";
 
 import { getErrorMessage } from "../../../lib/apiError";
 /** Statuses at which a customer can still call the order off themselves. */
-const CANCELLABLE = ["pending", "confirmed", "processing", "packed"];
+const CANCELLABLE = ["pending", "confirmed", "processing"];
+
+const addDays = (date, days) => new Date(new Date(date).getTime() + days * 86400000);
+const shortDate = (date) => new Date(date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 
 const OrderDetail = () => {
   const { orderId } = useParams();
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const justPlaced = searchParams.get("placed") === "1";
 
   const { data: order, loading, error, refetch } = useApi(getSingleOrder, orderId);
   const cancel = useMutation(() => cancelOrder(orderId, "Cancelled by customer"));
@@ -93,14 +101,62 @@ const OrderDetail = () => {
         </div>
       </header>
 
+      {justPlaced && !["cancelled", "refunded"].includes(order.status) && (
+        <motion.section
+          initial={{ opacity: 0, y: 12, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          className="relative mb-6 overflow-hidden rounded-3xl p-6 text-white shadow-lg sm:p-8"
+          style={{ background: "linear-gradient(120deg, var(--promo-leaf-from), var(--promo-leaf-to))" }}
+        >
+          <Doodle type="sparkle" size={34} float className="absolute right-8 top-6 text-white opacity-50" />
+          <Doodle type="star" size={24} float delay={0.5} className="absolute right-24 bottom-6 text-white opacity-40" />
+          <Doodle type="leaf" size={60} float delay={0.3} className="absolute -bottom-3 right-1/3 hidden text-white opacity-25 sm:block" />
+          <p className="flex items-center gap-2 text-[0.875rem] font-semibold uppercase tracking-[0.1em] opacity-90">
+            <PartyPopper size={18} /> Order placed
+          </p>
+          <h2 className="font-display mt-2 text-[1.75rem] font-semibold leading-tight sm:text-[2.25rem]">Thank you for your order!</h2>
+          <p className="mt-2 max-w-[56ch] text-[0.9375rem] opacity-90">
+            We&apos;ve emailed your confirmation. We&apos;ll keep you posted as it&apos;s packed, shipped and on its way.
+          </p>
+        </motion.section>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <div className="space-y-6">
+          {/* -------------------------------- Tracker ------------------------------- */}
+          <section className="rounded-2xl border border-line-subtle bg-surface p-5 sm:p-6">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-[1.0625rem] font-semibold text-content">
+                <Truck size={18} className="text-accent-text" /> Track your order
+              </h2>
+              {!["delivered", "cancelled", "returned", "refunded"].includes(order.status) && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-subtle px-3 py-1 text-[0.8125rem] font-semibold text-accent-text">
+                  <CalendarClock size={14} />
+                  Arriving by{" "}
+                  {shortDate(addDays(order.createdAt, order.shipping?.maxDeliveryDays || 7))}
+                </span>
+              )}
+            </div>
+            <OrderTracker order={order} />
+            {order.status === "delivered" && (
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-sunken p-4">
+                <p className="type-body text-content-secondary">Enjoying it? Help other shoppers with a quick review.</p>
+                {order.orderItems?.[0]?.product && (
+                  <Button as={Link} to={`/product/${order.orderItems[0].product}`} size="sm" variant="primary" icon={Star}>
+                    Write a review
+                  </Button>
+                )}
+              </div>
+            )}
+          </section>
+
           {/* -------------------------------- Progress ------------------------------ */}
           {order.statusHistory?.length > 0 && (
             <section className="rounded-lg border border-line-subtle bg-surface p-5">
               <h2 className="type-section-title mb-4 flex items-center gap-2 text-content">
                 <Truck size={17} className="text-content-muted" />
-                Progress
+                Activity
               </h2>
               <ol className="relative space-y-4 border-l border-line pl-5">
                 {order.statusHistory.map((entry, index) => (
@@ -191,6 +247,21 @@ const OrderDetail = () => {
             </address>
           </section>
 
+          {!order.onlinePayment && order.paymentStatus === "pending" && !["cancelled", "refunded"].includes(order.status) && (
+            <section className="rounded-2xl border border-status-warning bg-status-warning-bg p-5">
+              <p className="flex items-center gap-2 font-semibold text-content">
+                <Banknote size={18} className="text-status-warning" /> Cash on delivery
+              </p>
+              <p className="mt-1.5 type-body text-content-secondary">
+                Please keep{" "}
+                <span className="type-numeric font-semibold text-content">
+                  {formatCurrency(order.pricing?.grandTotal, { precise: true })}
+                </span>{" "}
+                ready. You can pay the delivery person in cash or by UPI.
+              </p>
+            </section>
+          )}
+
           <section className="rounded-lg border border-line-subtle bg-surface p-5">
             <h2 className="type-section-title mb-3 text-content">Payment summary</h2>
             <dl className="space-y-2.5">
@@ -215,7 +286,9 @@ const OrderDetail = () => {
               />
             </dl>
             <div className="mt-3 flex items-baseline justify-between border-t border-line-subtle pt-3">
-              <span className="type-body-strong text-content">Total paid</span>
+              <span className="type-body-strong text-content">
+                {order.paymentStatus === "paid" ? "Total paid" : "Total to pay"}
+              </span>
               <span className="type-numeric text-[1.25rem] font-semibold text-content">
                 {formatCurrency(order.pricing?.grandTotal, { precise: true })}
               </span>

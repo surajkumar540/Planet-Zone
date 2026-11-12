@@ -12,7 +12,7 @@ import cn from "../../lib/cn";
  * - dark: a brighter, lighter green with a vein in the canvas colour, so the
  *   leaf glows slightly instead of sinking into the background.
  */
-export const LogoMark = ({ size = 28, className, title }) => {
+export const LogoMark = ({ size = 28, className, title, animated = false }) => {
   // useId returns ":r1:", which is not valid inside url(#…).
   const gradientId = `planet-leaf-${useId().replace(/:/g, "")}`;
 
@@ -24,7 +24,7 @@ export const LogoMark = ({ size = 28, className, title }) => {
       fill="none"
       role={title ? "img" : undefined}
       aria-hidden={title ? undefined : "true"}
-      className={cn("shrink-0", className)}
+      className={cn("shrink-0", animated && "leaf-sway", className)}
     >
       {title && <title>{title}</title>}
       <defs>
@@ -61,11 +61,11 @@ const SIZES = {
 };
 
 /** Mark plus "Planet Zone" wordmark. `showText={false}` gives the mark alone. */
-const Logo = ({ size = "md", showText = true, className }) => {
+const Logo = ({ size = "md", showText = true, className, animated = false }) => {
   const scale = SIZES[size] || SIZES.md;
   return (
     <span className={cn("inline-flex items-center", scale.gap, className)}>
-      <LogoMark size={scale.mark} title={showText ? undefined : "Planet Zone"} />
+      <LogoMark size={scale.mark} title={showText ? undefined : "Planet Zone"} animated={animated} />
       {showText && (
         <span className={cn("font-semibold tracking-tight text-content leading-none", scale.text)}>
           Planet <span className="text-[color:var(--brand-text)]">Zone</span>

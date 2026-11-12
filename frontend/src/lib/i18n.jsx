@@ -39,6 +39,7 @@ const HI = {
   Orders: "ऑर्डर",
   Dashboard: "डैशबोर्ड",
   Language: "भाषा",
+  Search: "खोजें",
   "Search products, brands and more": "उत्पाद, ब्रांड और बहुत कुछ खोजें",
 
   // Search suggestions

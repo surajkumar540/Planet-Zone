@@ -53,7 +53,7 @@ const AuthShell = ({ title, description, children, footer }) => (
     >
       <div className="mb-4 flex items-center justify-between">
         <Link to="/" aria-label="Planet Zone home" className="rounded-md">
-          <Logo size="md" />
+          <Logo size="md" animated />
         </Link>
         <Link
           to="/"

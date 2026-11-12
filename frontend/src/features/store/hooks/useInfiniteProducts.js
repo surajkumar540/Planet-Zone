@@ -17,6 +17,10 @@ const useInfiniteProducts = (query, pageSize = 12) => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  // A failed next page is reported at the bottom of the list, never by
+  // replacing the products already on screen.
+  const [moreError, setMoreError] = useState(null);
+  const [reload, setReload] = useState(0);
 
   const key = JSON.stringify(query);
   const generation = useRef(0);
@@ -36,6 +40,7 @@ const useInfiniteProducts = (query, pageSize = 12) => {
     const gen = ++generation.current;
     setLoading(true);
     setError(null);
+    setMoreError(null);
     fetchPage(1, gen)
       .then((response) => {
         if (!response) return;
@@ -45,12 +50,12 @@ const useInfiniteProducts = (query, pageSize = 12) => {
       })
       .catch((caught) => gen === generation.current && setError(getErrorMessage(caught)))
       .finally(() => gen === generation.current && setLoading(false));
-  }, [fetchPage]);
+  }, [fetchPage, reload]);
 
   const hasMore = items !== null && items.length < total;
 
   const loadMore = useCallback(() => {
-    if (loading || loadingMore || !hasMore) return;
+    if (loading || loadingMore || !hasMore || moreError) return;
     const gen = generation.current;
     setLoadingMore(true);
     fetchPage(page + 1, gen)
@@ -64,17 +69,14 @@ const useInfiniteProducts = (query, pageSize = 12) => {
         setTotal(response.meta?.total ?? total);
         setPage((current) => current + 1);
       })
-      .catch((caught) => gen === generation.current && setError(getErrorMessage(caught)))
+      .catch((caught) => gen === generation.current && setMoreError(getErrorMessage(caught)))
       .finally(() => gen === generation.current && setLoadingMore(false));
-  }, [fetchPage, hasMore, loading, loadingMore, page, total]);
+  }, [fetchPage, hasMore, loading, loadingMore, moreError, page, total]);
 
-  const retry = useCallback(() => {
-    setError(null);
-    if (!items) generation.current += 0;
-    loadMore();
-  }, [items, loadMore]);
+  const retry = useCallback(() => setReload((count) => count + 1), []);
+  const retryMore = useCallback(() => setMoreError(null), []);
 
-  return { items, total, loading, loadingMore, hasMore, error, loadMore, retry };
+  return { items, total, loading, loadingMore, hasMore, error, moreError, loadMore, retry, retryMore };
 };
 
 export default useInfiniteProducts;

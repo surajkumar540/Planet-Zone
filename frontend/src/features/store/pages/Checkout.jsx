@@ -127,7 +127,7 @@ const Checkout = () => {
         const response = await createOrderApi(payload);
         clear();
         toast.success("Order placed", "You will receive a confirmation email shortly.");
-        navigate(`/order/${response.orderId}`);
+        navigate(`/order/${response.orderId}?placed=1`);
         return;
       }
 
@@ -171,7 +171,7 @@ const Checkout = () => {
               });
               clear();
               toast.success("Payment received", "Your order is confirmed.");
-              navigate(`/order/${response.orderId}`);
+              navigate(`/order/${response.orderId}?placed=1`);
               resolve();
             } catch (error) {
               reject(error);

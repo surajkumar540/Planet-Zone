@@ -56,6 +56,7 @@ const importData = async () => {
   }
 
   logger.info(`Imported ${created.length} users and ${products.length} products`);
+  if (!products.length) logger.info("Run `npm run data:sample` to add sample products with photos.");
 };
 
 const destroyData = async () => {

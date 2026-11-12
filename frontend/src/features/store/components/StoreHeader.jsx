@@ -17,6 +17,7 @@ import {
 import Logo from "../../../components/ui/Logo";
 import SearchBox from "./SearchBox";
 import LanguageSwitcher from "./LanguageSwitcher";
+import MobileNav from "./MobileNav";
 import { useI18n } from "../../../lib/i18n";
 
 import cn from "../../../lib/cn";
@@ -47,7 +48,7 @@ const StoreHeader = () => {
   const { t } = useI18n();
   // Keeps the box showing the active query when the shop is opened from a search.
   const currentSearch = pathname === "/shop" ? new URLSearchParams(search).get("search") || "" : "";
-  const { count } = useCart();
+  const { count, items: bagItems, subtotal } = useCart();
   const { isLoggedIn, isAdmin, user } = useSession();
   const { isDark, setThemeMode } = useTheme();
 
@@ -111,7 +112,7 @@ const StoreHeader = () => {
         "sticky top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300",
         // A menu panel hangs off the bar on mobile, so it takes the solid
         // treatment while open regardless of scroll position.
-        scrolled || menuOpen
+        scrolled
           ? "border-line-subtle bg-[color-mix(in_srgb,var(--surface-default)_94%,transparent)] shadow-sm backdrop-blur-md"
           : "border-transparent bg-surface-canvas"
       )}
@@ -128,7 +129,7 @@ const StoreHeader = () => {
         </button>
 
         <Link to="/" className="flex items-center shrink-0" aria-label="Planet Zone home">
-          <Logo size="md" />
+          <Logo size="md" animated />
         </Link>
 
         <nav className="ml-4 hidden items-center lg:flex" aria-label="Primary">
@@ -144,10 +145,13 @@ const StoreHeader = () => {
         </div>
 
         <div className="ml-auto flex items-center gap-1 md:ml-2">
-          <LanguageSwitcher />
+          <div className="hidden sm:block">
+            <LanguageSwitcher />
+          </div>
           <Button
             size="icon"
             variant="ghost"
+            className="hidden sm:inline-flex"
             icon={isDark ? Sun : Moon}
             onClick={() => setThemeMode(isDark ? "light" : "dark")}
             aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
@@ -163,6 +167,8 @@ const StoreHeader = () => {
             className="hidden sm:inline-flex"
           />
 
+          {/* Hovering the bag on desktop previews it, one click from checkout. */}
+          <div className="group relative">
           <Link
             to="/cart"
             data-cart-target
@@ -176,7 +182,9 @@ const StoreHeader = () => {
               transition={{ type: "spring", stiffness: 500, damping: 12 }}
               className="flex"
             >
-              <ShoppingBag size={18} />
+              <span className={count > 0 ? "bag-nudge flex" : "flex"}>
+                <ShoppingBag size={18} />
+              </span>
             </motion.span>
             {count > 0 && (
               <motion.span
@@ -188,7 +196,49 @@ const StoreHeader = () => {
                 {count > 99 ? "99+" : count}
               </motion.span>
             )}
+            {count > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 h-4 w-4 animate-ping rounded-full bg-accent opacity-30" aria-hidden="true" />
+            )}
           </Link>
+
+          {count > 0 && (
+            <div className="invisible absolute right-0 top-full z-50 w-80 translate-y-2 pt-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 max-lg:hidden">
+              <div className="rounded-2xl border border-line bg-surface-overlay p-4 shadow-xl">
+                <p className="mb-3 flex items-center justify-between text-[0.875rem] font-semibold text-content">
+                  {t("Your bag")}
+                  <span className="type-caption font-normal text-content-muted">
+                    {count === 1 ? t("Bag: 1 item") : t("Bag: {n} items", { n: count })}
+                  </span>
+                </p>
+                <ul className="space-y-2.5">
+                  {bagItems.slice(0, 3).map((item) => (
+                    <li key={`${item._id}::${item.variantSku || ""}`} className="flex items-center gap-3">
+                      <img src={item.image} alt="" className="h-11 w-11 shrink-0 rounded-lg border border-line-subtle object-cover" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[0.8125rem] font-medium text-content">{item.name}</span>
+                        <span className="block type-caption text-content-muted">× {item.qty}</span>
+                      </span>
+                      <span className="type-numeric text-[0.8125rem] font-semibold text-content">
+                        ₹{Math.round(item.totalPrice * item.qty).toLocaleString("en-IN")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {bagItems.length > 3 && (
+                  <p className="mt-2 type-caption text-content-muted">+{bagItems.length - 3} more</p>
+                )}
+                <div className="mt-3 flex items-center justify-between border-t border-line-subtle pt-3">
+                  <span className="type-caption text-content-secondary">Subtotal</span>
+                  <span className="type-numeric font-semibold text-content">₹{Math.round(subtotal).toLocaleString("en-IN")}</span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button as={Link} to="/cart" size="sm">{t("View bag")}</Button>
+                  <Button as={Link} to="/checkout" size="sm" variant="primary" className="shine">{t("Checkout")}</Button>
+                </div>
+              </div>
+            </div>
+          )}
+          </div>
 
           {isLoggedIn ? (
             <div className="relative" ref={accountRef}>
@@ -199,8 +249,14 @@ const StoreHeader = () => {
                 aria-haspopup="menu"
                 aria-expanded={accountOpen}
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-subtle type-caption font-semibold text-accent-text">
-                  {(user?.firstName?.[0] || "U").toUpperCase()}
+                <span className="avatar-ring flex">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="" className="h-7 w-7 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface type-caption font-semibold text-accent-text">
+                      {(user?.firstName?.[0] || "U").toUpperCase()}
+                    </span>
+                  )}
                 </span>
                 <span className="type-button hidden max-w-[8rem] truncate lg:block">
                   {user?.firstName || "Account"}
@@ -232,7 +288,7 @@ const StoreHeader = () => {
               )}
             </div>
           ) : (
-            <Button as={Link} to="/login" size="sm" variant="primary" className="ml-1">
+            <Button as={Link} to="/login" size="sm" variant="primary" className="shine ml-1">
               {t("Sign in")}
             </Button>
           )}
@@ -244,20 +300,17 @@ const StoreHeader = () => {
         </Container>
       )}
 
-      {menuOpen && (
-        <div className="border-t border-line-subtle bg-surface lg:hidden">
-          <Container className="flex flex-col gap-1 py-3">
-            {NAV_LINKS.map((link) => (
-              <NavLink key={link.to} to={link.to} end={link.end} className={navClass}>
-                {t(link.label)}
-              </NavLink>
-            ))}
-            <NavLink to="/wishlist" className={navClass}>
-              {t("Wishlist")}
-            </NavLink>
-          </Container>
-        </div>
-      )}
+      <MobileNav
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        user={user}
+        isLoggedIn={isLoggedIn}
+        isAdmin={isAdmin}
+        onSignOut={signOut}
+        isDark={isDark}
+        onToggleTheme={() => setThemeMode(isDark ? "light" : "dark")}
+        bagCount={count}
+      />
     </header>
   );
 };

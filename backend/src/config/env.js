@@ -31,6 +31,9 @@ const envSchema = z.object({
   // Comma separated list of allowed browser origins.
   CORS_ORIGINS: z.string().default("http://localhost:5173"),
 
+  // Public address of the storefront, used for links in emails.
+  APP_URL: z.string().url().default("http://localhost:5173"),
+
   LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).default("info"),
 });
 

@@ -8,6 +8,7 @@ import { getCategoryTree } from "../../../api/storeApi";
 import { useApi, useDebounced } from "../../../hooks/useApi";
 import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import { useI18n } from "../../../lib/i18n";
 
 /**
  * Search with live suggestions, used in the header and on the shop page.
@@ -67,8 +68,9 @@ const Highlight = ({ text, query }) => {
   );
 };
 
-const SearchBox = ({ placeholder = "Search products, brands and more", className, size = "md", onNavigate, initialValue = "" }) => {
+const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialValue = "" }) => {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const listId = useId();
   const rootRef = useRef(null);
   const inputRef = useRef(null);
@@ -211,13 +213,13 @@ const SearchBox = ({ placeholder = "Search products, brands and more", className
   const showPanel = open && (typed ? Boolean(results) || loading : options.length > 0);
   const sections = typed
     ? [
-        { kind: "product", title: "Products" },
-        { kind: "category", title: "Categories" },
-        { kind: "brand", title: "Brands" },
+        { kind: "product", title: t("Products") },
+        { kind: "category", title: t("Categories") },
+        { kind: "brand", title: t("Brands") },
       ]
     : [
-        { kind: "recent", title: "Recent searches" },
-        { kind: "dept", title: "Shop by department" },
+        { kind: "recent", title: t("Recent searches") },
+        { kind: "dept", title: t("Shop by department") },
       ];
 
   const rowClass = (index) =>
@@ -243,7 +245,7 @@ const SearchBox = ({ placeholder = "Search products, brands and more", className
           aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
           aria-label="Search products"
           value={value}
-          placeholder={placeholder}
+          placeholder={placeholder || t("Search products, brands and more")}
           onChange={(event) => {
             setValue(event.target.value);
             setOpen(true);
@@ -289,8 +291,8 @@ const SearchBox = ({ placeholder = "Search products, brands and more", className
           >
             {typed && results && options.length === 1 && (
               <div className="px-3 py-6 text-center">
-                <p className="type-body-strong text-content">No matches for “{typed}”</p>
-                <p className="mt-1 type-caption text-content-muted">Try a shorter word or a brand name.</p>
+                <p className="type-body-strong text-content">{t("No matches for “{q}”", { q: typed })}</p>
+                <p className="mt-1 type-caption text-content-muted">{t("Try a shorter word or a brand name.")}</p>
               </div>
             )}
 
@@ -316,7 +318,7 @@ const SearchBox = ({ placeholder = "Search products, brands and more", className
                           setRecent([]);
                         }}
                       >
-                        Clear
+                        {t("Clear")}
                       </button>
                     )}
                   </p>
@@ -436,7 +438,7 @@ const SearchBox = ({ placeholder = "Search products, brands and more", className
                   active === options.length - 1 ? "bg-accent-subtle" : "hover:bg-accent-subtle"
                 )}
               >
-                See all results for “{typed}”
+                {t("See all results for “{q}”", { q: typed })}
                 <kbd className="rounded border border-line px-1.5 py-0.5 text-[0.6875rem] font-medium text-content-muted">
                   Enter
                 </kbd>

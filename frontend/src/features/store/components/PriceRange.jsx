@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import { useI18n } from "../../../lib/i18n";
 
 /**
  * Price filter: a histogram of matching prices with a two-thumb slider on top.
@@ -32,6 +33,7 @@ const nice = (value) => {
 };
 
 const PriceRange = ({ bounds, valueMin, valueMax, onChange }) => {
+  const { t } = useI18n();
   const floor = Math.max(0, bounds?.min ?? 0);
   const ceil = Math.max(bounds?.max ?? 0, floor + 1);
   const isLog = bounds?.scale === "log" && floor > 0;
@@ -147,7 +149,7 @@ const PriceRange = ({ bounds, valueMin, valueMax, onChange }) => {
                   : "border-line text-content-secondary hover:border-accent hover:text-accent-text"
               )}
             >
-              {range.label}
+              {t(range.label)}
             </button>
           );
         })}

@@ -8,6 +8,7 @@ import { Price, Rating } from "./Primitives";
 import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
 import { useToast } from "../../../components/ui/Toast";
+import { useI18n } from "../../../lib/i18n";
 
 /**
  * The catalogue tile.
@@ -23,6 +24,7 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
   const { add } = useCart();
   const notifyAdded = useCartFeedback();
   const toast = useToast();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const imageRef = useRef(null);
   const [justAdded, setJustAdded] = useState(false);
@@ -47,8 +49,8 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
     const result = add(product, 1);
     if (!result.added) {
       toast.info(
-        "Already in your bag",
-        `You have all ${result.inBag} in stock in your bag.`
+        t("Already in your bag"),
+        t("You have all {n} in stock in your bag.", { n: result.inBag })
       );
       return;
     }
@@ -105,12 +107,12 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
           )}
           {lowStock && (
             <span className="rounded-full bg-status-warning-bg px-2 py-0.5 text-[0.6875rem] font-semibold text-status-warning">
-              Only {product.countInStock} left
+              {t("Only {n} left", { n: product.countInStock })}
             </span>
           )}
           {product.isFeatured && !outOfStock && (
             <span className="rounded-full bg-accent-subtle px-2 py-0.5 text-[0.6875rem] font-semibold text-accent-text">
-              Featured
+              {t("Featured")}
             </span>
           )}
         </div>
@@ -122,7 +124,7 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
           type="button"
           whileTap={{ scale: 0.8 }}
           onClick={handleWishlist}
-          className="absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-content-secondary shadow-sm backdrop-blur transition-colors hover:text-status-critical"
+          className="absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--surface-default)_90%,transparent)] text-content-secondary shadow-sm backdrop-blur transition-colors hover:text-status-critical"
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
           aria-pressed={isWishlisted}
         >
@@ -204,17 +206,17 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
               >
                 {justAdded ? (
                   <>
-                    <Check size={15} strokeWidth={3} /> Added
+                    <Check size={15} strokeWidth={3} /> {t("Added")}
                   </>
                 ) : outOfStock ? (
-                  "Sold out"
+                  t("Sold out")
                 ) : product.hasVariants ? (
                   <>
-                    <SlidersHorizontal size={14} /> Choose options
+                    <SlidersHorizontal size={14} /> {t("Choose options")}
                   </>
                 ) : (
                   <>
-                    <ShoppingBag size={14} /> Add to bag
+                    <ShoppingBag size={14} /> {t("Add to bag")}
                   </>
                 )}
               </motion.span>

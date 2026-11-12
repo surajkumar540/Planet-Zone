@@ -15,6 +15,7 @@ import ProductCard from "../components/ProductCard";
 import HeroCarousel from "../components/HeroCarousel";
 import DealOfTheDay from "../components/DealOfTheDay";
 import { useWishlistToggle } from "../hooks/useWishlist";
+import { useI18n } from "../../../lib/i18n";
 
 const PROMISES = [
   { icon: Truck, title: "Free delivery", body: "On orders above ₹499" },
@@ -69,6 +70,7 @@ const uniqueProducts = (...lists) => {
 };
 
 const Home = () => {
+  const { t } = useI18n();
   const { toggle, isWishlisted } = useWishlistToggle();
 
   const featured = useApi(getAllProducts, { isFeatured: true, limit: 4 });
@@ -97,31 +99,31 @@ const Home = () => {
     {
       id: "new",
       palette: "leaf",
-      eyebrow: "Just landed",
-      title: "New season, new shelf",
-      body: "Fresh picks added this week. Be the first to find your new favourite.",
-      cta: { label: "Shop new arrivals", to: "/shop?sort=createdAt:desc" },
+      eyebrow: t("Just landed"),
+      title: t("New season, new shelf"),
+      body: t("Fresh picks added this week. Be the first to find your new favourite."),
+      cta: { label: t("Shop new arrivals"), to: "/shop?sort=createdAt:desc" },
       images: imagesOf(newest.data || []),
     },
     {
       id: "deals",
       palette: "sun",
-      eyebrow: maxDiscount > 0 ? "Limited time" : "Everyday value",
-      title: maxDiscount > 0 ? `Save up to ${maxDiscount}%` : "Prices you'll love",
+      eyebrow: maxDiscount > 0 ? t("Limited time") : t("Everyday value"),
+      title: maxDiscount > 0 ? t("Save up to {n}%", { n: maxDiscount }) : t("Prices you'll love"),
       body:
         maxDiscount > 0
-          ? "On selected essentials while stocks last."
-          : "Fairly priced essentials, delivered across India.",
-      cta: { label: maxDiscount > 0 ? "Shop the deals" : "Browse the shop", to: "/shop?sort=totalPrice:asc" },
+          ? t("On selected essentials while stocks last.")
+          : t("Fairly priced essentials, delivered across India."),
+      cta: { label: maxDiscount > 0 ? t("Shop the deals") : t("Browse the shop"), to: "/shop?sort=totalPrice:asc" },
       images: imagesOf(byDiscount),
     },
     {
       id: "delivery",
       palette: "dusk",
-      eyebrow: "On us",
-      title: "Free delivery over ₹499",
-      body: "Plus 7-day easy returns on every order. No fine print.",
-      cta: { label: "Start shopping", to: "/shop" },
+      eyebrow: t("On us"),
+      title: t("Free delivery over ₹499"),
+      body: t("Plus 7-day easy returns on every order. No fine print."),
+      cta: { label: t("Start shopping"), to: "/shop" },
       images: imagesOf(topRated.data?.length ? topRated.data : everything.slice(3)),
     },
   ];
@@ -154,8 +156,8 @@ const Home = () => {
                 <promise.icon size={18} />
               </motion.span>
               <div className="min-w-0">
-                <p className="text-[0.8125rem] font-semibold leading-snug text-content sm:text-[0.875rem]">{promise.title}</p>
-                <p className="type-caption leading-snug text-content-muted">{promise.body}</p>
+                <p className="text-[0.8125rem] font-semibold leading-snug text-content sm:text-[0.875rem]">{t(promise.title)}</p>
+                <p className="type-caption leading-snug text-content-muted">{t(promise.body)}</p>
               </div>
             </Reveal.Item>
           ))}
@@ -166,9 +168,9 @@ const Home = () => {
       {categories?.length > 0 && (
         <Container className="py-section">
           <SectionHeading
-            eyebrow="Browse"
-            title="Shop by category"
-            description="Jump straight to the shelf you came for."
+            eyebrow={t("Browse")}
+            title={t("Shop by category")}
+            description={t("Jump straight to the shelf you came for.")}
           />
           <Reveal stagger={0.05} className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {categories.slice(0, 6).map((category) => (
@@ -201,11 +203,11 @@ const Home = () => {
       {/* --------------------------------- Bands --------------------------------- */}
       <Container className="py-section">
         <SectionHeading
-          eyebrow="Handpicked"
-          title="Featured this week"
+          eyebrow={t("Handpicked")}
+          title={t("Featured this week")}
           action={
             <Button as={Link} to="/shop?isFeatured=true" variant="link" iconRight={ArrowRight}>
-              View all
+              {t("View all")}
             </Button>
           }
         />
@@ -227,11 +229,11 @@ const Home = () => {
 
       <Container className="pb-section">
         <SectionHeading
-          eyebrow="Just landed"
-          title="New arrivals"
+          eyebrow={t("Just landed")}
+          title={t("New arrivals")}
           action={
             <Button as={Link} to="/shop?sort=createdAt:desc" variant="link" iconRight={ArrowRight}>
-              View all
+              {t("View all")}
             </Button>
           }
         />
@@ -248,11 +250,11 @@ const Home = () => {
       {topRated.data?.length > 0 && (
         <Container className="pb-section">
           <SectionHeading
-            eyebrow="Customer favourites"
-            title="Rated four stars and above"
+            eyebrow={t("Customer favourites")}
+            title={t("Rated four stars and above")}
             action={
               <Button as={Link} to="/shop?minRating=4" variant="link" iconRight={ArrowRight}>
-                View all
+                {t("View all")}
               </Button>
             }
           />
@@ -274,13 +276,13 @@ const Home = () => {
           <Doodle type="sparkle" size={22} float className="absolute left-10 top-8 hidden text-accent-text opacity-50 sm:block" />
           <Doodle type="leaf" size={40} float delay={0.6} className="absolute bottom-8 right-12 hidden text-accent-text opacity-40 sm:block" />
           <h2 className="font-display mt-3 text-[1.75rem] font-semibold tracking-tight text-content sm:text-[2.125rem]">
-            Small shop, carefully stocked
+            {t("Small shop, carefully stocked")}
           </h2>
           <p className="mx-auto mt-2 max-w-[48ch] type-description">
-            Every product is chosen by people, checked before it ships, and easy to send back.
+            {t("Every product is chosen by people, checked before it ships, and easy to send back.")}
           </p>
           <Button as={Link} to="/shop" variant="primary" size="lg" iconRight={ArrowRight} className="mt-6">
-            Explore the shop
+            {t("Explore the shop")}
           </Button>
         </Reveal>
       </Container>

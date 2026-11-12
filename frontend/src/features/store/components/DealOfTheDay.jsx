@@ -9,6 +9,7 @@ import { Price, Rating } from "./Primitives";
 import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
 import { useToast } from "../../../components/ui/Toast";
+import { useI18n } from "../../../lib/i18n";
 
 /** Time left until local midnight, as zero-padded [hours, minutes, seconds]. */
 const untilMidnight = () => {
@@ -55,6 +56,7 @@ const DealOfTheDay = ({ product }) => {
   const { add } = useCart();
   const notifyAdded = useCartFeedback();
   const toast = useToast();
+  const { t } = useI18n();
   const imageRef = useRef(null);
   const [time, setTime] = useState(untilMidnight);
 
@@ -99,7 +101,7 @@ const DealOfTheDay = ({ product }) => {
 
         <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-accent-subtle px-3 py-1 text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-accent-text">
           <Timer size={13} />
-          {discount > 0 ? "Deal of the day" : "Pick of the day"}
+          {discount > 0 ? t("Deal of the day") : t("Pick of the day")}
         </span>
 
         <div>
@@ -116,21 +118,21 @@ const DealOfTheDay = ({ product }) => {
 
         <div>
           <p className="mb-2 type-caption text-content-secondary">
-            {discount > 0 ? "Offer refreshes in" : "Next pick in"}
+            {discount > 0 ? t("Offer refreshes in") : t("Next pick in")}
           </p>
           <div className="flex items-start gap-2">
-            <Unit value={time[0]} label="hrs" />
+            <Unit value={time[0]} label={t("hrs")} />
             <span className="mt-2.5 text-[1.25rem] font-bold text-content-muted">:</span>
-            <Unit value={time[1]} label="min" />
+            <Unit value={time[1]} label={t("min")} />
             <span className="mt-2.5 text-[1.25rem] font-bold text-content-muted">:</span>
-            <Unit value={time[2]} label="sec" />
+            <Unit value={time[2]} label={t("sec")} />
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 pt-1">
           {product.hasVariants ? (
             <Button as={Link} to={`/product/${product._id}`} variant="primary" size="lg" iconRight={ArrowRight}>
-              Choose options
+              {t("Choose options")}
             </Button>
           ) : (
             <Button
@@ -141,17 +143,17 @@ const DealOfTheDay = ({ product }) => {
               onClick={() => {
                 const result = add(product, 1);
                 if (!result.added) {
-                  toast.info("Already in your bag", `You have all ${result.inBag} in stock in your bag.`);
+                  toast.info(t("Already in your bag"), t("You have all {n} in stock in your bag.", { n: result.inBag }));
                   return;
                 }
                 notifyAdded({ product, qty: result.added, inBag: result.inBag, sourceEl: imageRef.current });
               }}
             >
-              {soldOut ? "Sold out" : "Add to bag"}
+              {soldOut ? t("Sold out") : t("Add to bag")}
             </Button>
           )}
           <Button as={Link} to={`/product/${product._id}`} size="lg" variant="ghost">
-            View details
+            {t("View details")}
           </Button>
         </div>
       </div>

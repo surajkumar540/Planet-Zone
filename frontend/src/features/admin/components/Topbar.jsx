@@ -76,7 +76,7 @@ const Topbar = ({ onOpenMobileNav, lowStockCount = 0 }) => {
       className={cn(
         "sticky top-0 z-20 h-topbar shrink-0",
         "flex items-center gap-3 px-4 sm:px-6",
-        "bg-surface/85 backdrop-blur-md border-b border-line-subtle"
+        "bg-[color-mix(in_srgb,var(--surface-default)_94%,transparent)] backdrop-blur-md border-b border-line-subtle"
       )}
     >
       <Button

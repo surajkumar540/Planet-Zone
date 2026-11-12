@@ -8,6 +8,7 @@ import store from "./redux/store/store.js";
 import AppThemeProvider from "./theme/AppThemeProvider.jsx";
 import { ToastProvider } from "./components/ui/Toast.jsx";
 import ErrorBoundary from "./components/ui/ErrorBoundary.jsx";
+import { I18nProvider } from "./lib/i18n.jsx";
 import { installImageFallback } from "./lib/imageFallback.js";
 import "./index.css";
 
@@ -22,6 +23,7 @@ installImageFallback();
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
+      <I18nProvider>
       <AppThemeProvider>
         <ToastProvider>
           <BrowserRouter>
@@ -31,6 +33,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </BrowserRouter>
         </ToastProvider>
       </AppThemeProvider>
+      </I18nProvider>
     </Provider>
   </React.StrictMode>
 );

@@ -6,6 +6,7 @@ import { Check, X } from "lucide-react";
 import Button from "../../../components/ui/Button";
 import { formatCurrency } from "../../../lib/format";
 import { useCart } from "./useStorefront";
+import { useI18n } from "../../../lib/i18n";
 
 /**
  * "Added to bag" feedback, shared by every add-to-cart button.
@@ -111,6 +112,7 @@ export const CartFeedbackProvider = ({ children }) => {
 
 const AddedPanel = ({ added, onClose, onHold, onRelease }) => {
   const { count, subtotal } = useCart();
+  const { t } = useI18n();
 
   return (
     <AnimatePresence>
@@ -137,7 +139,7 @@ const AddedPanel = ({ added, onClose, onHold, onRelease }) => {
               >
                 <Check size={12} strokeWidth={3} />
               </motion.span>
-              Added to your bag
+              {t("Added to your bag")}
             </p>
             <button
               type="button"
@@ -171,17 +173,17 @@ const AddedPanel = ({ added, onClose, onHold, onRelease }) => {
 
           <div className="mt-3 flex items-center justify-between border-t border-line-subtle pt-3 type-caption text-content-secondary">
             <span>
-              Bag: {count} item{count === 1 ? "" : "s"}
+              {count === 1 ? t("Bag: 1 item") : t("Bag: {n} items", { n: count })}
             </span>
             <span className="type-numeric font-semibold text-content">{formatCurrency(subtotal)}</span>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button as={Link} to="/cart" onClick={onClose} fullWidth>
-              View bag
+              {t("View bag")}
             </Button>
             <Button as={Link} to="/checkout" variant="primary" onClick={onClose} fullWidth>
-              Checkout
+              {t("Checkout")}
             </Button>
           </div>
         </motion.aside>

@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import {
   BadgePercent,
   Check,
   ChevronDown,
-  ChevronLeft,
+  ArrowUp,
   ChevronRight,
+  Loader2,
   PackageCheck,
   SlidersHorizontal,
   Sparkles,
@@ -14,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 
-import { getAllProducts, getProductFacets } from "../../../api/productApi";
+import { getProductFacets } from "../../../api/productApi";
 import { useApi } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
 import { Select } from "../../../components/ui/Field";
@@ -28,6 +29,8 @@ import ProductCard from "../components/ProductCard";
 import PriceRange from "../components/PriceRange";
 import SearchBox from "../components/SearchBox";
 import { useWishlistToggle } from "../hooks/useWishlist";
+import useInfiniteProducts from "../hooks/useInfiniteProducts";
+import { useI18n } from "../../../lib/i18n";
 
 const SORT_OPTIONS = [
   { value: "createdAt:desc", label: "Newest first" },
@@ -57,8 +60,7 @@ const Shop = () => {
   const [params, setParams] = useSearchParams();
   const { toggle, isWishlisted } = useWishlistToggle();
   const [sheetOpen, setSheetOpen] = useState(false);
-
-  const page = Number(params.get("page")) || 1;
+  const { t } = useI18n();
 
   const setParam = useCallback(
     (patch) => {
@@ -95,46 +97,56 @@ const Shop = () => {
     return result;
   }, [params]);
 
-  const query = useMemo(
-    () => ({ page, limit: PAGE_SIZE, sort: params.get("sort") || "createdAt:desc", ...filters }),
-    [page, params, filters]
-  );
+  const query = useMemo(() => ({ sort: params.get("sort") || "createdAt:desc", ...filters }), [params, filters]);
 
-  const { data: products, meta, loading, error, refetch } = useApi(getAllProducts, query);
+  const { items: products, total, loading, loadingMore, hasMore, error, loadMore, retry } = useInfiniteProducts(query, PAGE_SIZE);
   const { data: facets } = useApi(getProductFacets, filters);
 
-  // Scroll back to the top of the results when the page number changes.
+  // Infinite scroll: fetch the next batch when the sentinel nears the viewport.
+  const sentinel = useRef(null);
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [page]);
+    const node = sentinel.current;
+    if (!node || !hasMore) return undefined;
+    const observer = new IntersectionObserver((entries) => entries[0].isIntersecting && loadMore(), {
+      rootMargin: "600px 0px",
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore, products]);
+
+  // A "back to top" button once the shopper is well down the list.
+  const [showTop, setShowTop] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 1400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const activeCount = FILTER_KEYS.filter((key) => key !== "search" && params.get(key)).length;
   const department = facets?.departments?.find((dept) => dept._id === params.get("dept"));
   const search = params.get("search");
-  const total = meta?.total ?? 0;
-  const totalPages = meta?.totalPages || 1;
 
   const title = search
-    ? `Results for “${search}”`
+    ? t("Results for “{q}”", { q: search })
     : splitList(params.get("category")).length === 1
       ? params.get("category")
-      : department?.name || "All products";
+      : department?.name || t("All products");
 
   const clearAll = () => setParams({}, { replace: true });
 
   /* -------------------------------- Filter panel ------------------------------- */
   const filterPanel = (
     <div className="divide-y divide-line-subtle">
-      <FilterSection title="Category" count={splitList(params.get("category")).length}>
+      <FilterSection title={t("Category")} count={splitList(params.get("category")).length}>
         <CheckList
           options={facets?.categories || []}
           selected={splitList(params.get("category"))}
           onToggle={(value) => toggleListValue("category", value)}
-          searchPlaceholder="Find a category"
+          searchPlaceholder={t("Find a category")}
         />
       </FilterSection>
 
-      <FilterSection title="Price" count={params.get("minPrice") || params.get("maxPrice") ? 1 : 0}>
+      <FilterSection title={t("Price")} count={params.get("minPrice") || params.get("maxPrice") ? 1 : 0}>
         <PriceRange
           bounds={facets?.price}
           valueMin={params.get("minPrice") || ""}
@@ -143,16 +155,16 @@ const Shop = () => {
         />
       </FilterSection>
 
-      <FilterSection title="Brand" count={splitList(params.get("brand")).length}>
+      <FilterSection title={t("Brand")} count={splitList(params.get("brand")).length}>
         <CheckList
           options={facets?.brands || []}
           selected={splitList(params.get("brand"))}
           onToggle={(value) => toggleListValue("brand", value)}
-          searchPlaceholder="Find a brand"
+          searchPlaceholder={t("Find a brand")}
         />
       </FilterSection>
 
-      <FilterSection title="Customer rating" count={params.get("minRating") ? 1 : 0}>
+      <FilterSection title={t("Customer rating")} count={params.get("minRating") ? 1 : 0}>
         <div className="space-y-1">
           {(facets?.ratings || [{ stars: 4 }, { stars: 3 }, { stars: 2 }]).map(({ stars, count }) => {
             const selected = params.get("minRating") === String(stars);
@@ -177,7 +189,7 @@ const Shop = () => {
                   ))}
                 </span>
                 <span className={cn("flex-1 text-[0.8125rem]", selected ? "font-semibold text-accent-text" : "text-content-secondary")}>
-                  & up
+                  {t("& up")}
                 </span>
                 {count !== undefined && <span className="type-caption type-numeric text-content-muted">{count}</span>}
               </button>
@@ -186,25 +198,25 @@ const Shop = () => {
         </div>
       </FilterSection>
 
-      <FilterSection title="Offers & availability" count={["onSale", "inStock", "isFeatured"].filter((key) => params.get(key)).length}>
+      <FilterSection title={t("Offers & availability")} count={["onSale", "inStock", "isFeatured"].filter((key) => params.get(key)).length}>
         <div className="space-y-2">
           <ToggleRow
             icon={BadgePercent}
-            label="On sale"
+            label={t("On sale")}
             count={facets?.onSale}
             checked={params.get("onSale") === "true"}
             onChange={(checked) => setParam({ onSale: checked ? "true" : "" })}
           />
           <ToggleRow
             icon={PackageCheck}
-            label="In stock"
+            label={t("In stock")}
             count={facets?.inStock}
             checked={params.get("inStock") === "true"}
             onChange={(checked) => setParam({ inStock: checked ? "true" : "" })}
           />
           <ToggleRow
             icon={Sparkles}
-            label="Featured"
+            label={t("Featured")}
             checked={params.get("isFeatured") === "true"}
             onChange={(checked) => setParam({ isFeatured: checked ? "true" : "" })}
           />
@@ -261,7 +273,7 @@ const Shop = () => {
             {title}
           </h1>
           <p className="mt-1 type-description" aria-live="polite">
-            {loading && !products ? "Finding products…" : `${formatNumber(total)} product${total === 1 ? "" : "s"}`}
+            {loading && !products ? t("Finding products…") : total === 1 ? t("1 product") : t("{n} products", { n: formatNumber(total) })}
           </p>
 
           <SearchBox className="mt-4 md:hidden" size="sm" initialValue={search || ""} />
@@ -270,7 +282,7 @@ const Shop = () => {
           {facets?.departments?.length > 0 && (
             <LayoutGroup id="dept-rail">
               <div className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
-                {[{ _id: "", name: "All", count: undefined }, ...facets.departments].map((dept) => {
+                {[{ _id: "", name: t("All"), count: undefined }, ...facets.departments].map((dept) => {
                   const selected = (params.get("dept") || "") === dept._id;
                   return (
                     <button
@@ -313,11 +325,11 @@ const Shop = () => {
             <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-line-subtle bg-surface px-4 py-2 [scrollbar-width:thin]">
               <div className="flex items-center justify-between py-3">
                 <h2 className="flex items-center gap-2 text-[0.9375rem] font-semibold text-content">
-                  <SlidersHorizontal size={16} /> Filters
+                  <SlidersHorizontal size={16} /> {t("Filters")}
                 </h2>
                 {activeCount > 0 && (
                   <button type="button" onClick={clearAll} className="type-caption font-medium text-accent-text hover:underline">
-                    Clear all
+                    {t("Clear all")}
                   </button>
                 )}
               </div>
@@ -329,7 +341,7 @@ const Shop = () => {
           <div>
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <Button icon={SlidersHorizontal} onClick={() => setSheetOpen(true)} className="lg:hidden">
-                Filters
+                {t("Filters")}
                 {activeCount > 0 && (
                   <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[0.6875rem] font-bold text-accent-on">
                     {activeCount}
@@ -365,7 +377,7 @@ const Shop = () => {
                   value={params.get("sort") || "createdAt:desc"}
                   onChange={(event) => setParam({ sort: event.target.value })}
                   aria-label="Sort products"
-                  options={SORT_OPTIONS}
+                  options={SORT_OPTIONS.map((option) => ({ ...option, label: t(option.label) }))}
                 />
               </div>
             </div>
@@ -383,7 +395,7 @@ const Shop = () => {
             </div>
 
             {error ? (
-              <ErrorState description={error} onRetry={refetch} />
+              <ErrorState description={error} onRetry={retry} />
             ) : !products && loading ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
                 {Array.from({ length: 8 }, (_, index) => (
@@ -421,8 +433,25 @@ const Shop = () => {
                     ))}
                   </AnimatePresence>
                 </motion.div>
-
-                {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPage={(next) => setParam({ page: next })} />}
+                {/* Infinite scroll: the sentinel triggers the next batch. */}
+                <div ref={sentinel} className="flex flex-col items-center py-10" aria-live="polite">
+                  {loadingMore ? (
+                    <span className="inline-flex items-center gap-2 type-caption text-content-muted">
+                      <Loader2 size={16} className="animate-spin" /> {t("Loading more…")}
+                    </span>
+                  ) : hasMore ? (
+                    <Button variant="ghost" onClick={loadMore}>
+                      {t("Show {n} more", { n: Math.min(PAGE_SIZE, total - products.length) })}
+                    </Button>
+                  ) : (
+                    total > PAGE_SIZE && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-line-subtle bg-surface px-4 py-2 type-caption text-content-secondary">
+                        <Check size={14} className="text-status-good" />
+                        {t("You've seen all {n} products", { n: formatNumber(total) })}
+                      </span>
+                    )
+                  )}
+                </div>
               </>
             ) : (
               <div className="flex flex-col items-center rounded-2xl border border-dashed border-line px-6 py-14 text-center">
@@ -430,13 +459,13 @@ const Shop = () => {
                   <Doodle type="circle" size={84} className="text-accent-text opacity-40" />
                   <Doodle type="sprout" size={40} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-accent-text" />
                 </div>
-                <h2 className="font-display mt-4 text-[1.5rem] font-semibold text-content">Nothing matched</h2>
+                <h2 className="font-display mt-4 text-[1.5rem] font-semibold text-content">{t("Nothing matched")}</h2>
                 <p className="mt-1 max-w-[40ch] type-description">
-                  Try removing a filter or two, or search for something a little broader.
+                  {t("Try removing a filter or two, or search for something a little broader.")}
                 </p>
                 {(activeCount > 0 || search) && (
                   <Button variant="primary" className="mt-5" onClick={clearAll}>
-                    Clear all filters
+                    {t("Clear all filters")}
                   </Button>
                 )}
               </div>
@@ -444,6 +473,22 @@ const Shop = () => {
           </div>
         </div>
       </Container>
+
+      <AnimatePresence>
+        {showTop && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, y: 16, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.8 }}
+            whileHover={{ y: -3 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-surface-inverse px-4 py-2.5 text-[0.8125rem] font-semibold text-content-inverse shadow-xl"
+          >
+            <ArrowUp size={15} /> {t("Back to top")}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* ------------------------------ Mobile filter sheet ------------------------------ */}
       <AnimatePresence>
@@ -473,11 +518,11 @@ const Shop = () => {
                 <span className="h-1.5 w-10 rounded-full bg-line-strong" />
               </div>
               <div className="flex items-center justify-between border-b border-line-subtle px-5 py-3">
-                <h2 className="text-[1.0625rem] font-semibold text-content">Filters</h2>
+                <h2 className="text-[1.0625rem] font-semibold text-content">{t("Filters")}</h2>
                 <div className="flex items-center gap-3">
                   {activeCount > 0 && (
                     <button type="button" onClick={clearAll} className="type-caption font-medium text-accent-text">
-                      Clear all
+                      {t("Clear all")}
                     </button>
                   )}
                   <button type="button" onClick={() => setSheetOpen(false)} aria-label="Close filters" className="rounded-md p-1 text-content-muted">
@@ -488,7 +533,7 @@ const Shop = () => {
               <div className="flex-1 overflow-y-auto px-5">{filterPanel}</div>
               <div className="border-t border-line-subtle p-4">
                 <Button variant="primary" size="lg" fullWidth onClick={() => setSheetOpen(false)}>
-                  Show {formatNumber(total)} product{total === 1 ? "" : "s"}
+                  {t("Show {n} products", { n: formatNumber(total) })}
                 </Button>
               </div>
             </motion.div>
@@ -543,6 +588,7 @@ const FilterSection = ({ title, count = 0, children, defaultOpen = true }) => {
 
 /** Multi-select checkboxes with live counts, an inline search, and "show more". */
 const CheckList = ({ options, selected, onToggle, searchPlaceholder }) => {
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const [needle, setNeedle] = useState("");
 
@@ -556,7 +602,7 @@ const CheckList = ({ options, selected, onToggle, searchPlaceholder }) => {
     : merged;
   const visible = expanded || needle ? filtered : filtered.slice(0, 6);
 
-  if (!merged.length) return <p className="type-caption text-content-muted">Nothing to filter yet.</p>;
+  if (!merged.length) return <p className="type-caption text-content-muted">{t("Nothing to filter yet.")}</p>;
 
   return (
     <div>
@@ -618,7 +664,7 @@ const CheckList = ({ options, selected, onToggle, searchPlaceholder }) => {
           onClick={() => setExpanded((value) => !value)}
           className="mt-1.5 px-1.5 text-[0.8125rem] font-medium text-accent-text hover:underline"
         >
-          {expanded ? "Show less" : `Show ${filtered.length - 6} more`}
+          {expanded ? t("Show less") : t("Show {n} more", { n: filtered.length - 6 })}
         </button>
       )}
     </div>
@@ -652,37 +698,5 @@ const ToggleRow = ({ icon: Icon, label, count, checked, onChange }) => (
   </button>
 );
 
-/** Numbered pages with ellipses: 1 … 4 5 [6] 7 8 … 20. */
-const Pagination = ({ page, totalPages, onPage }) => {
-  const pages = [];
-  for (let number = 1; number <= totalPages; number += 1) {
-    if (number === 1 || number === totalPages || Math.abs(number - page) <= 1) pages.push(number);
-    else if (pages[pages.length - 1] !== "…") pages.push("…");
-  }
-  return (
-    <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label="Pagination">
-      <Button size="icon-sm" variant="ghost" icon={ChevronLeft} disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page" />
-      {pages.map((number, index) =>
-        number === "…" ? (
-          <span key={`gap-${index}`} className="px-1 text-content-muted">…</span>
-        ) : (
-          <button
-            key={number}
-            type="button"
-            onClick={() => onPage(number)}
-            aria-current={number === page ? "page" : undefined}
-            className={cn(
-              "h-9 min-w-9 rounded-lg px-2 text-[0.875rem] font-semibold type-numeric transition-colors",
-              number === page ? "bg-accent text-accent-on shadow-sm" : "text-content-secondary hover:bg-surface-hover"
-            )}
-          >
-            {number}
-          </button>
-        )
-      )}
-      <Button size="icon-sm" variant="ghost" icon={ChevronRight} disabled={page >= totalPages} onClick={() => onPage(page + 1)} aria-label="Next page" />
-    </nav>
-  );
-};
 
 export default Shop;

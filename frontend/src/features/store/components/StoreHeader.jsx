@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import Logo from "../../../components/ui/Logo";
 import SearchBox from "./SearchBox";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useI18n } from "../../../lib/i18n";
 
 import cn from "../../../lib/cn";
 import Button from "../../../components/ui/Button";
@@ -42,6 +44,7 @@ const StoreHeader = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { pathname, search } = useLocation();
+  const { t } = useI18n();
   // Keeps the box showing the active query when the shop is opened from a search.
   const currentSearch = pathname === "/shop" ? new URLSearchParams(search).get("search") || "" : "";
   const { count } = useCart();
@@ -109,8 +112,8 @@ const StoreHeader = () => {
         // A menu panel hangs off the bar on mobile, so it takes the solid
         // treatment while open regardless of scroll position.
         scrolled || menuOpen
-          ? "border-line-subtle bg-surface/80 shadow-sm backdrop-blur-xl backdrop-saturate-150"
-          : "border-transparent bg-surface/40 backdrop-blur-md"
+          ? "border-line-subtle bg-[color-mix(in_srgb,var(--surface-default)_94%,transparent)] shadow-sm backdrop-blur-md"
+          : "border-transparent bg-surface-canvas"
       )}
     >
       <Container className="flex h-16 items-center gap-3">
@@ -131,7 +134,7 @@ const StoreHeader = () => {
         <nav className="ml-4 hidden items-center lg:flex" aria-label="Primary">
           {NAV_LINKS.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.end} className={navClass}>
-              {link.label}
+              {t(link.label)}
             </NavLink>
           ))}
         </nav>
@@ -141,6 +144,7 @@ const StoreHeader = () => {
         </div>
 
         <div className="ml-auto flex items-center gap-1 md:ml-2">
+          <LanguageSwitcher />
           <Button
             size="icon"
             variant="ghost"
@@ -209,11 +213,11 @@ const StoreHeader = () => {
                   className="absolute right-0 top-full z-50 mt-1 w-52 animate-slide-up overflow-hidden rounded-md border border-line bg-surface-overlay p-1 shadow-lg"
                 >
                   {isAdmin && (
-                    <MenuLink to="/admin" icon={LayoutDashboard} label="Dashboard" />
+                    <MenuLink to="/admin" icon={LayoutDashboard} label={t("Dashboard")} />
                   )}
-                  <MenuLink to="/profile" icon={User} label="Profile" />
-                  <MenuLink to="/orders" icon={Package} label="Orders" />
-                  <MenuLink to="/wishlist" icon={Heart} label="Wishlist" />
+                  <MenuLink to="/profile" icon={User} label={t("Profile")} />
+                  <MenuLink to="/orders" icon={Package} label={t("Orders")} />
+                  <MenuLink to="/wishlist" icon={Heart} label={t("Wishlist")} />
                   <div className="my-1 h-px bg-line-subtle" />
                   <button
                     type="button"
@@ -222,14 +226,14 @@ const StoreHeader = () => {
                     className="flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 type-button text-status-critical transition-colors hover:bg-status-critical-bg"
                   >
                     <LogOut size={15} />
-                    Sign out
+                    {t("Sign out")}
                   </button>
                 </div>
               )}
             </div>
           ) : (
             <Button as={Link} to="/login" size="sm" variant="primary" className="ml-1">
-              Sign in
+              {t("Sign in")}
             </Button>
           )}
         </div>
@@ -245,11 +249,11 @@ const StoreHeader = () => {
           <Container className="flex flex-col gap-1 py-3">
             {NAV_LINKS.map((link) => (
               <NavLink key={link.to} to={link.to} end={link.end} className={navClass}>
-                {link.label}
+                {t(link.label)}
               </NavLink>
             ))}
             <NavLink to="/wishlist" className={navClass}>
-              Wishlist
+              {t("Wishlist")}
             </NavLink>
           </Container>
         </div>

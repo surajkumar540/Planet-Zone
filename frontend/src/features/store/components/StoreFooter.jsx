@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
 import Logo from "../../../components/ui/Logo";
+import { useI18n } from "../../../lib/i18n";
 
 import { Container } from "./Primitives";
 
@@ -32,7 +33,9 @@ const COLUMNS = [
   },
 ];
 
-const StoreFooter = () => (
+const StoreFooter = () => {
+  const { t } = useI18n();
+  return (
   <footer className="mt-section border-t border-line-subtle bg-surface-sunken">
     <Container className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
       <div>
@@ -40,7 +43,7 @@ const StoreFooter = () => (
           <Logo size="md" />
         </Link>
         <p className="type-description max-w-[38ch]">
-          Everyday essentials, sourced carefully and delivered across India.
+          {t("Everyday essentials, sourced carefully and delivered across India.")}
         </p>
 
         <ul className="mt-5 flex flex-col gap-2">
@@ -64,8 +67,8 @@ const StoreFooter = () => (
       </div>
 
       {COLUMNS.map((column) => (
-        <nav key={column.title} aria-label={column.title}>
-          <h3 className="type-overline mb-3 text-content">{column.title}</h3>
+        <nav key={column.title} aria-label={t(column.title)}>
+          <h3 className="type-overline mb-3 text-content">{t(column.title)}</h3>
           <ul className="flex flex-col gap-2">
             {column.links.map((link) => (
               <li key={link.label}>
@@ -73,7 +76,7 @@ const StoreFooter = () => (
                   to={link.to}
                   className="type-caption text-content-secondary transition-colors hover:text-accent-text"
                 >
-                  {link.label}
+                  {t(link.label)}
                 </Link>
               </li>
             ))}
@@ -85,14 +88,15 @@ const StoreFooter = () => (
     <div className="border-t border-line-subtle">
       <Container className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="type-caption text-content-muted">
-          © {new Date().getFullYear()} Planet. All rights reserved.
+          © {new Date().getFullYear()} Planet Zone. {t("All rights reserved.")}
         </p>
         <p className="type-caption text-content-muted">
-          Prices include GST where applicable.
+          {t("Prices include GST where applicable.")}
         </p>
       </Container>
     </div>
   </footer>
-);
+  );
+};
 
 export default StoreFooter;

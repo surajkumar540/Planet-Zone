@@ -25,6 +25,7 @@ import { formatDate, formatNumber } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { Container, Price, QuantityStepper, Rating, SectionHeading } from "../components/Primitives";
 import ProductCard from "../components/ProductCard";
+import ZoomImage from "../components/ZoomImage";
 import { useCart, useSession } from "../hooks/useStorefront";
 import { useWishlistToggle } from "../hooks/useWishlist";
 import { useCartFeedback } from "../hooks/useCartFeedback";
@@ -124,14 +125,12 @@ const ProductDetail = () => {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           {/* -------------------------------- Gallery ------------------------------- */}
           <div>
-            <div className="overflow-hidden rounded-xl border border-line-subtle bg-surface">
-              <img
-                ref={imageRef}
-                src={gallery[activeImage] || product.image}
-                alt={product.name}
-                className="aspect-square w-full object-cover"
-              />
-            </div>
+            <ZoomImage
+              ref={imageRef}
+              src={gallery[activeImage] || product.image}
+              alt={product.name}
+              className="rounded-2xl border border-line-subtle bg-surface"
+            />
 
             {gallery.length > 1 && (
               <div className="mt-3 flex gap-2 overflow-x-auto pb-1">

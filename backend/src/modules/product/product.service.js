@@ -42,12 +42,33 @@ const departmentIds = async (dept) => {
   return [dept, ...descendants.map((category) => category.id)];
 };
 
+/**
+ * Categories whose name contains the search text, plus everything beneath
+ * them. Lets "elec" find every product under Electronics, even though no
+ * product is literally named "electronic".
+ */
+const categoriesMatching = async (search) => {
+  if (!search) return [];
+  const matches = await prisma.category.findMany({
+    where: { name: { contains: escapeLike(search), mode: "insensitive" } },
+    select: { id: true },
+  });
+  if (!matches.length) return [];
+  const ids = matches.map((category) => category.id);
+  const descendants = await prisma.category.findMany({
+    where: { ancestors: { hasSome: ids } },
+    select: { id: true },
+  });
+  return [...ids, ...descendants.map((category) => category.id)];
+};
+
 /** Translates the validated list query into a Prisma filter. */
 const buildFilter = ({
   search,
   category,
   categoryRef,
   deptIds,
+  searchCategoryIds,
   onSale,
   brand,
   minPrice,
@@ -64,7 +85,13 @@ const buildFilter = ({
   // Inactive products are hidden from the storefront; the dashboard opts in.
   if (!includeInactive) where.isActive = true;
 
-  if (search) Object.assign(where, searchFilter(search, ["name", "brand", "category", "sku"]));
+  if (search) {
+    const text = searchFilter(search, ["name", "brand", "category", "sku", "shortDescription"]);
+    where.OR = [
+      ...text.OR,
+      ...(searchCategoryIds?.length ? [{ categoryRefId: { in: searchCategoryIds } }] : []),
+    ];
+  }
   if (splitList(category).length) where.category = oneOrMany(splitList(category));
   if (categoryRef) where.categoryRefId = categoryRef;
   if (deptIds?.length) where.categoryRefId = { in: deptIds };
@@ -94,6 +121,7 @@ const buildFilter = ({
 const resolveQuery = async (query) => ({
   ...query,
   deptIds: query.dept ? await departmentIds(query.dept) : undefined,
+  searchCategoryIds: await categoriesMatching(query.search),
 });
 
 const listProducts = async (rawQuery) => {
@@ -428,9 +456,18 @@ const matchRank = (name, q) => {
  */
 const suggest = async ({ q, limit }) => {
   const contains = { contains: escapeLike(q), mode: "insensitive" };
+  const categoryIds = await categoriesMatching(q);
   const [products, categories, brands] = await Promise.all([
     prisma.product.findMany({
-      where: { isActive: true, OR: [{ name: contains }, { brand: contains }, { category: contains }] },
+      where: {
+        isActive: true,
+        OR: [
+          { name: contains },
+          { brand: contains },
+          { category: contains },
+          ...(categoryIds.length ? [{ categoryRefId: { in: categoryIds } }] : []),
+        ],
+      },
       select: { id: true, name: true, image: true, totalPrice: true, price: true, discount: true, brand: true, category: true },
       take: 40,
     }),

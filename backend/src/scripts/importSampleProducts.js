@@ -93,7 +93,10 @@ const ensureCategories = async () => {
 };
 
 const toPayload = (item, category, featured) => {
-  const images = [...new Set([...(item.images || []), item.thumbnail].filter(Boolean))];
+  // The thumbnail is a ~300px preview; shown full size it looks blurry, so it
+  // is only used when a product has no full-size images at all.
+  const fullSize = (item.images || []).filter(Boolean);
+  const images = fullSize.length ? [...new Set(fullSize)] : [item.thumbnail].filter(Boolean);
   const firstSentence = (item.description || "").split(/(?<=\.)\s/)[0];
 
   const attributes = [

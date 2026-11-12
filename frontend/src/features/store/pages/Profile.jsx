@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
@@ -6,7 +7,9 @@ import {
   BadgeCheck,
   Briefcase,
   Camera,
+  Eye,
   Loader2,
+  X as CloseIcon,
   Check,
   Heart,
   Home,
@@ -62,8 +65,39 @@ const AvatarUploader = ({ user, onSaved }) => {
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [viewing, setViewing] = useState(false);
+  // The menu is drawn in a portal at the photo's on-screen position, so the
+  // card's rounded, overflow-hidden frame can never clip it.
+  const anchor = useRef(null);
+  const [menuAt, setMenuAt] = useState(null);
 
   const shown = preview ?? user?.avatar ?? "";
+
+  const openMenu = () => {
+    const rect = anchor.current?.getBoundingClientRect();
+    if (rect) setMenuAt({ top: rect.bottom + 8, left: rect.left });
+    setMenuOpen(true);
+  };
+
+  // Close on outside click, Escape, scroll or resize (the anchor would move).
+  useEffect(() => {
+    if (!menuOpen && !viewing) return undefined;
+    const close = () => setMenuOpen(false);
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setViewing(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [menuOpen, viewing]);
   const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "?";
 
   const save = async (avatar, message) => {
@@ -95,12 +129,12 @@ const AvatarUploader = ({ user, onSaved }) => {
   };
 
   return (
-    <div className="relative shrink-0">
+    <div className="relative shrink-0" ref={anchor}>
       <motion.button
         type="button"
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        onClick={() => (shown ? setMenuOpen((open) => !open) : input.current?.click())}
+        onClick={() => (shown ? (menuOpen ? setMenuOpen(false) : openMenu()) : input.current?.click())}
         aria-label={shown ? "Change profile photo" : "Add a profile photo"}
         className="group relative block h-24 w-24 overflow-hidden rounded-full shadow-lg ring-4 ring-surface"
       >
@@ -136,38 +170,92 @@ const AvatarUploader = ({ user, onSaved }) => {
 
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={choose} />
 
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            className="absolute left-0 top-full z-20 mt-2 w-44 rounded-xl border border-line bg-surface-overlay p-1 shadow-lg"
-            onMouseLeave={() => setMenuOpen(false)}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                input.current?.click();
-              }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[0.875rem] text-content hover:bg-surface-hover"
+      {createPortal(
+        <AnimatePresence>
+          {menuOpen && menuAt && (
+            <>
+              <div className="fixed inset-0 z-[90]" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+              <motion.div
+                role="menu"
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                transition={{ duration: 0.15 }}
+                style={{ top: menuAt.top, left: menuAt.left }}
+                className="fixed z-[91] w-48 origin-top-left rounded-xl border border-line bg-surface-overlay p-1 shadow-xl"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setViewing(true);
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[0.875rem] transition-colors text-content hover:bg-surface-hover"
+                >
+                  <Eye size={15} /> View photo
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    input.current?.click();
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[0.875rem] transition-colors text-content hover:bg-surface-hover"
+                >
+                  <Camera size={15} /> Upload new photo
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    save("", "Profile photo removed");
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[0.875rem] transition-colors text-status-critical hover:bg-status-critical-bg"
+                >
+                  <Trash2 size={15} /> Remove photo
+                </button>
+              </motion.div>
+            </>
+          )}
+
+          {viewing && shown && (
+            <motion.div
+              key="viewer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Profile photo"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setViewing(false)}
+              className="fixed inset-0 z-[95] flex items-center justify-center bg-black/75 p-6 backdrop-blur-sm"
             >
-              <Camera size={15} /> Upload new photo
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                save("", "Profile photo removed");
-              }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[0.875rem] text-status-critical hover:bg-status-critical-bg"
-            >
-              <Trash2 size={15} /> Remove photo
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <motion.img
+                src={shown}
+                alt="Your profile photo"
+                initial={{ scale: 0.85 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                onClick={(event) => event.stopPropagation()}
+                className="aspect-square w-[min(80vw,22rem)] rounded-full object-cover shadow-2xl ring-4 ring-white/80"
+              />
+              <button
+                type="button"
+                onClick={() => setViewing(false)}
+                aria-label="Close"
+                className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+              >
+                <CloseIcon size={20} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };

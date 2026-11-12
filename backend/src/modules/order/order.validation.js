@@ -64,7 +64,12 @@ const quoteOrderSchema = z.object({
 });
 
 const listOrdersQuery = listQuery.extend({
-  status: z.enum(ORDER_STATUS_VALUES).optional(),
+  // One status, or several comma-separated ("confirmed,processing").
+  status: z
+    .string()
+    .optional()
+    .transform((value) => (value ? value.split(",").map((part) => part.trim()).filter(Boolean) : undefined))
+    .pipe(z.array(z.enum(ORDER_STATUS_VALUES)).optional()),
   paymentStatus: z.enum(PAYMENT_STATUS_VALUES).optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),

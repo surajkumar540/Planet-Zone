@@ -200,7 +200,7 @@ const AppearanceSettings = () => {
 
 const StoreSettings = () => {
   const toast = useToast();
-  const { data, loading, refetch } = useApi(getSettings, null);
+  const { data, loading, reload } = useApi(getSettings, null);
   const { mutate: save, loading: saving } = useMutation(updateSettings);
   const [form, setForm] = useState(null);
 
@@ -232,7 +232,7 @@ const StoreSettings = () => {
     try {
       await save(form);
       toast.success("Settings saved");
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not save settings", getErrorMessage(caught));
     }
@@ -347,7 +347,7 @@ const StoreSettings = () => {
 
 const ProfileSettings = () => {
   const toast = useToast();
-  const { data, loading, refetch } = useApi(getProfile, null);
+  const { data, loading, reload } = useApi(getProfile, null);
   const { mutate: save, loading: saving } = useMutation(setProfile);
   const [form, setForm] = useState(null);
 
@@ -375,7 +375,7 @@ const ProfileSettings = () => {
     try {
       await save(form);
       toast.success("Profile updated");
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not update profile", getErrorMessage(caught));
     }

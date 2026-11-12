@@ -1,5 +1,8 @@
 import { Suspense, lazy } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { ArrowLeft, LayoutDashboard, ShoppingBag, Store } from "lucide-react";
+import LostPage from "../../components/ui/LostPage";
+import Button from "../../components/ui/Button";
 import { useSelector } from "react-redux";
 import { getAnalyticsSummary } from "../../api/adminApi";
 import { useApi } from "../../hooks/useApi";
@@ -13,6 +16,7 @@ import { Card } from "../../components/ui/Card";
  */
 const Overview = lazy(() => import("./pages/Overview"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Reports = lazy(() => import("./pages/Reports"));
 const Orders = lazy(() => import("./pages/Orders"));
 const OrderDetail = lazy(() => import("./pages/OrderDetail"));
 const Products = lazy(() => import("./pages/Products"));
@@ -38,6 +42,48 @@ const RouteFallback = () => (
   </div>
 );
 
+/** Unknown path inside the dashboard: stays in the dashboard, says so plainly. */
+const AdminNotFound = () => (
+  <Card>
+    <LostPage
+      compact
+      title="No such dashboard page"
+      description="The link may be old, or the page was moved. Everything is reachable from the menu on the left."
+      actions={
+        <>
+          <Button as={Link} to="/admin" variant="primary" icon={LayoutDashboard}>
+            Go to dashboard
+          </Button>
+          <Button as={Link} to="/admin/orders" variant="secondary" icon={ShoppingBag}>
+            Orders
+          </Button>
+        </>
+      }
+    />
+  </Card>
+);
+
+/** A signed-in customer who followed a dashboard link. */
+const NoAccess = () => (
+  <div className="min-h-screen bg-surface-canvas">
+    <LostPage
+      code="403"
+      title="This area is for the store team"
+      description="You're signed in with a customer account, which can't open the dashboard. If you work here, ask an admin to give your account access."
+      actions={
+        <>
+          <Button as={Link} to="/" variant="primary" icon={Store}>
+            Back to the shop
+          </Button>
+          <Button as={Link} to="/orders" variant="secondary" icon={ArrowLeft}>
+            Your orders
+          </Button>
+        </>
+      }
+    />
+  </div>
+);
+
 /**
  * Dashboard routes.
  *
@@ -47,7 +93,8 @@ const RouteFallback = () => (
  * boundary — this only decides what to render.
  */
 const AdminRoutes = () => {
-  const { isAdminLogged, status } = useSelector((state) => state.user);
+  const { isAdminLogged, isUserLogged, status } = useSelector((state) => state.user);
+  const location = useLocation();
 
   // The low-stock count feeds the header badge across every dashboard screen.
   // The light summary endpoint is enough; the overview page loads the full dashboard itself.
@@ -57,7 +104,11 @@ const AdminRoutes = () => {
   });
 
   if (status === "idle" || status === "loading") return <RouteFallback />;
-  if (!isAdminLogged) return <Navigate to="/login" replace />;
+  if (!isAdminLogged) {
+    // Signed out: sign in, then come straight back here.
+    if (!isUserLogged) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+    return <NoAccess />;
+  }
 
   return (
     <Routes>
@@ -160,12 +211,11 @@ const AdminRoutes = () => {
             </Suspense>
           }
         />
-        {/* Reports reuse the analytics screen until they diverge. */}
         <Route
           path="reports"
           element={
             <Suspense fallback={<RouteFallback />}>
-              <Analytics />
+              <Reports />
             </Suspense>
           }
         />
@@ -178,8 +228,7 @@ const AdminRoutes = () => {
           }
         />
 
-        {/* Unknown dashboard paths return to the overview rather than the storefront. */}
-        <Route path="*" element={<Navigate to="/admin" replace />} />
+        <Route path="*" element={<AdminNotFound />} />
       </Route>
     </Routes>
   );

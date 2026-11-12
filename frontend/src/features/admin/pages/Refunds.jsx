@@ -31,7 +31,7 @@ const STATUS_TONE = {
 const Refunds = () => {
   const toast = useToast();
   const list = useListParams({ limit: 20, sort: "createdAt:desc" });
-  const { data, meta, loading, error, refetch } = useApi(getRefunds, list.params);
+  const { data, meta, loading, error, refetch, reload } = useApi(getRefunds, list.params);
 
   const { mutate: review } = useMutation(reviewRefund);
   const { mutate: complete } = useMutation(processRefund);
@@ -47,7 +47,7 @@ const Refunds = () => {
         await review(refund._id, { approve: action === "approve" });
         toast.success(action === "approve" ? "Refund approved" : "Refund rejected");
       }
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not update refund", getErrorMessage(caught));
     } finally {

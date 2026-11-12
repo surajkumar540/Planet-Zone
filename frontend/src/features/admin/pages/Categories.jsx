@@ -156,7 +156,7 @@ const CategoryForm = ({ parent, onClose, onSaved }) => {
 
 const Categories = () => {
   const toast = useToast();
-  const { data, loading, error, refetch } = useApi(getCategoryTree, { includeCounts: "true" });
+  const { data, loading, error, refetch, reload } = useApi(getCategoryTree, { includeCounts: "true" });
   const { mutate: removeCategory, loading: deleting } = useMutation(deleteCategory);
 
   const [formState, setFormState] = useState(null);
@@ -167,7 +167,7 @@ const Categories = () => {
       await removeCategory(pendingDelete._id);
       toast.success("Category deleted", pendingDelete.name);
       setPendingDelete(null);
-      refetch();
+      reload();
     } catch (caught) {
       // The API refuses while subcategories or products still reference it.
       toast.error("Could not delete category", getErrorMessage(caught));
@@ -223,7 +223,7 @@ const Categories = () => {
         <CategoryForm
           parent={formState.parent}
           onClose={() => setFormState(null)}
-          onSaved={refetch}
+          onSaved={reload}
         />
       )}
 

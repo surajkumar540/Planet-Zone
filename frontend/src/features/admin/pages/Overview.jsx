@@ -1,72 +1,153 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import {
+  ArrowDownRight,
   ArrowRight,
-  IndianRupee,
-  Package,
-  ShoppingCart,
+  ArrowUpRight,
+  Banknote,
+  BarChart3,
+  CheckCircle2,
+  ClipboardCheck,
+  ExternalLink,
+  FileSpreadsheet,
+  Inbox,
+  PackageCheck,
+  PackageOpen,
+  Plus,
+  RotateCcw,
+  Tag,
   TriangleAlert,
-  Users,
+  Truck,
 } from "lucide-react";
-import { getDashboard } from "../../../api/adminApi";
-import { useApi } from "../../../hooks/useApi";
-import PageHeader from "../../../components/ui/PageHeader";
-import { Card, CardBody, CardHeader } from "../../../components/ui/Card";
+
+import { getToday, updateOrderStatus } from "../../../api/adminApi";
+import { useApi, useMutation } from "../../../hooks/useApi";
+import { useToast } from "../../../components/ui/Toast";
+import { Card, CardHeader } from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
-import Badge from "../../../components/ui/Badge";
 import Avatar from "../../../components/ui/Avatar";
-import { Select } from "../../../components/ui/Field";
 import { EmptyState, ErrorState } from "../../../components/ui/States";
-import { SkeletonText } from "../../../components/ui/Skeleton";
-import StatTile from "../components/StatTile";
+import { Skeleton, SkeletonText } from "../../../components/ui/Skeleton";
 import { OrderStatusBadge } from "../components/StatusBadge";
-import {
-  CategoryBarChart,
-  OrdersBarChart,
-  RevenueAreaChart,
-  StatusDonutChart,
-} from "../../../components/charts/ChartKit";
-import {
-  formatCurrency,
-  formatDate,
-  formatNumber,
-  formatRelativeTime,
-} from "../../../lib/format";
+import { formatCurrency, formatNumber, formatRelativeTime } from "../../../lib/format";
+import { getErrorMessage } from "../../../lib/apiError";
+import cn from "../../../lib/cn";
 
-const RANGE_OPTIONS = [
-  { value: "7", label: "Last 7 days" },
-  { value: "30", label: "Last 30 days" },
-  { value: "90", label: "Last 90 days" },
-  { value: "365", label: "Last 12 months" },
-];
+/** The one obvious next step for an order, as on the order page. */
+const NEXT_STEP = {
+  pending: { status: "confirmed", label: "Confirm" },
+  confirmed: { status: "processing", label: "Start packing" },
+  processing: { status: "packed", label: "Mark packed" },
+  // Shipping needs a tracking number, so it opens the order instead.
+  packed: { label: "Ship", openOrder: true },
+  shipped: { status: "out_for_delivery", label: "Out for delivery" },
+  out_for_delivery: { status: "delivered", label: "Delivered" },
+};
 
-/** Turns the range selection into the API's `from`/`interval` contract. */
-const buildRangeParams = (days) => {
-  const from = new Date();
-  from.setDate(from.getDate() - Number(days));
-  from.setHours(0, 0, 0, 0);
+const greeting = () => {
+  const hour = new Date().getHours();
+  return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+};
 
-  return {
-    from: from.toISOString(),
-    // Daily buckets get unreadable past a quarter, so longer ranges roll up.
-    interval: Number(days) > 120 ? "month" : Number(days) > 45 ? "week" : "day",
+/** Up/down chip comparing today with yesterday. */
+const Delta = ({ change }) => {
+  if (change === undefined || change === null) return null;
+  const flat = Math.abs(change) < 0.05;
+  const up = change > 0;
+  const Icon = up ? ArrowUpRight : ArrowDownRight;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[0.75rem] font-semibold",
+        flat ? "bg-surface-sunken text-content-secondary" : up ? "bg-status-good-bg text-status-good" : "bg-status-critical-bg text-status-critical"
+      )}
+    >
+      {!flat && <Icon size={13} />}
+      {flat ? "Same as yesterday" : `${Math.abs(change)}% vs yesterday`}
+    </span>
+  );
+};
+
+/** One to-do: a count, what it means, and where to go to deal with it. */
+const TodoCard = ({ icon: Icon, count, title, detail, to, tone = "accent", index }) => {
+  const clear = !count;
+  const tones = {
+    accent: "bg-accent-subtle text-accent-text",
+    warning: "bg-status-warning-bg text-status-warning",
+    critical: "bg-status-critical-bg text-status-critical",
+    info: "bg-status-info-bg text-status-info",
   };
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}>
+      <Link
+        to={to}
+        className={cn(
+          "group flex h-full items-start gap-3 rounded-2xl border bg-surface p-4 transition-all",
+          clear ? "border-line-subtle" : "border-line hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
+        )}
+      >
+        <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", clear ? "bg-surface-sunken text-content-muted" : tones[tone])}>
+          {clear ? <CheckCircle2 size={19} /> : <Icon size={19} />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline gap-2">
+            <span className={cn("type-numeric text-[1.5rem] font-semibold leading-none", clear ? "text-content-muted" : "text-content")}>
+              {formatNumber(count || 0)}
+            </span>
+            <span className={cn("text-[0.875rem] font-semibold", clear ? "text-content-muted" : "text-content")}>{title}</span>
+          </span>
+          <span className="mt-1 block type-caption text-content-muted">{clear ? "All clear" : detail}</span>
+        </span>
+        {!clear && <ArrowRight size={16} className="mt-1 shrink-0 text-content-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-text" />}
+      </Link>
+    </motion.div>
+  );
+};
+
+/** Seven simple bars, one per day, so the week reads at a glance. */
+const WeekBars = ({ days = [] }) => {
+  const max = Math.max(1, ...days.map((day) => day.revenue));
+  return (
+    <div className="flex h-28 items-end gap-2" role="img" aria-label="Sales for the last 7 days">
+      {days.map((day, index) => {
+        const isToday = index === days.length - 1;
+        const label = new Date(`${day.bucket}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short" });
+        return (
+          <div key={day.bucket} className="group relative flex flex-1 flex-col items-center gap-1.5">
+            <span className="pointer-events-none absolute -top-7 whitespace-nowrap rounded-md bg-surface-inverse px-1.5 py-0.5 text-[0.6875rem] font-semibold text-content-inverse opacity-0 transition-opacity group-hover:opacity-100">
+              {formatCurrency(day.revenue)} · {day.orders}
+            </span>
+            <motion.span
+              initial={{ height: 0 }}
+              animate={{ height: `${Math.max(4, (day.revenue / max) * 84)}px` }}
+              transition={{ delay: index * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className={cn("w-full max-w-[2.25rem] rounded-md", isToday ? "bg-accent" : "bg-accent-subtle group-hover:bg-accent group-hover:opacity-60")}
+            />
+            <span className={cn("text-[0.6875rem]", isToday ? "font-semibold text-content" : "text-content-muted")}>
+              {isToday ? "Today" : label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 /**
- * The dashboard's landing screen.
+ * Dashboard home: what needs doing today.
  *
- * Everything comes from one `/analytics/dashboard` request rather than eight,
- * so the whole screen resolves together instead of popping in panel by panel.
+ * Trends live in Analytics and downloadable numbers in Reports; this screen
+ * answers "how is today going, and what should I do next?", with each to-do
+ * linking straight to the filtered list that resolves it.
  */
 const Overview = () => {
-  const [range, setRange] = useState("30");
-  const params = useMemo(() => buildRangeParams(range), [range]);
-
-  const { data, loading, error, refetch } = useApi(getDashboard, params);
-
-  const summary = data?.summary;
-  const lowStock = data?.lowStockProducts || [];
+  const toast = useToast();
+  const { userObj } = useSelector((state) => state.user);
+  const { data, loading, error, refetch, reload } = useApi(getToday, null);
+  const { mutate } = useMutation(updateOrderStatus);
+  const [busyId, setBusyId] = useState(null);
 
   if (error) {
     return (
@@ -76,287 +157,204 @@ const Overview = () => {
     );
   }
 
+  const queue = data?.queue || {};
+  const week = data?.week?.slice(-7) || [];
+  const weekTotal = week.reduce((sum, day) => sum + day.revenue, 0);
+
+  const advance = async (order, step) => {
+    setBusyId(order._id);
+    try {
+      await mutate(order._id, { status: step.status });
+      toast.success(`${order.orderNumber} updated`, `${step.label} done.`);
+      reload();
+    } catch (caught) {
+      toast.error("Could not update order", getErrorMessage(caught));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const todos = [
+    { icon: ClipboardCheck, count: queue.toConfirm, title: "to confirm", detail: "New orders waiting for you", to: "/admin/orders?status=pending", tone: "info" },
+    { icon: PackageOpen, count: queue.toPack, title: "to pack", detail: "Confirmed, not packed yet", to: "/admin/orders?status=confirmed,processing" },
+    { icon: PackageCheck, count: queue.toShip, title: "ready to ship", detail: "Packed, add tracking & ship", to: "/admin/orders?status=packed" },
+    { icon: Truck, count: queue.inTransit, title: "on the way", detail: "Shipped or out for delivery", to: "/admin/orders?status=shipped,out_for_delivery", tone: "info" },
+    {
+      icon: Banknote,
+      count: queue.codToCollect?.orders,
+      title: "cash to collect",
+      detail: `${formatCurrency(queue.codToCollect?.amount)} due on delivery`,
+      to: "/admin/orders?paymentStatus=pending",
+      tone: "warning",
+    },
+    { icon: TriangleAlert, count: queue.lowStock, title: "low on stock", detail: "Reorder before they sell out", to: "/admin/inventory?lowStock=true", tone: "critical" },
+    { icon: Inbox, count: queue.unreadMessages, title: "unread messages", detail: "From the contact form", to: "/admin/messages", tone: "info" },
+    { icon: RotateCcw, count: queue.refundRequests, title: "refund requests", detail: "Waiting for review", to: "/admin/refunds", tone: "warning" },
+  ];
+  const openTodos = todos.filter((todo) => todo.count > 0).length;
+
   return (
     <div className="space-y-section">
-      <PageHeader
-        title="Dashboard"
-        description="Your store at a glance."
-        actions={
-          <Select
-            aria-label="Date range"
-            value={range}
-            onChange={(event) => setRange(event.target.value)}
-            options={RANGE_OPTIONS}
-            className="w-[168px]"
+      {/* ------------------------------- Greeting ------------------------------- */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="type-caption text-content-muted">
+            {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+          <h1 className="font-display mt-0.5 text-[1.75rem] font-semibold leading-tight text-content">
+            {greeting()}
+            {userObj?.firstName ? `, ${userObj.firstName}` : ""}
+          </h1>
+          <p className="mt-1 type-body text-content-secondary">
+            {loading
+              ? "Checking what needs doing…"
+              : openTodos
+                ? `You have ${openTodos} thing${openTodos === 1 ? "" : "s"} to look at today.`
+                : "Everything is up to date. Nice work!"}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button as={Link} to="/" target="_blank" variant="secondary" icon={ExternalLink}>
+            View store
+          </Button>
+          <Button as={Link} to="/admin/products?new=1" variant="primary" icon={Plus}>
+            Add product
+          </Button>
+        </div>
+      </div>
+
+      {/* ----------------------------- Today's sales ---------------------------- */}
+      <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1.4fr]">
+        <Card className="relative overflow-hidden p-5">
+          <span
+            className="absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-15"
+            style={{ background: "radial-gradient(circle, var(--brand-leaf-from), transparent 70%)" }}
+            aria-hidden="true"
           />
-        }
-      />
-
-      {/* Headline metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatTile
-          label="Revenue"
-          value={formatCurrency(summary?.revenue?.value)}
-          change={summary?.revenue?.change}
-          icon={IndianRupee}
-          loading={loading}
-          hint="vs previous period"
-        />
-        <StatTile
-          label="Orders"
-          value={formatNumber(summary?.orders?.value)}
-          change={summary?.orders?.change}
-          icon={ShoppingCart}
-          loading={loading}
-          hint="vs previous period"
-        />
-        <StatTile
-          label="New customers"
-          value={formatNumber(summary?.customers?.value)}
-          change={summary?.customers?.change}
-          icon={Users}
-          loading={loading}
-          hint="vs previous period"
-        />
-        <StatTile
-          label="Average order value"
-          value={formatCurrency(summary?.averageOrderValue?.value)}
-          change={summary?.averageOrderValue?.change}
-          icon={Package}
-          loading={loading}
-          hint="vs previous period"
-        />
+          <p className="type-label text-content-muted">Sales today</p>
+          {loading ? (
+            <Skeleton className="mt-3 h-9 w-36" />
+          ) : (
+            <>
+              <p className="type-numeric mt-2 text-[2rem] font-semibold leading-none text-content">{formatCurrency(data?.today?.revenue)}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Delta change={data?.change?.revenue} />
+                <span className="type-caption text-content-muted">Yesterday {formatCurrency(data?.yesterday?.revenue)}</span>
+              </div>
+            </>
+          )}
+        </Card>
+        <Card className="p-5">
+          <p className="type-label text-content-muted">Orders today</p>
+          {loading ? (
+            <Skeleton className="mt-3 h-9 w-20" />
+          ) : (
+            <>
+              <p className="type-numeric mt-2 text-[2rem] font-semibold leading-none text-content">{formatNumber(data?.today?.orders)}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Delta change={data?.change?.orders} />
+                <span className="type-caption text-content-muted">Yesterday {formatNumber(data?.yesterday?.orders)}</span>
+              </div>
+            </>
+          )}
+        </Card>
+        <Card className="p-5">
+          <div className="mb-3 flex items-baseline justify-between gap-2">
+            <p className="type-label text-content-muted">Last 7 days</p>
+            {!loading && <p className="type-numeric text-[0.9375rem] font-semibold text-content">{formatCurrency(weekTotal)}</p>}
+          </div>
+          {loading ? <Skeleton className="h-28 w-full" /> : <WeekBars days={week} />}
+        </Card>
       </div>
 
-      {/* Low stock is an alert, not a metric — it earns its own row when it fires. */}
-      {!loading && summary?.lowStock?.value > 0 && (
-        <Card className="border-status-warning/40 bg-status-warning-bg/40">
-          <CardBody className="flex flex-col sm:flex-row sm:items-center gap-3 py-3.5">
-            <TriangleAlert size={18} className="text-status-warning shrink-0" aria-hidden="true" />
-            <p className="type-body text-content flex-1">
-              <span className="font-semibold">{summary.lowStock.value}</span>{" "}
-              {summary.lowStock.value === 1 ? "product is" : "products are"} at or below the
-              reorder point.
-            </p>
-            <Button
-              as={Link}
-              to="/admin/inventory?lowStock=true"
-              variant="secondary"
-              size="sm"
-              iconRight={ArrowRight}
-            >
-              Review stock
-            </Button>
-          </CardBody>
-        </Card>
-      )}
+      {/* ------------------------------- To-dos -------------------------------- */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-[1.0625rem] font-semibold text-content">Needs your attention</h2>
+          <span className="type-caption text-content-muted">Click a card to open that list</span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {loading
+            ? Array.from({ length: 8 }, (_, index) => <Skeleton key={index} className="h-[5.25rem] rounded-2xl" />)
+            : todos.map((todo, index) => <TodoCard key={todo.title} index={index} {...todo} />)}
+        </div>
+      </section>
 
-      {/* Revenue trend takes the wider column; status mix is a supporting view. */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <Card variant="chart" className="xl:col-span-2">
+      {/* ---------------------- Recent orders + shortcuts ---------------------- */}
+      <div className="grid gap-4 xl:grid-cols-[1fr_18rem]">
+        <Card>
           <CardHeader
-            title="Revenue over time"
-            description={`Total ${formatCurrency(summary?.revenue?.value)} across the selected period`}
-          />
-          <RevenueAreaChart data={data?.salesTrend} loading={loading} height={300} />
-        </Card>
-
-        <Card variant="chart">
-          <CardHeader title="Order status" description="Where orders currently sit" />
-          <StatusDonutChart data={data?.statusDistribution} loading={loading} height={300} />
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <Card variant="chart">
-          <CardHeader title="Orders per period" />
-          <OrdersBarChart data={data?.salesTrend} loading={loading} height={280} />
-        </Card>
-
-        <Card variant="chart">
-          <CardHeader title="Revenue by category" />
-          <CategoryBarChart data={data?.revenueByCategory} loading={loading} height={280} />
-        </Card>
-      </div>
-
-      {/* Operational lists */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <Card className="xl:col-span-2">
-          <CardHeader
-            title="Recent orders"
+            title="Latest orders"
+            description="Move each one along without opening it"
             actions={
               <Button as={Link} to="/admin/orders" variant="ghost" size="sm" iconRight={ArrowRight}>
-                View all
+                All orders
               </Button>
             }
           />
           {loading ? (
             <div className="p-5">
-              <SkeletonText lines={5} />
+              <SkeletonText lines={6} />
             </div>
           ) : data?.recentOrders?.length ? (
             <ul className="divide-y divide-line-subtle">
-              {data.recentOrders.map((order) => (
-                <li key={order._id}>
-                  <Link
-                    to={`/admin/orders/${order._id}`}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-surface-hover transition-colors"
-                  >
-                    <Avatar
-                      size="sm"
-                      firstName={order.User?.firstName}
-                      lastName={order.User?.lastName}
-                      src={order.User?.avatar}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="type-body-strong text-content truncate">
-                        {order.User?.firstName
-                          ? `${order.User.firstName} ${order.User.lastName || ""}`.trim()
-                          : "Guest"}
-                      </p>
-                      <p className="type-caption truncate">
-                        {order.orderNumber} · {formatRelativeTime(order.createdAt)}
-                      </p>
-                    </div>
-                    <div className="hidden sm:block">
-                      <OrderStatusBadge status={order.status} />
-                    </div>
-                    <p className="type-body-strong type-numeric text-content shrink-0">
-                      {formatCurrency(order.pricing?.grandTotal)}
-                    </p>
-                  </Link>
-                </li>
-              ))}
+              {data.recentOrders.map((order) => {
+                const step = NEXT_STEP[order.status];
+                const name = order.User?.firstName ? `${order.User.firstName} ${order.User.lastName || ""}`.trim() : "Guest";
+                return (
+                  <li key={order._id} className="flex flex-wrap items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-hover sm:flex-nowrap">
+                    <Link to={`/admin/orders/${order._id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                      <Avatar size="sm" firstName={order.User?.firstName} lastName={order.User?.lastName} src={order.User?.avatar} />
+                      <span className="min-w-0">
+                        <span className="block truncate type-body-strong text-content">{name}</span>
+                        <span className="block truncate type-caption">
+                          {order.orderNumber} · {formatRelativeTime(order.createdAt)} · {order.onlinePayment ? "Paid online" : "Cash on delivery"}
+                        </span>
+                      </span>
+                    </Link>
+                    <OrderStatusBadge status={order.status} />
+                    <span className="type-body-strong type-numeric w-20 text-right text-content">{formatCurrency(order.pricing?.grandTotal)}</span>
+                    <span className="w-32 text-right">
+                      {step &&
+                        (step.openOrder ? (
+                          <Button as={Link} to={`/admin/orders/${order._id}`} size="sm" variant="secondary" iconRight={ArrowRight}>
+                            {step.label}
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="secondary" loading={busyId === order._id} onClick={() => advance(order, step)}>
+                            {step.label}
+                          </Button>
+                        ))}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <EmptyState
-              icon={ShoppingCart}
-              title="No orders yet"
-              description="Orders will appear here as soon as customers start buying."
-            />
+            <EmptyState icon={PackageOpen} title="No orders yet" description="They'll show up here the moment someone buys." />
           )}
         </Card>
 
-        <Card>
-          <CardHeader title="Top products" description="By units sold" />
-          {loading ? (
-            <div className="p-5">
-              <SkeletonText lines={5} />
-            </div>
-          ) : data?.topProducts?.length ? (
-            <ol className="divide-y divide-line-subtle">
-              {data.topProducts.map((product, index) => (
-                <li key={product.productId || index} className="flex items-center gap-3 px-5 py-3">
-                  <span className="w-6 h-6 rounded-md bg-surface-sunken grid place-items-center type-caption font-semibold text-content-secondary shrink-0">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="type-body-strong text-content truncate">{product.name}</p>
-                    <p className="type-caption truncate">{product.category}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="type-body-strong type-numeric text-content">
-                      {formatNumber(product.unitsSold)}
-                    </p>
-                    <p className="type-caption type-numeric">{formatCurrency(product.revenue)}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <EmptyState icon={Package} title="No sales yet" description="Top sellers appear here." />
-          )}
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader
-            title="Low stock"
-            description="Products needing a reorder"
-            actions={
-              <Button
-                as={Link}
-                to="/admin/inventory?lowStock=true"
-                variant="ghost"
-                size="sm"
-                iconRight={ArrowRight}
+        <Card className="p-4">
+          <p className="mb-3 px-1 type-label text-content-muted">Shortcuts</p>
+          <div className="grid gap-2">
+            {[
+              { to: "/admin/products?new=1", icon: Plus, label: "Add a product" },
+              { to: "/admin/coupons", icon: Tag, label: "Create a discount" },
+              { to: "/admin/analytics", icon: BarChart3, label: "See trends" },
+              { to: "/admin/reports", icon: FileSpreadsheet, label: "Download a report" },
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center gap-3 rounded-xl border border-line-subtle px-3 py-2.5 text-[0.875rem] font-medium text-content transition-colors hover:border-accent hover:bg-accent-subtle hover:text-accent-text"
               >
-                Inventory
-              </Button>
-            }
-          />
-          {loading ? (
-            <div className="p-5">
-              <SkeletonText lines={4} />
-            </div>
-          ) : lowStock.length ? (
-            <ul className="divide-y divide-line-subtle">
-              {lowStock.map((product) => (
-                <li key={product._id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="type-body-strong text-content truncate">{product.name}</p>
-                    <p className="type-caption truncate">{product.category}</p>
-                  </div>
-                  <Badge tone={product.countInStock === 0 ? "critical" : "warning"}>
-                    {product.countInStock === 0
-                      ? "Out of stock"
-                      : `${product.countInStock} left`}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState
-              icon={Package}
-              title="Stock levels are healthy"
-              description="Nothing is below its reorder point right now."
-            />
-          )}
-        </Card>
-
-        <Card>
-          <CardHeader
-            title="New customers"
-            actions={
-              <Button
-                as={Link}
-                to="/admin/customers"
-                variant="ghost"
-                size="sm"
-                iconRight={ArrowRight}
-              >
-                View all
-              </Button>
-            }
-          />
-          {loading ? (
-            <div className="p-5">
-              <SkeletonText lines={4} />
-            </div>
-          ) : data?.recentCustomers?.length ? (
-            <ul className="divide-y divide-line-subtle">
-              {data.recentCustomers.map((customer) => (
-                <li key={customer._id} className="flex items-center gap-3 px-5 py-3">
-                  <Avatar
-                    size="sm"
-                    firstName={customer.firstName}
-                    lastName={customer.lastName}
-                    src={customer.avatar}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="type-body-strong text-content truncate">
-                      {`${customer.firstName} ${customer.lastName || ""}`.trim()}
-                    </p>
-                    <p className="type-caption truncate">{customer.email}</p>
-                  </div>
-                  <p className="type-caption shrink-0">{formatDate(customer.createdAt)}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState icon={Users} title="No customers yet" />
-          )}
+                <item.icon size={16} />
+                <span className="flex-1">{item.label}</span>
+                <ArrowRight size={14} className="text-content-muted" />
+              </Link>
+            ))}
+          </div>
         </Card>
       </div>
     </div>

@@ -79,6 +79,24 @@ router.get(
   cached("revenue-by-category", (req) => analyticsService.getRevenueByCategory(req.query))
 );
 
+// Live: the to-do counts must reflect an order the moment it is updated.
+router.get(
+  "/analytics/today",
+  staffOnly,
+  asyncHandler(async (req, res) => ok(res, { data: await analyticsService.getToday() }))
+);
+
+const reportQuery = rangeQuery.extend({
+  type: z.enum(["sales", "orders", "products", "categories"]).default("sales"),
+});
+
+router.get(
+  "/analytics/report",
+  staffOnly,
+  validate({ query: reportQuery }),
+  cached("report", (req) => analyticsService.getReport(req.query))
+);
+
 router.get(
   "/analytics/low-stock",
   staffOnly,

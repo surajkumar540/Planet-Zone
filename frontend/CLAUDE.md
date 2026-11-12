@@ -52,6 +52,7 @@ src/
 **Data fetching**
 - Screens fetch their own data with `useApi(fetcher, params, options)`, which returns `{ data, meta, loading, error, refetch, setData }`. There is no server-cache library. Don't add one, and don't prefetch catalogue data in `App.jsx`.
 - Writes use `useMutation`. Its `mutate` rethrows, so handle failures at the call site.
+- After a save, call `reload()` (not `refetch()`): it fetches fresh data without the loading state, so the screen never blanks into skeletons. `refetch()` is for retrying an error.
 - Paginated lists use `useListParams` and pass its `params` to `useApi`. Sort strings look like `createdAt:desc`.
 - Put API calls in `src/api/*`, using the instance from `api/axios.js`, which attaches the bearer token and handles 401s. API functions return `response.data`, the envelope `{ status, message, data, meta }`, and `useApi` unwraps `data` and `meta` from it.
 

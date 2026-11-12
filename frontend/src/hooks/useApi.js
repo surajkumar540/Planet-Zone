@@ -93,6 +93,7 @@ export const useApi = (
 
   const requestId = useRef(0);
   const forceNext = useRef(false);
+  const quietNext = useRef(false);
   const seenGeneration = useRef(requestsGeneration.current);
   const [reloadToken, setReloadToken] = useState(0);
 
@@ -109,9 +110,13 @@ export const useApi = (
     const force = forceNext.current || seenGeneration.current !== requestsGeneration.current;
     forceNext.current = false;
     seenGeneration.current = requestsGeneration.current;
+    const quiet = quietNext.current;
+    quietNext.current = false;
 
-    setLoading(true);
-    setError(null);
+    if (!quiet) {
+      setLoading(true);
+      setError(null);
+    }
 
     sharedRead(fetcherRef.current, params, { cacheTime, force })
       .then((response) => {
@@ -123,7 +128,8 @@ export const useApi = (
       })
       .catch((caught) => {
         if (!active || currentRequest !== requestId.current) return;
-        setError(getErrorMessage(caught));
+        // A quiet reload that fails keeps what is on screen.
+        if (!quiet) setError(getErrorMessage(caught));
       })
       .finally(() => {
         if (active && currentRequest === requestId.current) setLoading(false);
@@ -140,7 +146,18 @@ export const useApi = (
     setReloadToken((token) => token + 1);
   }, []);
 
-  return { data, meta, loading, error, refetch, setData };
+  /**
+   * Fresh data without the loading state: what is on screen stays put and is
+   * swapped when the response lands. Use after a save, so the page never
+   * blanks into skeletons.
+   */
+  const reload = useCallback(() => {
+    forceNext.current = true;
+    quietNext.current = true;
+    setReloadToken((token) => token + 1);
+  }, []);
+
+  return { data, meta, loading, error, refetch, reload, setData };
 };
 
 /* ---------------------------------- Writes ---------------------------------- */

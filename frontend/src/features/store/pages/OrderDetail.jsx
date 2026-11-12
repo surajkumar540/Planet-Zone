@@ -1,20 +1,22 @@
 import { useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Banknote, CalendarClock, MapPin, Package, PartyPopper, Star, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, Banknote, CalendarClock, MapPin, PartyPopper, Star, Truck, XCircle } from "lucide-react";
 
 import { cancelOrder, getSingleOrder } from "../../../api/orderApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
 import { ConfirmDialog } from "../../../components/ui/Modal";
 import { Skeleton } from "../../../components/ui/Skeleton";
-import { EmptyState, ErrorState } from "../../../components/ui/States";
+import { ErrorState } from "../../../components/ui/States";
 import { OrderStatusBadge, PaymentStatusBadge } from "../../../components/ui/StatusBadge";
 import { useToast } from "../../../components/ui/Toast";
 import { formatCurrency, formatDateTime, humanise } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { Container } from "../components/Primitives";
 import OrderTracker from "../components/OrderTracker";
+import NotFound from "./NotFound";
+import { useSession } from "../hooks/useStorefront";
 import { Doodle } from "../../../components/ui/Doodles";
 
 import { getErrorMessage } from "../../../lib/apiError";
@@ -31,15 +33,28 @@ const OrderDetail = () => {
   const [searchParams] = useSearchParams();
   const justPlaced = searchParams.get("placed") === "1";
 
-  const { data: order, loading, error, refetch } = useApi(getSingleOrder, orderId);
+  const { data: order, loading, error, refetch, reload } = useApi(getSingleOrder, orderId);
+  const { user, isAdmin } = useSession();
   const cancel = useMutation(() => cancelOrder(orderId, "Cancelled by customer"));
 
-  if (loading) {
+  if (loading && !order) {
     return (
       <Container className="py-8">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="mt-6 h-64 w-full rounded-lg" />
       </Container>
+    );
+  }
+
+  // A bad link, or someone else's order: same answer, and it never says which.
+  if ((error && /not found|invalid identifier|forbidden|not allowed/i.test(error)) || (!loading && !error && !order)) {
+    return (
+      <NotFound
+        title="We couldn't find that order"
+        description="It may belong to another account, or the link is incomplete. Your own orders are all in one place."
+        backTo="/orders"
+        backLabel="Your orders"
+      />
     );
   }
 
@@ -51,13 +66,11 @@ const OrderDetail = () => {
     );
   }
 
-  if (!order) {
-    return (
-      <Container className="py-16">
-        <EmptyState icon={Package} title="Order not found" />
-      </Container>
-    );
-  }
+  // Staff opening a customer's order link get the dashboard view of it,
+  // with the tools to act on it, instead of the customer's page.
+  const ownerId = order.User?._id || order.User;
+  const isOwner = Boolean(user?._id) && String(ownerId) === String(user._id);
+  if (isAdmin && !isOwner) return <Navigate to={`/admin/orders/${order._id}`} replace />;
 
   const canCancel = CANCELLABLE.includes(order.status);
 
@@ -66,7 +79,7 @@ const OrderDetail = () => {
       await cancel.mutate();
       toast.success("Order cancelled", "Any payment made will be refunded.");
       setConfirmOpen(false);
-      refetch();
+      reload();
     } catch (caught) {
       toast.error(getErrorMessage(caught, "Could not cancel this order"));
     }
@@ -101,7 +114,7 @@ const OrderDetail = () => {
         </div>
       </header>
 
-      {justPlaced && !["cancelled", "refunded"].includes(order.status) && (
+      {justPlaced && isOwner && !["cancelled", "refunded"].includes(order.status) && (
         <motion.section
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

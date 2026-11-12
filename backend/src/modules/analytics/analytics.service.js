@@ -223,6 +223,145 @@ const getRecentCustomers = async ({ limit = 5 }) => {
 
 const getLowStockProducts = ({ limit = 5 }) => productRepository.findLowStock(limit);
 
+/* ------------------------------ Today / to-dos ------------------------------ */
+
+const startOfDay = (date = new Date()) => {
+  const day = new Date(date);
+  day.setHours(0, 0, 0, 0);
+  return day;
+};
+
+/** Orders still moving, i.e. not finished one way or another. */
+const OPEN_STATUSES = ["pending", "confirmed", "processing", "packed", "shipped", "out_for_delivery"];
+
+/**
+ * What needs doing right now, for the dashboard home: today's takings against
+ * yesterday's, every queue that needs a person, and the last 7 days of sales.
+ * Always live (no cache), because it changes with every order update.
+ */
+const getToday = async () => {
+  const today = startOfDay();
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const weekAgo = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+  const [todaySales, yesterdaySales, byStatus, cod, unreadMessages, refundRequests, lowStock, week, recentOrders] =
+    await Promise.all([
+      sumRevenue(today, new Date()),
+      sumRevenue(yesterday, new Date(today.getTime() - 1)),
+      prisma.order.groupBy({ by: ["status"], where: { status: { in: OPEN_STATUSES } }, _count: { _all: true } }),
+      prisma.order.aggregate({
+        where: { onlinePayment: false, paymentStatus: "pending", status: { in: OPEN_STATUSES } },
+        _sum: { grandTotal: true },
+        _count: { _all: true },
+      }),
+      prisma.contactMessage.count({ where: { isRead: false } }),
+      prisma.refund.count({ where: { status: "requested" } }),
+      prisma.product.count({ where: lowStockFilter() }),
+      getSalesTrend({ from: weekAgo, to: new Date(), interval: "day" }),
+      getRecentOrders({ limit: 8 }),
+    ]);
+
+  const count = Object.fromEntries(byStatus.map((row) => [row.status, row._count._all]));
+  return {
+    today: todaySales,
+    yesterday: yesterdaySales,
+    change: {
+      revenue: percentChange(todaySales.revenue, yesterdaySales.revenue),
+      orders: percentChange(todaySales.orders, yesterdaySales.orders),
+    },
+    queue: {
+      toConfirm: count.pending || 0,
+      toPack: (count.confirmed || 0) + (count.processing || 0),
+      toShip: count.packed || 0,
+      inTransit: (count.shipped || 0) + (count.out_for_delivery || 0),
+      codToCollect: { orders: cod._count._all, amount: num(cod._sum.grandTotal) || 0 },
+      unreadMessages,
+      refundRequests,
+      lowStock,
+    },
+    week,
+    recentOrders,
+  };
+};
+
+/** Cash on delivery against online payment, by orders and revenue. */
+const getPaymentMix = async (range) => {
+  const { start, end } = resolveRange(range);
+  const rows = await prisma.order.groupBy({
+    by: ["onlinePayment"],
+    where: revenueWhere(start, end),
+    _sum: { grandTotal: true },
+    _count: { _all: true },
+  });
+  const pick = (online) => rows.find((row) => row.onlinePayment === online);
+  return ["cod", "online"].map((method) => {
+    const row = pick(method === "online");
+    return { method, orders: row?._count._all || 0, revenue: num(row?._sum.grandTotal) || 0 };
+  });
+};
+
+/* ---------------------------------- Reports ---------------------------------- */
+
+const ORDER_REPORT_LIMIT = 2000;
+
+/**
+ * Tabular data for the Reports screen, one kind at a time, sized for a table
+ * and a CSV download rather than a chart.
+ */
+const getReport = async ({ type = "sales", interval = "day", ...range } = {}) => {
+  const { start, end } = resolveRange(range);
+  switch (type) {
+    case "products":
+      return prisma.$queryRaw`
+        SELECT MIN(i.name) AS name, MIN(i.category) AS category,
+               SUM(i.qty)::int AS "unitsSold", COUNT(DISTINCT o.id)::int AS orders,
+               SUM(i."lineTotal")::float8 AS revenue
+        FROM order_items i JOIN orders o ON o.id = i."orderId"
+        WHERE ${revenueSql(start, end)}
+        GROUP BY i."productId" ORDER BY revenue DESC LIMIT 500`;
+    case "categories":
+      return prisma.$queryRaw`
+        SELECT i.category AS category, SUM(i.qty)::int AS "unitsSold",
+               COUNT(DISTINCT o.id)::int AS orders, SUM(i."lineTotal")::float8 AS revenue
+        FROM order_items i JOIN orders o ON o.id = i."orderId"
+        WHERE ${revenueSql(start, end)}
+        GROUP BY i.category ORDER BY revenue DESC`;
+    case "orders": {
+      const rows = await prisma.order.findMany({
+        where: { createdAt: { gte: start, lte: end } },
+        orderBy: { createdAt: "desc" },
+        take: ORDER_REPORT_LIMIT,
+        select: {
+          id: true,
+          orderNumber: true,
+          createdAt: true,
+          status: true,
+          paymentStatus: true,
+          onlinePayment: true,
+          grandTotal: true,
+          user: { select: { firstName: true, lastName: true, email: true } },
+          _count: { select: { items: true } },
+        },
+      });
+      return rows.map((row) => ({
+        _id: row.id,
+        orderNumber: row.orderNumber,
+        createdAt: row.createdAt,
+        customer: [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" "),
+        email: row.user?.email || "",
+        items: row._count.items,
+        payment: row.onlinePayment ? "Online" : "Cash on delivery",
+        paymentStatus: row.paymentStatus,
+        status: row.status,
+        total: num(row.grandTotal) || 0,
+      }));
+    }
+    case "sales":
+    default:
+      return getSalesTrend({ from: start, to: end, interval });
+  }
+};
+
 /**
  * Single round trip powering the overview screen, so the dashboard renders
  * from one request instead of eight.
@@ -241,6 +380,7 @@ const getDashboard = async (query = {}) => {
     recentOrders,
     recentCustomers,
     lowStockProducts,
+    paymentMix,
   ] = await Promise.all([
     getSummary({ from, to }),
     getSalesTrend({ from, to, interval }),
@@ -250,6 +390,7 @@ const getDashboard = async (query = {}) => {
     getRecentOrders({ limit: 6 }),
     getRecentCustomers({ limit: 5 }),
     getLowStockProducts({ limit: 5 }),
+    getPaymentMix({ from, to }),
   ]);
 
   return {
@@ -261,10 +402,14 @@ const getDashboard = async (query = {}) => {
     recentOrders,
     recentCustomers,
     lowStockProducts,
+    paymentMix,
   };
 };
 
 module.exports = {
+  getToday,
+  getPaymentMix,
+  getReport,
   getSummary,
   getSalesTrend,
   getStatusDistribution,

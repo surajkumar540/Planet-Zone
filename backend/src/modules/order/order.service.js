@@ -213,9 +213,16 @@ const createOrder = async ({
   return placed;
 };
 
+/** A status filter that may be one value or a list. */
+const statusWhere = (status) => {
+  if (!status || (Array.isArray(status) && !status.length)) return {};
+  if (Array.isArray(status)) return status.length === 1 ? { status: status[0] } : { status: { in: status } };
+  return { status };
+};
+
 /** The signed-in customer's own orders. */
 const listMyOrders = async ({ userId, page, limit, sort, status }) => {
-  const where = { userId, ...(status ? { status } : {}) };
+  const where = { userId, ...statusWhere(status) };
   return orderRepository.paginate(where, {
     page,
     limit,
@@ -226,7 +233,7 @@ const listMyOrders = async ({ userId, page, limit, sort, status }) => {
 /** Every order, for the dashboard queue. */
 const listAllOrders = async ({ page, limit, sort, search, status, paymentStatus, from, to }) => {
   const where = {
-    ...(status ? { status } : {}),
+    ...statusWhere(status),
     ...(paymentStatus ? { paymentStatus } : {}),
   };
 

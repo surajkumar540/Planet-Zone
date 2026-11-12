@@ -69,7 +69,7 @@ const OrderDetail = () => {
   const { id } = useParams();
   const toast = useToast();
 
-  const { data: order, loading, error, refetch } = useApi(getOrder, id);
+  const { data: order, loading, error, refetch, reload } = useApi(getOrder, id);
   const { mutate, loading: saving } = useMutation(updateOrderStatus);
 
   const [statusModalOpen, setStatusModalOpen] = useState(false);
@@ -90,7 +90,7 @@ const OrderDetail = () => {
     try {
       await mutate(id, { status: next.status });
       toast.success("Order updated", `Now ${humanise(next.status)}.`);
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not update order", getErrorMessage(caught));
     }
@@ -109,13 +109,13 @@ const OrderDetail = () => {
       });
       toast.success("Order updated", `Status changed to ${humanise(form.status)}.`);
       setStatusModalOpen(false);
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not update order", getErrorMessage(caught));
     }
   };
 
-  if (loading) {
+  if (loading && !order) {
     return (
       <Card>
         <CardBody>

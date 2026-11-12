@@ -17,7 +17,7 @@ import { getErrorMessage } from "../../../lib/apiError";
 const Messages = () => {
   const toast = useToast();
   const list = useListParams({ limit: 20, sort: "createdAt:desc" });
-  const { data, meta, loading, error, refetch } = useApi(getContactMessages, list.params);
+  const { data, meta, loading, error, refetch, reload } = useApi(getContactMessages, list.params);
 
   const { mutate: markRead } = useMutation(markMessageRead);
   const { mutate: removeMessage, loading: deleting } = useMutation(deleteMessage);
@@ -31,7 +31,7 @@ const Messages = () => {
     if (!message.isRead) {
       try {
         await markRead(message._id);
-        refetch();
+        reload();
       } catch {
         // A failed read receipt should not interrupt reading the message.
       }
@@ -43,7 +43,7 @@ const Messages = () => {
       await removeMessage(pendingDelete._id);
       toast.success("Message deleted");
       setPendingDelete(null);
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not delete message", getErrorMessage(caught));
     }

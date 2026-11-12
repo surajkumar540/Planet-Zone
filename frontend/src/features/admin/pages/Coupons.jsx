@@ -163,7 +163,7 @@ const CouponForm = ({ onClose, onSaved }) => {
 const Coupons = () => {
   const toast = useToast();
   const list = useListParams({ limit: 20, sort: "createdAt:desc" });
-  const { data, meta, loading, error, refetch } = useApi(getCoupons, list.params);
+  const { data, meta, loading, error, refetch, reload } = useApi(getCoupons, list.params);
   const { mutate: removeCoupon, loading: deleting } = useMutation(deleteCoupon);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -180,7 +180,7 @@ const Coupons = () => {
           : pendingDelete.code
       );
       setPendingDelete(null);
-      refetch();
+      reload();
     } catch (caught) {
       toast.error("Could not delete coupon", getErrorMessage(caught));
     }
@@ -337,7 +337,7 @@ const Coupons = () => {
         />
       </Card>
 
-      {formOpen && <CouponForm onClose={() => setFormOpen(false)} onSaved={refetch} />}
+      {formOpen && <CouponForm onClose={() => setFormOpen(false)} onSaved={reload} />}
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

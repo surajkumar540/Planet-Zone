@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, ShoppingCart } from "lucide-react";
 import { getAdminOrders } from "../../../api/adminApi";
 import { useApi, useListParams } from "../../../hooks/useApi";
@@ -13,6 +13,9 @@ import { formatCurrency, formatDateTime } from "../../../lib/format";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All statuses" },
+  // Work queues, as linked from the dashboard.
+  { value: "confirmed,processing", label: "To pack" },
+  { value: "shipped,out_for_delivery", label: "On the way" },
   { value: "pending", label: "Pending" },
   { value: "confirmed", label: "Confirmed" },
   { value: "processing", label: "Processing" },
@@ -36,7 +39,14 @@ const PAYMENT_OPTIONS = [
 
 const Orders = () => {
   const navigate = useNavigate();
-  const list = useListParams({ limit: 20, sort: "createdAt:desc" });
+  // ?status=… and ?paymentStatus=… pre-filter the list (dashboard to-do cards link here).
+  const [searchParams] = useSearchParams();
+  const list = useListParams({
+    limit: 20,
+    sort: "createdAt:desc",
+    ...(searchParams.get("status") ? { status: searchParams.get("status") } : {}),
+    ...(searchParams.get("paymentStatus") ? { paymentStatus: searchParams.get("paymentStatus") } : {}),
+  });
   const { data, meta, loading, error, refetch } = useApi(getAdminOrders, list.params);
 
   const columns = [

@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Check,
   ChevronRight,
   Heart,
+  PackageCheck,
   RefreshCw,
   ShieldCheck,
   ShoppingBag,
@@ -12,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { fetchSingleProductApi, getAllProducts, saveProductReview } from "../../../api/productApi";
-import { getProductReviewSummary, getProductReviews } from "../../../api/storeApi";
+import { getProductReviewSummary, getProductReviews, getReviewEligibility } from "../../../api/storeApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
 import { Textarea } from "../../../components/ui/Field";
@@ -25,12 +27,14 @@ import { Container, Price, QuantityStepper, Rating, SectionHeading } from "../co
 import ProductCard from "../components/ProductCard";
 import { useCart, useSession } from "../hooks/useStorefront";
 import { useWishlistToggle } from "../hooks/useWishlist";
+import { useCartFeedback } from "../hooks/useCartFeedback";
 
 import { getErrorMessage } from "../../../lib/apiError";
 const ProductDetail = () => {
   const { pid } = useParams();
-  const toast = useToast();
   const { add } = useCart();
+  const notifyAdded = useCartFeedback();
+  const imageRef = useRef(null);
   const { isLoggedIn } = useSession();
   const { toggle, isWishlisted } = useWishlistToggle();
 
@@ -84,7 +88,7 @@ const ProductDetail = () => {
 
   const handleAdd = () => {
     add(product, qty, variant);
-    toast.success("Added to bag", `${qty} × ${product.name}`);
+    notifyAdded({ product, qty, variant, sourceEl: imageRef.current });
   };
 
   return (
@@ -114,6 +118,7 @@ const ProductDetail = () => {
           <div>
             <div className="overflow-hidden rounded-xl border border-line-subtle bg-surface">
               <img
+                ref={imageRef}
                 src={gallery[activeImage] || product.image}
                 alt={product.name}
                 className="aspect-square w-full object-cover"
@@ -336,29 +341,152 @@ const ProductDetail = () => {
 
 /* ---------------------------------- Reviews --------------------------------- */
 
-const ReviewSection = ({ productId, product, summary, reviews, isLoggedIn, onSaved }) => {
+const RATING_WORDS = ["", "Poor", "Fair", "Good", "Very good", "Excellent"];
+
+/**
+ * The review form, shown only to customers who can actually review.
+ *
+ * The API accepts reviews only from someone with a delivered order containing
+ * this product. Asking first means a customer who has not bought it sees why,
+ * instead of writing a review and being refused at the end.
+ */
+const ReviewComposer = ({ productId, isLoggedIn, onSaved }) => {
   const toast = useToast();
+  const eligibility = useApi(getReviewEligibility, productId, {
+    enabled: isLoggedIn && Boolean(productId),
+  });
+  const existing = eligibility.data?.review;
+
   const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
   const { mutate, loading } = useMutation((body) => saveProductReview(productId, body));
+
+  // Editing an existing review starts from what the customer wrote before.
+  useEffect(() => {
+    if (existing) {
+      setRating(existing.rating);
+      setComment(existing.comment);
+    }
+  }, [existing]);
 
   const submit = async (event) => {
     event.preventDefault();
     if (!rating) {
-      toast.warning("Pick a rating first");
+      toast.warning("Pick a star rating first");
       return;
     }
     try {
       await mutate({ rating, comment: comment.trim() });
-      toast.success("Thanks for your review");
-      setRating(0);
-      setComment("");
+      toast.success(existing ? "Review updated" : "Thanks for your review!");
+      eligibility.refetch();
       onSaved();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your review"));
+      toast.error("Review not saved", getErrorMessage(error, "Please try again."));
     }
   };
 
+  const shell = "mt-4 rounded-2xl border border-line-subtle bg-surface p-5";
+
+  if (!isLoggedIn) {
+    return (
+      <div className={shell}>
+        <p className="type-body text-content-secondary">
+          <Link to="/login" className="font-medium text-accent-text hover:underline">
+            Sign in
+          </Link>{" "}
+          to review a product you&apos;ve bought.
+        </p>
+      </div>
+    );
+  }
+
+  if (eligibility.loading) return <Skeleton className="mt-4 h-28 w-full rounded-2xl" />;
+
+  if (!eligibility.data?.canReview) {
+    const inTransit = eligibility.data?.reason === "in_transit";
+    return (
+      <div className={cn(shell, "flex gap-3")}>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-accent-text">
+          <PackageCheck size={17} />
+        </span>
+        <div>
+          <p className="type-body-strong text-content">
+            {inTransit ? "Your order is on its way" : "Verified reviews only"}
+          </p>
+          <p className="mt-0.5 type-caption text-content-secondary">
+            {inTransit
+              ? "You'll be able to review this product once it's delivered."
+              : "Only customers who bought this product can review it, so every rating here is genuine."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const shown = hovered || rating;
+
+  return (
+    <form onSubmit={submit} className={shell}>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="type-card-title text-content">{existing ? "Update your review" : "Write a review"}</h3>
+        <span className="inline-flex items-center gap-1 rounded-full bg-status-good-bg px-2 py-0.5 text-[0.6875rem] font-semibold text-status-good">
+          <Check size={11} strokeWidth={3} /> Verified purchase
+        </span>
+      </div>
+
+      <div className="mb-3 flex items-center gap-2">
+        <div
+          className="flex items-center gap-0.5"
+          role="radiogroup"
+          aria-label="Your rating"
+          onMouseLeave={() => setHovered(0)}
+        >
+          {[1, 2, 3, 4, 5].map((star) => (
+            <motion.button
+              key={star}
+              type="button"
+              role="radio"
+              aria-checked={rating === star}
+              aria-label={`${star} star${star === 1 ? "" : "s"}`}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.85 }}
+              onMouseEnter={() => setHovered(star)}
+              onClick={() => setRating(star)}
+              className="p-0.5"
+            >
+              <Star
+                size={24}
+                className={cn(
+                  "transition-colors",
+                  star <= shown
+                    ? "fill-[var(--status-warning)] text-[var(--status-warning)]"
+                    : "text-line-strong"
+                )}
+              />
+            </motion.button>
+          ))}
+        </div>
+        <span className="type-caption font-medium text-content-secondary">{RATING_WORDS[shown]}</span>
+      </div>
+
+      <Textarea
+        value={comment}
+        onChange={(event) => setComment(event.target.value)}
+        placeholder="What did you like, or not? How was the quality?"
+        rows={4}
+        required
+        aria-label="Your review"
+      />
+
+      <Button type="submit" variant="primary" loading={loading} className="mt-3" fullWidth>
+        {existing ? "Update review" : "Submit review"}
+      </Button>
+    </form>
+  );
+};
+
+const ReviewSection = ({ productId, product, summary, reviews, isLoggedIn, onSaved }) => {
   const total = summary?.total || product.numReviews || 0;
 
   return (
@@ -404,56 +532,7 @@ const ReviewSection = ({ productId, product, summary, reviews, isLoggedIn, onSav
             </div>
           </div>
 
-          {isLoggedIn ? (
-            <form onSubmit={submit} className="mt-4 rounded-lg border border-line-subtle bg-surface p-5">
-              <h3 className="type-card-title mb-3 text-content">Write a review</h3>
-
-              <div className="mb-3 flex items-center gap-1" role="radiogroup" aria-label="Your rating">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    role="radio"
-                    aria-checked={rating === star}
-                    aria-label={`${star} star${star === 1 ? "" : "s"}`}
-                    onClick={() => setRating(star)}
-                    className="p-0.5"
-                  >
-                    <Star
-                      size={22}
-                      className={cn(
-                        star <= rating
-                          ? "fill-[var(--status-warning)] text-[var(--status-warning)]"
-                          : "text-line-strong"
-                      )}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              <Textarea
-                value={comment}
-                onChange={(event) => setComment(event.target.value)}
-                placeholder="What did you think of it?"
-                rows={4}
-                required
-                aria-label="Your review"
-              />
-
-              <Button type="submit" variant="primary" loading={loading} className="mt-3" fullWidth>
-                Submit review
-              </Button>
-            </form>
-          ) : (
-            <div className="mt-4 rounded-lg border border-line-subtle bg-surface p-5">
-              <p className="type-body text-content-secondary">
-                <Link to="/login" className="text-accent-text hover:underline">
-                  Sign in
-                </Link>{" "}
-                to share your experience with this product.
-              </p>
-            </div>
-          )}
+          <ReviewComposer productId={productId} isLoggedIn={isLoggedIn} onSaved={onSaved} />
         </div>
 
         <div>

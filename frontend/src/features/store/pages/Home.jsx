@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { ArrowRight, BadgeCheck, RefreshCw, ShieldCheck, Truck } from "lucide-react";
 
 import { getAllProducts } from "../../../api/productApi";
@@ -7,15 +9,18 @@ import { useApi } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { ErrorState } from "../../../components/ui/States";
+import { Doodle, Reveal } from "../../../components/ui/Doodles";
 import { Container, SectionHeading } from "../components/Primitives";
 import ProductCard from "../components/ProductCard";
+import HeroCarousel from "../components/HeroCarousel";
+import DealOfTheDay from "../components/DealOfTheDay";
 import { useWishlistToggle } from "../hooks/useWishlist";
 
 const PROMISES = [
-  { icon: Truck, title: "Free delivery", body: "On every order above ₹499, anywhere in India." },
-  { icon: RefreshCw, title: "7-day returns", body: "Changed your mind? Send it back, no questions." },
-  { icon: ShieldCheck, title: "Secure payments", body: "Cards, UPI and net banking via Razorpay." },
-  { icon: BadgeCheck, title: "Quality checked", body: "Every batch inspected before it ships." },
+  { icon: Truck, title: "Free delivery", body: "On orders above ₹499" },
+  { icon: RefreshCw, title: "7-day returns", body: "No questions asked" },
+  { icon: ShieldCheck, title: "Secure payments", body: "Cards, UPI, net banking" },
+  { icon: BadgeCheck, title: "Quality checked", body: "Inspected before it ships" },
 ];
 
 /** A grid that holds its shape while the products for it are still loading. */
@@ -24,14 +29,14 @@ const ProductRow = ({ products, loading, error, onRetry, onToggleWishlist, isWis
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[0, 1, 2, 3].map((index) => (
-          <div key={index} className="overflow-hidden rounded-lg border border-line-subtle">
+          <div key={index} className="overflow-hidden rounded-2xl border border-line-subtle">
             <Skeleton className="aspect-square w-full rounded-none" />
-            <div className="space-y-2 p-4">
+            <div className="space-y-2 p-3.5">
               <Skeleton className="h-3 w-1/3" />
               <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-9 w-full" />
             </div>
           </div>
         ))}
@@ -40,17 +45,27 @@ const ProductRow = ({ products, loading, error, onRetry, onToggleWishlist, isWis
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <Reveal stagger={0.07} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {products.map((product) => (
-        <ProductCard
-          key={product._id}
-          product={product}
-          onToggleWishlist={onToggleWishlist}
-          isWishlisted={isWishlisted(product._id)}
-        />
+        <Reveal.Item key={product._id}>
+          <ProductCard
+            product={product}
+            onToggleWishlist={onToggleWishlist}
+            isWishlisted={isWishlisted(product._id)}
+          />
+        </Reveal.Item>
       ))}
-    </div>
+    </Reveal>
   );
+};
+
+/** Unique by id, keeping the first occurrence. */
+const uniqueProducts = (...lists) => {
+  const seen = new Map();
+  for (const product of lists.flat()) {
+    if (product && !seen.has(product._id)) seen.set(product._id, product);
+  }
+  return [...seen.values()];
 };
 
 const Home = () => {
@@ -65,91 +80,87 @@ const Home = () => {
   // products so the first band on the page is never blank.
   const heroProducts = featured.data?.length ? featured.data : newest.data?.slice(0, 4) || [];
 
+  const everything = useMemo(
+    () => uniqueProducts(newest.data || [], featured.data || [], topRated.data || []),
+    [newest.data, featured.data, topRated.data]
+  );
+  const byDiscount = useMemo(
+    () => [...everything].sort((a, b) => (b.discount || 0) - (a.discount || 0)),
+    [everything]
+  );
+  const maxDiscount = Math.round(byDiscount[0]?.discount || 0);
+  const imagesOf = (list) => list.map((product) => product.image).filter(Boolean);
+
+  // Banner copy is derived from the catalogue: a discount is only promised
+  // when a product actually has one.
+  const slides = [
+    {
+      id: "new",
+      palette: "leaf",
+      eyebrow: "Just landed",
+      title: "New season, new shelf",
+      body: "Fresh picks added this week. Be the first to find your new favourite.",
+      cta: { label: "Shop new arrivals", to: "/shop?sort=createdAt:desc" },
+      images: imagesOf(newest.data || []),
+    },
+    {
+      id: "deals",
+      palette: "sun",
+      eyebrow: maxDiscount > 0 ? "Limited time" : "Everyday value",
+      title: maxDiscount > 0 ? `Save up to ${maxDiscount}%` : "Prices you'll love",
+      body:
+        maxDiscount > 0
+          ? "On selected essentials while stocks last."
+          : "Fairly priced essentials, delivered across India.",
+      cta: { label: maxDiscount > 0 ? "Shop the deals" : "Browse the shop", to: "/shop?sort=totalPrice:asc" },
+      images: imagesOf(byDiscount),
+    },
+    {
+      id: "delivery",
+      palette: "dusk",
+      eyebrow: "On us",
+      title: "Free delivery over ₹499",
+      body: "Plus 7-day easy returns on every order. No fine print.",
+      cta: { label: "Start shopping", to: "/shop" },
+      images: imagesOf(topRated.data?.length ? topRated.data : everything.slice(3)),
+    },
+  ];
+
+  const dealProduct = byDiscount.find((product) => product.isActive !== false) || null;
+
   return (
     <>
       {/* ---------------------------------- Hero --------------------------------- */}
-      <section className="border-b border-line-subtle bg-surface">
-        <Container className="grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-20">
-          <div>
-            <p className="type-overline mb-3 text-accent-text">New season, new shelf</p>
-            <h1 className="type-display text-[2.5rem] leading-[1.1] text-content sm:text-[3.25rem]">
-              Everyday essentials, chosen with care.
-            </h1>
-            <p className="type-description mt-4 max-w-[52ch] text-[1rem]">
-              A tightly edited catalogue of products worth keeping — fairly priced, honestly
-              described and delivered to your door.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button as={Link} to="/shop" variant="primary" size="lg" iconRight={ArrowRight}>
-                Shop the catalogue
-              </Button>
-              <Button as={Link} to="/shop?sort=createdAt:desc" size="lg">
-                See what&apos;s new
-              </Button>
-            </div>
-
-            <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-line-subtle pt-6">
-              {[
-                { label: "Products", value: "500+" },
-                { label: "Cities served", value: "120" },
-                { label: "Avg. rating", value: "4.6" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <dt className="type-caption text-content-muted">{stat.label}</dt>
-                  <dd className="type-numeric mt-0.5 text-[1.375rem] font-semibold text-content">
-                    {stat.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {/*
-            The hero art is the catalogue itself rather than a stock photo, so
-            the first thing a visitor sees is something they can actually buy.
-          */}
-          <div className="grid grid-cols-2 gap-4">
-            {heroProducts.slice(0, 4).map((product) => (
-              <Link
-                key={product._id}
-                to={`/product/${product._id}`}
-                className="group relative overflow-hidden rounded-xl border border-line-subtle bg-surface-sunken"
-              >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 type-caption font-medium text-white">
-                  {product.name}
-                </span>
-              </Link>
-            ))}
-            {heroProducts.length === 0 &&
-              [0, 1, 2, 3].map((index) => (
-                <Skeleton key={index} className="aspect-square w-full rounded-xl" />
-              ))}
-          </div>
-        </Container>
-      </section>
+      <Container className="pt-5 sm:pt-7">
+        {newest.loading && !everything.length ? (
+          <Skeleton className="h-[25rem] w-full rounded-[1.75rem] sm:h-[26rem] lg:h-[28rem]" />
+        ) : (
+          <HeroCarousel slides={slides} />
+        )}
+      </Container>
 
       {/* -------------------------------- Promises ------------------------------- */}
-      <section className="border-b border-line-subtle bg-surface-sunken">
-        <Container className="grid gap-6 py-8 sm:grid-cols-2 lg:grid-cols-4">
+      <Container className="py-6">
+        <Reveal stagger={0.08} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {PROMISES.map((promise) => (
-            <div key={promise.title} className="flex gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-subtle text-accent-text">
-                <promise.icon size={17} />
-              </span>
-              <div>
-                <p className="type-body-strong text-content">{promise.title}</p>
-                <p className="type-caption text-content-secondary">{promise.body}</p>
+            <Reveal.Item
+              key={promise.title}
+              className="group flex items-center gap-3 rounded-2xl border border-line-subtle bg-surface p-3.5 transition-colors hover:border-accent"
+            >
+              <motion.span
+                whileHover={{ rotate: -10, scale: 1.08 }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-subtle text-accent-text"
+              >
+                <promise.icon size={18} />
+              </motion.span>
+              <div className="min-w-0">
+                <p className="text-[0.8125rem] font-semibold leading-snug text-content sm:text-[0.875rem]">{promise.title}</p>
+                <p className="type-caption leading-snug text-content-muted">{promise.body}</p>
               </div>
-            </div>
+            </Reveal.Item>
           ))}
-        </Container>
-      </section>
+        </Reveal>
+      </Container>
 
       {/* ------------------------------- Categories ------------------------------ */}
       {categories?.length > 0 && (
@@ -159,33 +170,36 @@ const Home = () => {
             title="Shop by category"
             description="Jump straight to the shelf you came for."
           />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <Reveal stagger={0.05} className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {categories.slice(0, 6).map((category) => (
-              <Link
-                key={category._id}
-                to={`/shop?category=${encodeURIComponent(category.name)}`}
-                className="flex flex-col items-center gap-2 rounded-lg border border-line-subtle bg-surface p-4 text-center transition-colors hover:border-accent hover:bg-accent-subtle"
-              >
-                {category.image ? (
-                  <img
-                    src={category.image}
-                    alt=""
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-sunken type-section-title text-content-secondary">
-                    {category.name[0]}
+              <Reveal.Item key={category._id}>
+                <Link
+                  to={`/shop?category=${encodeURIComponent(category.name)}`}
+                  className="group flex flex-col items-center gap-2 rounded-2xl border border-line-subtle bg-surface p-4 text-center transition-all hover:-translate-y-1 hover:border-accent hover:shadow-md"
+                >
+                  {category.image ? (
+                    <img
+                      src={category.image}
+                      alt=""
+                      className="h-14 w-14 rounded-full object-cover transition-transform group-hover:scale-110"
+                    />
+                  ) : (
+                    <span className="font-display flex h-14 w-14 items-center justify-center rounded-full bg-accent-subtle text-[1.375rem] font-semibold text-accent-text transition-transform group-hover:scale-110">
+                      {category.name[0]}
+                    </span>
+                  )}
+                  <span className="truncate text-[0.8125rem] font-semibold text-content">
+                    {category.name}
                   </span>
-                )}
-                <span className="type-button text-content">{category.name}</span>
-              </Link>
+                </Link>
+              </Reveal.Item>
             ))}
-          </div>
+          </Reveal>
         </Container>
       )}
 
       {/* --------------------------------- Bands --------------------------------- */}
-      <Container className="pb-section">
+      <Container className="py-section">
         <SectionHeading
           eyebrow="Handpicked"
           title="Featured this week"
@@ -204,6 +218,12 @@ const Home = () => {
           isWishlisted={isWishlisted}
         />
       </Container>
+
+      {dealProduct && (
+        <Container className="pb-section">
+          <DealOfTheDay product={dealProduct} />
+        </Container>
+      )}
 
       <Container className="pb-section">
         <SectionHeading
@@ -246,6 +266,24 @@ const Home = () => {
           />
         </Container>
       )}
+
+      {/* --------------------------------- Closing -------------------------------- */}
+      <Container className="pb-section">
+        <Reveal className="relative overflow-hidden rounded-[1.75rem] border border-line-subtle bg-surface px-6 py-10 text-center sm:px-12">
+          <Doodle type="sprout" size={44} className="mx-auto text-accent-text" />
+          <Doodle type="sparkle" size={22} float className="absolute left-10 top-8 hidden text-accent-text opacity-50 sm:block" />
+          <Doodle type="leaf" size={40} float delay={0.6} className="absolute bottom-8 right-12 hidden text-accent-text opacity-40 sm:block" />
+          <h2 className="font-display mt-3 text-[1.75rem] font-semibold tracking-tight text-content sm:text-[2.125rem]">
+            Small shop, carefully stocked
+          </h2>
+          <p className="mx-auto mt-2 max-w-[48ch] type-description">
+            Every product is chosen by people, checked before it ships, and easy to send back.
+          </p>
+          <Button as={Link} to="/shop" variant="primary" size="lg" iconRight={ArrowRight} className="mt-6">
+            Explore the shop
+          </Button>
+        </Reveal>
+      </Container>
     </>
   );
 };

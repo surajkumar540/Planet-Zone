@@ -7,7 +7,7 @@ import { paymentInit, paymentSuccess } from "../../../api/paymentApi";
 import { createAddress, getAddresses, quoteOrder } from "../../../api/storeApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
-import { Input, Select } from "../../../components/ui/Field";
+import { Input } from "../../../components/ui/Field";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { EmptyState } from "../../../components/ui/States";
 import { useToast } from "../../../components/ui/Toast";
@@ -15,26 +15,10 @@ import { formatCurrency } from "../../../lib/format";
 import { loadScript } from "../../../utils/functions";
 import cn from "../../../lib/cn";
 import { Container } from "../components/Primitives";
+import AddressForm from "../components/AddressForm";
 import { toOrderCart, useCart, useSession } from "../hooks/useStorefront";
 
 import { getErrorMessage } from "../../../lib/apiError";
-const STATES = [
-  "Andhra Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa", "Gujarat", "Haryana",
-  "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra",
-  "Odisha", "Punjab", "Rajasthan", "Tamil Nadu", "Telangana", "Uttar Pradesh", "Uttarakhand",
-  "West Bengal",
-].map((state) => ({ value: state, label: state }));
-
-const EMPTY_ADDRESS = {
-  fullName: "",
-  phoneNo: "",
-  address: "",
-  city: "",
-  state: "",
-  pinCode: "",
-  landMark: "",
-};
-
 /**
  * Checkout.
  *
@@ -50,7 +34,6 @@ const Checkout = () => {
   const { user } = useSession();
 
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [draft, setDraft] = useState(EMPTY_ADDRESS);
   const [showForm, setShowForm] = useState(false);
   const [couponDraft, setCouponDraft] = useState("");
   const [couponCode, setCouponCode] = useState("");
@@ -108,12 +91,10 @@ const Checkout = () => {
     );
   }
 
-  const submitAddress = async (event) => {
-    event.preventDefault();
+  const submitAddress = async (value) => {
     try {
-      const response = await saveAddress.mutate({ ...draft, isDefault: true });
-      toast.success("Address saved");
-      setDraft(EMPTY_ADDRESS);
+      const response = await saveAddress.mutate({ ...value, isDefault: true });
+      toast.success("Address saved", "We'll deliver your order here.");
       setShowForm(false);
       await refetchAddresses();
       setSelectedAddressId(response?.data?._id || null);
@@ -279,67 +260,13 @@ const Checkout = () => {
             )}
 
             {showForm && (
-              <form onSubmit={submitAddress} className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Input
-                  label="Full name"
-                  required
-                  value={draft.fullName}
-                  onChange={(event) => setDraft({ ...draft, fullName: event.target.value })}
-                />
-                <Input
-                  label="Phone number"
-                  required
-                  inputMode="numeric"
-                  value={draft.phoneNo}
-                  onChange={(event) => setDraft({ ...draft, phoneNo: event.target.value })}
-                />
-                <div className="sm:col-span-2">
-                  <Input
-                    label="Address"
-                    required
-                    value={draft.address}
-                    onChange={(event) => setDraft({ ...draft, address: event.target.value })}
-                  />
-                </div>
-                <Input
-                  label="City"
-                  required
-                  value={draft.city}
-                  onChange={(event) => setDraft({ ...draft, city: event.target.value })}
-                />
-                <Select
-                  label="State"
-                  required
-                  placeholder="Select a state"
-                  options={STATES}
-                  value={draft.state}
-                  onChange={(event) => setDraft({ ...draft, state: event.target.value })}
-                />
-                <Input
-                  label="PIN code"
-                  required
-                  inputMode="numeric"
-                  value={draft.pinCode}
-                  onChange={(event) => setDraft({ ...draft, pinCode: event.target.value })}
-                />
-                <Input
-                  label="Landmark"
-                  hint="Optional"
-                  value={draft.landMark}
-                  onChange={(event) => setDraft({ ...draft, landMark: event.target.value })}
-                />
-
-                <div className="flex gap-2 sm:col-span-2">
-                  <Button type="submit" variant="primary" loading={saveAddress.loading}>
-                    Save address
-                  </Button>
-                  {addresses?.length > 0 && (
-                    <Button variant="ghost" onClick={() => setShowForm(false)}>
-                      Cancel
-                    </Button>
-                  )}
-                </div>
-              </form>
+              <AddressForm
+                className="mt-4"
+                onSubmit={submitAddress}
+                loading={saveAddress.loading}
+                submitLabel="Deliver here"
+                onCancel={addresses?.length > 0 ? () => setShowForm(false) : undefined}
+              />
             )}
           </section>
 

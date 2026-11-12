@@ -26,6 +26,16 @@ input::-ms-clear {
   display: none;
 }
 
+/* Fills the active dot of the home carousel over one slide's duration. */
+@keyframes promo-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 body {
   background: var(--surface-canvas);
   color: var(--text-primary);

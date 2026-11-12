@@ -32,6 +32,12 @@ export const getProductReviewSummary = async (productId) => {
   return response.data;
 };
 
+/** { canReview, reason: "delivered"|"in_transit"|"not_purchased", review } */
+export const getReviewEligibility = async (productId) => {
+  const response = await axios.get(`/api/product/${productId}/reviews/eligibility`);
+  return response.data;
+};
+
 export const deleteOwnReview = async (productId) => {
   const response = await axios.delete(`/api/product/${productId}/reviews`);
   return response.data;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -46,6 +47,20 @@ const StoreHeader = () => {
   const { isDark, setThemeMode } = useTheme();
 
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Increments when an added item lands in the bag, replaying the icon's pop.
+
+  const [bump, setBump] = useState(0);
+
+  useEffect(() => {
+
+    const onBump = () => setBump((value) => value + 1);
+
+    window.addEventListener("cart:bump", onBump);
+
+    return () => window.removeEventListener("cart:bump", onBump);
+
+  }, []);
   const [accountOpen, setAccountOpen] = useState(false);
   const [term, setTerm] = useState("");
   const [scrolled, setScrolled] = useState(false);
@@ -163,14 +178,28 @@ const StoreHeader = () => {
 
           <Link
             to="/cart"
+            data-cart-target
             className="relative flex h-control w-control items-center justify-center rounded-md text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
             aria-label={`Bag, ${count} item${count === 1 ? "" : "s"}`}
           >
-            <ShoppingBag size={18} />
+            <motion.span
+              key={`bag-${bump}`}
+              initial={bump ? { rotate: -18, scale: 1.25 } : false}
+              animate={{ rotate: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 12 }}
+              className="flex"
+            >
+              <ShoppingBag size={18} />
+            </motion.span>
             {count > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 type-numeric text-[0.625rem] font-semibold text-accent-on">
+              <motion.span
+                key={`badge-${bump}-${count}`}
+                initial={bump ? { scale: 1.8 } : false}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 520, damping: 14 }}
+                className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 type-numeric text-[0.625rem] font-semibold text-accent-on">
                 {count > 99 ? "99+" : count}
-              </span>
+              </motion.span>
             )}
           </Link>
 

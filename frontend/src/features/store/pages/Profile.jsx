@@ -6,12 +6,13 @@ import { changeAccountPassword, getProfile, setProfile } from "../../../api/user
 import { createAddress, deleteAddress, getAddresses } from "../../../api/storeApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
-import { Input, Select } from "../../../components/ui/Field";
+import { Input } from "../../../components/ui/Field";
 import Tabs from "../../../components/ui/Tabs";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { useToast } from "../../../components/ui/Toast";
 import { setProfile as setProfileAction } from "../../../redux/reducers/userSlice";
 import { Container } from "../components/Primitives";
+import AddressForm from "../components/AddressForm";
 
 import { getErrorMessage } from "../../../lib/apiError";
 const TABS = [
@@ -20,14 +21,7 @@ const TABS = [
   { value: "security", label: "Security", icon: Lock },
 ];
 
-const STATES = [
-  "Andhra Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa", "Gujarat", "Haryana",
-  "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra",
-  "Odisha", "Punjab", "Rajasthan", "Tamil Nadu", "Telangana", "Uttar Pradesh", "Uttarakhand",
-  "West Bengal",
-].map((state) => ({ value: state, label: state }));
 
-/** Account settings: identity, saved addresses and password. */
 const Profile = () => {
   const [tab, setTab] = useState("details");
 
@@ -113,30 +107,16 @@ const DetailsTab = () => {
 
 /* --------------------------------- Addresses -------------------------------- */
 
-const EMPTY_ADDRESS = {
-  fullName: "",
-  phoneNo: "",
-  address: "",
-  city: "",
-  state: "",
-  pinCode: "",
-  landMark: "",
-};
-
 const AddressesTab = () => {
   const toast = useToast();
   const { data: addresses, loading, refetch } = useApi(getAddresses, null);
   const create = useMutation(createAddress);
-
-  const [draft, setDraft] = useState(EMPTY_ADDRESS);
   const [open, setOpen] = useState(false);
 
-  const submit = async (event) => {
-    event.preventDefault();
+  const submit = async (value) => {
     try {
-      await create.mutate(draft);
+      await create.mutate(value);
       toast.success("Address added");
-      setDraft(EMPTY_ADDRESS);
       setOpen(false);
       refetch();
     } catch (error) {
@@ -162,7 +142,12 @@ const AddressesTab = () => {
         {(addresses || []).map((entry) => (
           <div key={entry._id} className="rounded-lg border border-line-subtle bg-surface p-4">
             <div className="flex items-start justify-between gap-2">
-              <p className="type-body-strong text-content">{entry.shippingAddress.fullName}</p>
+              <p className="flex items-center gap-2 type-body-strong text-content">
+                {entry.shippingAddress.fullName}
+                <span className="rounded-full border border-line px-2 py-0.5 text-[0.6875rem] font-semibold capitalize text-content-secondary">
+                  {entry.label || "home"}
+                </span>
+              </p>
               {entry.isDefault && (
                 <span className="rounded-sm bg-accent-subtle px-2 py-0.5 type-caption text-accent-text">
                   Default
@@ -190,67 +175,16 @@ const AddressesTab = () => {
       </div>
 
       {open ? (
-        <form
-          onSubmit={submit}
-          className="mt-4 grid gap-4 rounded-lg border border-line-subtle bg-surface p-5 sm:grid-cols-2"
-        >
-          <Input
-            label="Full name"
-            required
-            value={draft.fullName}
-            onChange={(event) => setDraft({ ...draft, fullName: event.target.value })}
+        <div className="mt-4 rounded-2xl border border-line-subtle bg-surface p-5">
+          <h3 className="type-card-title mb-4 text-content">New address</h3>
+          <AddressForm
+            onSubmit={submit}
+            loading={create.loading}
+            showDefaultToggle
+            initialValue={{ isDefault: !(addresses || []).length }}
+            onCancel={() => setOpen(false)}
           />
-          <Input
-            label="Phone number"
-            required
-            inputMode="numeric"
-            value={draft.phoneNo}
-            onChange={(event) => setDraft({ ...draft, phoneNo: event.target.value })}
-          />
-          <div className="sm:col-span-2">
-            <Input
-              label="Address"
-              required
-              value={draft.address}
-              onChange={(event) => setDraft({ ...draft, address: event.target.value })}
-            />
-          </div>
-          <Input
-            label="City"
-            required
-            value={draft.city}
-            onChange={(event) => setDraft({ ...draft, city: event.target.value })}
-          />
-          <Select
-            label="State"
-            required
-            placeholder="Select a state"
-            options={STATES}
-            value={draft.state}
-            onChange={(event) => setDraft({ ...draft, state: event.target.value })}
-          />
-          <Input
-            label="PIN code"
-            required
-            inputMode="numeric"
-            value={draft.pinCode}
-            onChange={(event) => setDraft({ ...draft, pinCode: event.target.value })}
-          />
-          <Input
-            label="Landmark"
-            hint="Optional"
-            value={draft.landMark}
-            onChange={(event) => setDraft({ ...draft, landMark: event.target.value })}
-          />
-          <div className="flex gap-2 sm:col-span-2">
-            <Button type="submit" variant="primary" loading={create.loading}>
-              Save address
-            </Button>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-          </div>
-        </form>
+        </div>
       ) : (
         <Button icon={Plus} className="mt-4" onClick={() => setOpen(true)}>
           Add an address

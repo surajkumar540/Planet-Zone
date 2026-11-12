@@ -63,6 +63,14 @@ const upsertReview = asyncHandler(async (req, res) => {
   return ok(res, { data, message: "Review saved" });
 });
 
+const reviewEligibility = asyncHandler(async (req, res) => {
+  const data = await productService.getReviewEligibility({
+    productId: req.params.id,
+    userId: req.auth.userId,
+  });
+  return ok(res, { data });
+});
+
 const deleteOwnReview = asyncHandler(async (req, res) => {
   const data = await productService.deleteReview({
     productId: req.params.id,
@@ -79,5 +87,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   upsertReview,
+  reviewEligibility,
   deleteOwnReview,
 };

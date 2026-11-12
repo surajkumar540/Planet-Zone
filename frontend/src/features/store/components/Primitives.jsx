@@ -128,7 +128,9 @@ export const SectionHeading = ({ eyebrow, title, description, action, className 
   >
     <div className="min-w-0">
       {eyebrow && <p className="type-overline mb-1 text-accent-text">{eyebrow}</p>}
-      <h2 className="type-section-title text-[1.375rem] text-content">{title}</h2>
+      <h2 className="font-display text-[1.625rem] font-semibold leading-tight tracking-tight text-content sm:text-[1.875rem]">
+        {title}
+      </h2>
       {description && <p className="type-description mt-1 max-w-[60ch]">{description}</p>}
     </div>
     {action}

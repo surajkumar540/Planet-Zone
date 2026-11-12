@@ -21,6 +21,13 @@ router.post(
   validate({ params: schemas.productIdParam, body: schemas.reviewSchema }),
   controller.upsertReview
 );
+/** Whether the caller may review this product (a delivered order is required). */
+router.get(
+  "/product/:id/reviews/eligibility",
+  authenticate,
+  validate({ params: schemas.productIdParam }),
+  controller.reviewEligibility
+);
 router.delete(
   "/product/:id/reviews",
   authenticate,

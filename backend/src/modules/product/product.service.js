@@ -220,10 +220,51 @@ const deleteProduct = async (id) => {
   return product;
 };
 
+/** Orders that have not reached the customer yet, but are on their way. */
+const IN_PROGRESS = ["pending", "confirmed", "processing", "packed", "shipped", "out_for_delivery"];
+
+/**
+ * Whether a customer may review a product: only after an order containing it
+ * has been delivered to them. Reviews from people who never owned the product
+ * are what make store ratings untrustworthy.
+ *
+ * @returns {{ canReview: boolean, reason: "delivered"|"in_transit"|"not_purchased", review: object|null }}
+ */
+const getReviewEligibility = async ({ productId, userId }) => {
+  const [delivered, inTransit, review] = await Promise.all([
+    prisma.orderItem.count({
+      where: { productId, order: { userId, status: "delivered" } },
+    }),
+    prisma.orderItem.count({
+      where: { productId, order: { userId, status: { in: IN_PROGRESS } } },
+    }),
+    prisma.review.findUnique({
+      where: { productId_userId: { productId, userId } },
+      select: { id: true, rating: true, comment: true, isApproved: true },
+    }),
+  ]);
+
+  const reason = delivered ? "delivered" : inTransit ? "in_transit" : "not_purchased";
+  return {
+    canReview: delivered > 0,
+    reason,
+    review: review ? { _id: review.id, rating: review.rating, comment: review.comment, isApproved: review.isApproved } : null,
+  };
+};
+
 /** Adds or replaces the caller's review and refreshes the rating summary. */
 const upsertReview = async ({ productId, user, rating, comment }) => {
   const product = await productRepository.count({ id: productId });
   if (!product) throw AppError.notFound("Product not found");
+
+  const { canReview, reason } = await getReviewEligibility({ productId, userId: user._id });
+  if (!canReview) {
+    throw AppError.forbidden(
+      reason === "in_transit"
+        ? "You can review this product once your order is delivered."
+        : "Only customers who bought this product can review it."
+    );
+  }
 
   return withTransaction(async (tx) => {
     await tx.review.upsert({
@@ -268,5 +309,6 @@ module.exports = {
   deleteProduct,
   upsertReview,
   deleteReview,
+  getReviewEligibility,
   getFilterOptions,
 };

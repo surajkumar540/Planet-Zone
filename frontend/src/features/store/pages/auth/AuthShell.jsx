@@ -40,7 +40,7 @@ const Backdrop = () => (
 );
 
 const AuthShell = ({ title, description, children, footer }) => (
-  <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-surface-canvas px-4 py-6 sm:py-10">
+  <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#06100b] px-4 py-6 sm:py-10">
     <Backdrop />
 
     <motion.div
@@ -62,7 +62,7 @@ const AuthShell = ({ title, description, children, footer }) => (
         </Link>
       </div>
 
-      <div className="rounded-xl border border-line bg-[color-mix(in_srgb,var(--surface-default)_88%,transparent)] p-5 shadow-xl backdrop-blur-md sm:p-6">
+      <div className="rounded-xl border border-line bg-[color-mix(in_srgb,var(--surface-default)_97%,transparent)] p-5 shadow-2xl backdrop-blur-md sm:p-6">
         <h1 className="text-[1.25rem] font-semibold leading-tight tracking-tight text-content">
           {title}
         </h1>
@@ -73,7 +73,7 @@ const AuthShell = ({ title, description, children, footer }) => (
       </div>
 
       {footer && (
-        <p className="mx-auto mt-4 w-fit rounded-full bg-[color-mix(in_srgb,var(--surface-default)_80%,transparent)] px-4 py-1.5 text-center type-caption text-content-secondary shadow-sm backdrop-blur-md">{footer}</p>
+        <p className="mx-auto mt-4 w-fit rounded-full bg-black/45 px-4 py-1.5 text-center type-caption text-white/85 shadow-sm ring-1 ring-white/10 backdrop-blur-md [&_a]:text-[#4ade80]">{footer}</p>
       )}
     </motion.div>
   </div>

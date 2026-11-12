@@ -123,20 +123,21 @@ const ProductWall = () => {
         ))}
       </motion.div>
 
-      {/* Readability: a wash of the page colour, a spotlight behind the form, and faded edges. */}
-      <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--surface-canvas) 38%, transparent)" }} />
+      {/* Readability: a dark wash over the wall, deepest behind the form and at
+          the edges, so the card stands out clearly in both themes. */}
+      <div className="absolute inset-0" style={{ background: "rgba(5, 10, 8, 0.55)" }} />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(38rem 32rem at 50% 50%, color-mix(in srgb, var(--surface-canvas) 92%, transparent) 0%, color-mix(in srgb, var(--surface-canvas) 55%, transparent) 55%, transparent 100%)",
+            "radial-gradient(34rem 30rem at 50% 50%, rgba(3, 7, 5, 0.55) 0%, rgba(3, 7, 5, 0.25) 60%, transparent 100%)",
         }}
       />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(to bottom, var(--surface-canvas) 0%, transparent 16%, transparent 84%, var(--surface-canvas) 100%), linear-gradient(to right, var(--surface-canvas) 0%, transparent 10%, transparent 90%, var(--surface-canvas) 100%)",
+            "linear-gradient(to bottom, rgba(3,7,5,0.85) 0%, transparent 18%, transparent 82%, rgba(3,7,5,0.85) 100%), linear-gradient(to right, rgba(3,7,5,0.7) 0%, transparent 12%, transparent 88%, rgba(3,7,5,0.7) 100%)",
         }}
       />
     </div>

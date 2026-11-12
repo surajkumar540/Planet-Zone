@@ -20,6 +20,7 @@ import { useSession } from "../hooks/useStorefront";
 import { Doodle } from "../../../components/ui/Doodles";
 
 import { getErrorMessage } from "../../../lib/apiError";
+import { img } from "../../../lib/img";
 /** Statuses at which a customer can still call the order off themselves. */
 const CANCELLABLE = ["pending", "confirmed", "processing"];
 
@@ -212,7 +213,7 @@ const OrderDetail = () => {
               {(order.orderItems || []).map((item, index) => (
                 <li key={`${item.product}-${index}`} className="flex gap-4 py-3">
                   <img
-                    src={item.image}
+                    src={img(item.image, 160)}
                     alt=""
                     className="h-16 w-16 shrink-0 rounded-md bg-surface-sunken object-cover"
                   />

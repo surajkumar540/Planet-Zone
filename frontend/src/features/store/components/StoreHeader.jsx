@@ -2,18 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import {
-  Heart,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Moon,
-  Package,
-  ShoppingBag,
-  Sun,
-  User,
-  X,
-} from "lucide-react";
+import { Heart, LayoutDashboard, LogOut, Menu, Moon, Package, ShoppingBag, Sun, User, X, UserRound, ArrowRight } from "lucide-react";
 import Logo from "../../../components/ui/Logo";
 import SearchBox from "./SearchBox";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -26,6 +15,7 @@ import { Container } from "./Primitives";
 import { useCart, useSession } from "../hooks/useStorefront";
 import { setLoggedOut } from "../../../redux/reducers/userSlice";
 import { useTheme } from "../../../theme/ThemeProvider";
+import { img } from "../../../lib/img";
 
 const NAV_LINKS = [
   { to: "/", label: "Home", end: true },
@@ -213,7 +203,7 @@ const StoreHeader = () => {
                 <ul className="space-y-2.5">
                   {bagItems.slice(0, 3).map((item) => (
                     <li key={`${item._id}::${item.variantSku || ""}`} className="flex items-center gap-3">
-                      <img src={item.image} alt="" className="h-11 w-11 shrink-0 rounded-lg border border-line-subtle object-cover" />
+                      <img src={img(item.image, 96)} alt="" className="h-11 w-11 shrink-0 rounded-lg border border-line-subtle object-cover" />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[0.8125rem] font-medium text-content">{item.name}</span>
                         <span className="block type-caption text-content-muted">× {item.qty}</span>
@@ -288,9 +278,18 @@ const StoreHeader = () => {
               )}
             </div>
           ) : (
-            <Button as={Link} to="/login" size="sm" variant="primary" className="shine ml-1">
-              {t("Sign in")}
-            </Button>
+            <Link
+              to="/login"
+              state={{ from: pathname }}
+              className="shine group ml-1 inline-flex h-10 items-center gap-2 rounded-full py-1 pl-1 pr-4 text-[0.875rem] font-semibold text-white shadow-md ring-1 ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-6px_var(--brand-leaf-from)] active:translate-y-0"
+              style={{ background: "linear-gradient(120deg, var(--promo-leaf-from), var(--promo-leaf-to))" }}
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/30 transition-transform duration-300 group-hover:rotate-[-8deg] group-hover:scale-105">
+                <UserRound size={16} />
+              </span>
+              <span className="hidden sm:inline">{t("Sign in")}</span>
+              <ArrowRight size={15} className="-ml-0.5 hidden transition-transform duration-200 group-hover:translate-x-0.5 sm:block" />
+            </Link>
           )}
         </div>
       </Container>

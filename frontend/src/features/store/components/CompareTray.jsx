@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Scale, X } from "lucide-react";
 
 import { COMPARE_LIMIT, useCompare } from "../hooks/useCompare";
+import { img } from "../../../lib/img";
 
 /**
  * The bar that appears once something is added to compare: thumbnails of the
@@ -36,7 +37,7 @@ const CompareTray = () => {
               const item = items[index];
               return item ? (
                 <div key={item._id} className="group relative">
-                  <img src={item.image} alt={item.name} title={item.name} className="h-12 w-12 rounded-lg border border-line-subtle bg-white object-cover" />
+                  <img src={img(item.image, 96)} alt={item.name} title={item.name} className="h-12 w-12 rounded-lg border border-line-subtle bg-white object-cover" />
                   <button
                     type="button"
                     onClick={() => remove(item._id)}

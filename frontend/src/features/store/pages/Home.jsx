@@ -17,6 +17,7 @@ import DealOfTheDay from "../components/DealOfTheDay";
 import { useWishlistToggle } from "../hooks/useWishlist";
 import { useI18n } from "../../../lib/i18n";
 import PersonalRails from "../components/PersonalRails";
+import DepartmentShowcase from "../components/DepartmentShowcase";
 
 const PROMISES = [
   { icon: Truck, title: "Free delivery", body: "On orders above ₹499" },
@@ -78,6 +79,12 @@ const Home = () => {
   const newest = useApi(getAllProducts, { sort: "createdAt:desc", limit: 8 });
   const topRated = useApi(getAllProducts, { minRating: 4, sort: "rating:desc", limit: 4 });
   const { data: categories } = useApi(getCategoryTree, null, { cacheTime: 5 * 60 * 1000 });
+  // The natural department gets its own banner slide when it exists.
+  const naturalDept = (categories || []).find((dept) => /natural/i.test(dept.name));
+  const natural = useApi(getAllProducts, naturalDept ? { dept: naturalDept._id, sort: "rating:desc", limit: 12 } : null, {
+    enabled: Boolean(naturalDept),
+    cacheTime: 5 * 60 * 1000,
+  });
 
   // Featured is curated and can legitimately be empty; fall back to the newest
   // products so the first band on the page is never blank.
@@ -93,8 +100,16 @@ const Home = () => {
   );
   const maxDiscount = Math.round(byDiscount[0]?.discount || 0);
   // Each banner photo links to its product, so the banner carries the id and name too.
+  // Slides take products in turn and never reuse one, so no two slides repeat.
+  const used = new Set();
   const imagesOf = (list) =>
-    list.filter((product) => product.image).map((product) => ({ src: product.image, id: product._id, name: product.name }));
+    list
+      .filter((product) => product.image && !used.has(product._id))
+      .slice(0, 3)
+      .map((product) => {
+        used.add(product._id);
+        return { src: product.image, id: product._id, name: product.name };
+      });
 
   // Banner copy is derived from the catalogue: a discount is only promised
   // when a product actually has one.
@@ -120,15 +135,25 @@ const Home = () => {
       cta: { label: maxDiscount > 0 ? t("Shop the deals") : t("Browse the shop"), to: "/shop?sort=totalPrice:asc" },
       images: imagesOf(byDiscount),
     },
-    {
-      id: "delivery",
-      palette: "dusk",
-      eyebrow: t("On us"),
-      title: t("Free delivery over ₹499"),
-      body: t("Plus 7-day easy returns on every order. No fine print."),
-      cta: { label: t("Start shopping"), to: "/shop" },
-      images: imagesOf(topRated.data?.length ? topRated.data : everything.slice(3)),
-    },
+    naturalDept
+      ? {
+          id: "natural",
+          palette: "dusk",
+          eyebrow: t("New department"),
+          title: t("Pure & natural"),
+          body: t("Honey, herbal teas, nuts, spices, oats and oils, from brands you can trust."),
+          cta: { label: t("Explore natural foods"), to: `/shop?dept=${naturalDept._id}` },
+          images: imagesOf(natural.data || []),
+        }
+      : {
+          id: "rated",
+          palette: "dusk",
+          eyebrow: t("Customer favourites"),
+          title: t("Loved by shoppers"),
+          body: t("Our best-rated picks, chosen by people who bought them."),
+          cta: { label: t("See top rated"), to: "/shop?minRating=4" },
+          images: imagesOf([...(topRated.data || []), ...everything]),
+        },
   ];
 
   const dealProduct = byDiscount.find((product) => product.isActive !== false) || null;
@@ -174,32 +199,13 @@ const Home = () => {
             eyebrow={t("Browse")}
             title={t("Shop by category")}
             description={t("Jump straight to the shelf you came for.")}
+            action={
+              <Button as={Link} to="/shop" variant="link" iconRight={ArrowRight}>
+                {t("View all")}
+              </Button>
+            }
           />
-          <Reveal stagger={0.05} className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            {categories.slice(0, 6).map((category) => (
-              <Reveal.Item key={category._id}>
-                <Link
-                  to={`/shop?category=${encodeURIComponent(category.name)}`}
-                  className="group flex flex-col items-center gap-2 rounded-2xl border border-line-subtle bg-surface p-4 text-center transition-all hover:-translate-y-1 hover:border-accent hover:shadow-md"
-                >
-                  {category.image ? (
-                    <img
-                      src={category.image}
-                      alt=""
-                      className="h-14 w-14 rounded-full object-cover transition-transform group-hover:scale-110"
-                    />
-                  ) : (
-                    <span className="font-display flex h-14 w-14 items-center justify-center rounded-full bg-accent-subtle text-[1.375rem] font-semibold text-accent-text transition-transform group-hover:scale-110">
-                      {category.name[0]}
-                    </span>
-                  )}
-                  <span className="truncate text-[0.8125rem] font-semibold text-content">
-                    {category.name}
-                  </span>
-                </Link>
-              </Reveal.Item>
-            ))}
-          </Reveal>
+          <DepartmentShowcase departments={categories} />
         </Container>
       )}
 

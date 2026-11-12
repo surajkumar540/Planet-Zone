@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Doodle } from "../../../components/ui/Doodles";
 import cn from "../../../lib/cn";
+import { img } from "../../../lib/img";
 
 /**
  * Home-page banner carousel.
@@ -136,13 +137,12 @@ const Slide = ({ slide, dragged }) => (
                 if (dragged.current) event.preventDefault();
               }}
               aria-label={`View ${image.name}`}
-              className="block h-full w-full overflow-hidden rounded-2xl p-1.5 shadow-2xl ring-1 ring-white/40 backdrop-blur transition-transform duration-300 hover:z-20 hover:-translate-y-1 hover:scale-105"
-              style={{ background: "rgba(255,255,255,0.18)" }}
+              className="block h-full w-full overflow-hidden rounded-2xl p-1.5 shadow-2xl ring-1 ring-white/40 transition-transform duration-300 hover:z-20 hover:-translate-y-1 hover:scale-105"
+              // A frame tinted in the slide's colours; the photo keeps its true colours.
+              style={{ background: CARD_TINTS[index](slide.palette) }}
             >
-              {/* Tinted in the slide's colours; multiply turns the photo's white
-                  background into that tint, so each card has its own colour. */}
-              <span className="block h-full w-full overflow-hidden rounded-xl" style={{ background: CARD_TINTS[index](slide.palette) }}>
-                <img src={image.src} alt="" draggable={false} className="h-full w-full object-cover mix-blend-multiply" />
+              <span className="block h-full w-full overflow-hidden rounded-xl bg-white">
+                <img src={img(image.src, 480)} alt="" draggable={false} className="h-full w-full object-cover" />
               </span>
             </Link>
           </motion.div>

@@ -10,6 +10,7 @@ import { EmptyState, ErrorState } from "../../../components/ui/States";
 import { OrderStatusBadge, PaymentStatusBadge } from "../../../components/ui/StatusBadge";
 import { formatCurrency, formatDate } from "../../../lib/format";
 import { Container } from "../components/Primitives";
+import { img } from "../../../lib/img";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All orders" },
@@ -83,7 +84,7 @@ const Orders = () => {
                   {(order.orderItems || []).slice(0, 4).map((item, index) => (
                     <img
                       key={`${item.product || item._id}-${index}`}
-                      src={item.image}
+                      src={img(item.image, 160)}
                       alt=""
                       className="h-11 w-11 rounded-md border-2 border-surface bg-surface-sunken object-cover"
                     />

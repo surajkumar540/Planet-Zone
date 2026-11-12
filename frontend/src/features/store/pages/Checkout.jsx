@@ -19,6 +19,7 @@ import AddressForm from "../components/AddressForm";
 import { toOrderCart, useCart, useSession } from "../hooks/useStorefront";
 
 import { getErrorMessage } from "../../../lib/apiError";
+import { img } from "../../../lib/img";
 /**
  * Checkout.
  *
@@ -304,7 +305,7 @@ const Checkout = () => {
               {items.map((item) => (
                 <li key={`${item._id}-${item.variantSku || ""}`} className="flex gap-3 py-3">
                   <img
-                    src={item.image}
+                    src={img(item.image, 160)}
                     alt=""
                     className="h-14 w-14 rounded-md bg-surface-sunken object-cover"
                   />

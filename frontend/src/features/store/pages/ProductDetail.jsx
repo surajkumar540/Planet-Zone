@@ -37,6 +37,7 @@ import { getAlternatives, getBoughtTogether, getSimilar } from "../../../api/sma
 import { recordView } from "../../../lib/recentlyViewed";
 import { sameKind, useCompare } from "../hooks/useCompare";
 import ProductRail from "../components/ProductRail";
+import { img } from "../../../lib/img";
 /**
  * Compare, spelled out: an "Add to compare" button before, and after adding,
  * how many are chosen with the obvious next step (compare now, or add one
@@ -217,7 +218,7 @@ const ProductDetail = () => {
           <div>
             <ZoomImage
               ref={imageRef}
-              src={gallery[activeImage] || product.image}
+              src={img(gallery[activeImage] || product.image, 1200)}
               alt={product.name}
               className="rounded-2xl border border-line-subtle bg-surface"
             />
@@ -236,7 +237,7 @@ const ProductDetail = () => {
                     aria-label={`View image ${index + 1}`}
                     aria-current={index === activeImage}
                   >
-                    <img src={image} alt="" className="h-full w-full object-cover" />
+                    <img src={img(image, 160)} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>

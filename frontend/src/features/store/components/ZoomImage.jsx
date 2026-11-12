@@ -1,6 +1,7 @@
 import { forwardRef, useRef, useState } from "react";
 import { ZoomIn } from "lucide-react";
 import cn from "../../../lib/cn";
+import { img } from "../../../lib/img";
 
 /**
  * A product image that magnifies under the pointer.
@@ -34,7 +35,7 @@ const ZoomImage = forwardRef(({ src, alt, className }, ref) => {
     >
       <img
         ref={ref}
-        src={src}
+        src={img(src, 1200)}
         alt={alt}
         draggable={false}
         className="aspect-square w-full select-none object-contain transition-transform duration-200 ease-out"

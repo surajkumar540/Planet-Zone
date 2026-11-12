@@ -1,6 +1,7 @@
 import { Minus, Plus, Star } from "lucide-react";
 import cn from "../../../lib/cn";
 import { formatCurrency } from "../../../lib/format";
+import { img } from "../../../lib/img";
 
 /**
  * Small building blocks shared across the storefront.
@@ -153,7 +154,7 @@ export const ProductImage = ({ src, alt, className, ratio = "square" }) => (
   >
     {src ? (
       <img
-        src={src}
+        src={img(src, 480)}
         alt={alt}
         loading="lazy"
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"

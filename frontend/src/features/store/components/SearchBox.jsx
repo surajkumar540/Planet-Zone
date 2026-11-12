@@ -10,6 +10,7 @@ import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { useI18n } from "../../../lib/i18n";
 import { openPhotoSearch } from "./PhotoSearch";
+import { img } from "../../../lib/img";
 
 /**
  * Search with live suggestions, used in the header and on the shop page.
@@ -389,7 +390,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
                         className={rowClass(index)}
                       >
                         <img
-                          src={option.product.image}
+                          src={img(option.product.image, 96)}
                           alt=""
                           className="h-11 w-11 shrink-0 rounded-lg border border-line-subtle bg-surface-sunken object-cover"
                         />

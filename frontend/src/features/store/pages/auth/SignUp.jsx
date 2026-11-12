@@ -13,6 +13,7 @@ import { useToast } from "../../../../components/ui/Toast";
 import { createAccount } from "../../../../redux/reducers/userSlice";
 import cn from "../../../../lib/cn";
 import AuthShell, { AuthError, AuthLink } from "./AuthShell";
+import GoogleSignIn from "./GoogleSignIn";
 
 const EMPTY = {
   firstName: "",
@@ -206,6 +207,7 @@ const SignUp = () => {
           Create account
         </Button>
       </form>
+      <GoogleSignIn text="signup_with" />
     </AuthShell>
   );
 };

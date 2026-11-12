@@ -33,6 +33,7 @@ import { useToast } from "../../../components/ui/Toast";
 import { getErrorMessage } from "../../../lib/apiError";
 import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import { img } from "../../../lib/img";
 
 /**
  * Floating shopping assistant: the store's help chat.
@@ -121,7 +122,7 @@ const ProductResult = ({ product, onAdd, onNavigate }) => {
   return (
     <div className="flex gap-3 rounded-xl border border-line-subtle bg-surface p-2.5">
       <Link to={`/product/${product._id}`} onClick={onNavigate} className="shrink-0">
-        <img src={product.image} alt="" loading="lazy" className="h-16 w-16 rounded-lg bg-white object-cover" />
+        <img src={img(product.image, 160)} alt="" loading="lazy" className="h-16 w-16 rounded-lg bg-white object-cover" />
       </Link>
       <div className="min-w-0 flex-1">
         <Link to={`/product/${product._id}`} onClick={onNavigate} className="line-clamp-2 text-[0.8125rem] font-semibold leading-snug text-content hover:text-accent-text">
@@ -176,7 +177,7 @@ const OrderResult = ({ order, onCancel, onNavigate }) => {
       <div className="flex items-center gap-3 p-3">
         <div className="flex -space-x-3">
           {order.items.slice(0, 2).map((item, index) => (
-            <img key={index} src={item.image} alt="" className="h-11 w-11 rounded-lg border-2 border-surface bg-white object-cover" />
+            <img key={index} src={img(item.image, 96)} alt="" className="h-11 w-11 rounded-lg border-2 border-surface bg-white object-cover" />
           ))}
         </div>
         <div className="min-w-0 flex-1">
@@ -556,7 +557,7 @@ const ShoppingAssistant = () => {
                       <div className="mt-2 overflow-hidden rounded-2xl border border-line-subtle bg-surface">
                         {message.bag.map((item) => (
                           <div key={`${item._id}${item.variantSku || ""}`} className="flex items-center gap-3 border-b border-line-subtle px-3 py-2 last:border-0">
-                            <img src={item.image} alt="" className="h-10 w-10 rounded-lg bg-white object-cover" />
+                            <img src={img(item.image, 96)} alt="" className="h-10 w-10 rounded-lg bg-white object-cover" />
                             <span className="min-w-0 flex-1 truncate text-[0.8125rem] text-content">{item.name}</span>
                             <span className="type-caption">×{item.qty}</span>
                           </div>

@@ -7,6 +7,7 @@ import Button from "../../../components/ui/Button";
 import { formatCurrency } from "../../../lib/format";
 import { useCart } from "./useStorefront";
 import { useI18n } from "../../../lib/i18n";
+import { img } from "../../../lib/img";
 
 /**
  * "Added to bag" feedback, shared by every add-to-cart button.
@@ -153,7 +154,7 @@ const AddedPanel = ({ added, onClose, onHold, onRelease }) => {
 
           <div className="flex items-center gap-3">
             <img
-              src={added.image}
+              src={img(added.image, 160)}
               alt=""
               className="h-14 w-14 shrink-0 rounded-lg border border-line-subtle object-cover"
             />

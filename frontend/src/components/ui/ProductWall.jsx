@@ -6,6 +6,7 @@ import { getAllProducts } from "../../api/productApi";
 import { useApi } from "../../hooks/useApi";
 import { formatCurrency } from "../../lib/format";
 import cn from "../../lib/cn";
+import { img } from "../../lib/img";
 
 /**
  * A living wall of the store's own products behind the auth screens.
@@ -36,7 +37,7 @@ const Card = ({ item, index }) => (
     <div className="aspect-square overflow-hidden rounded-xl" style={{ background: tint(index) }}>
       {item.image ? (
         // Multiply turns each photo's white background into the card's tint.
-        <img src={item.image} alt="" loading="lazy" draggable={false} className="h-full w-full object-cover mix-blend-multiply" />
+        <img src={img(item.image, 320)} alt="" loading="lazy" draggable={false} className="h-full w-full object-cover" />
       ) : (
         <span className="flex h-full w-full items-center justify-center text-black/40">
           <item.icon size={44} strokeWidth={1.4} />

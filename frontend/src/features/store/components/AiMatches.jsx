@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 import { formatCurrency } from "../../../lib/format";
+import { img } from "../../../lib/img";
 
 /**
  * "AI found these by meaning": products the local AI model matched to the
@@ -34,7 +35,7 @@ const AiMatches = ({ query, products, keywordCount }) => (
           className="group w-36 shrink-0 overflow-hidden rounded-xl border border-line-subtle bg-surface transition-all hover:-translate-y-0.5 hover:shadow-md"
         >
           <div className="bg-white">
-            <img src={product.image} alt="" loading="lazy" className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <img src={img(product.image, 320)} alt="" loading="lazy" className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" />
           </div>
           <div className="p-2.5">
             <p className="line-clamp-2 text-[0.75rem] font-semibold leading-snug text-content group-hover:text-accent-text">{product.name}</p>

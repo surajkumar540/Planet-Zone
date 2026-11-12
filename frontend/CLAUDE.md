@@ -73,6 +73,7 @@ src/
 - **Don't use raw colours or `dark:` variants.** Tokens already resolve for both themes. New colours need a token in both the light and dark blocks, plus a binding in `tailwind.config.js`.
 - `--accent-*` values are written at runtime by `ThemeProvider` from the selected preset, so they have no fixed values in the CSS. Dark mode is driven by `data-theme` on `<html>`; with the `system` setting the attribute is absent and a media query applies.
 - Chart colours come from `theme/chartPalette.js` via `ChartKit`. They deliberately don't follow the accent colour, because colour identifies the series.
+- Show product photos through `img(src, width)` from `lib/img.js` (the API image optimiser), sized for where they appear: ~96 tiny thumbnails, 160–320 small cards, 480 product cards, 1200 the zoomable photo.
 - Join conditional classes with `cn` from `lib/cn.js`, format money and dates with `lib/format.js`, and use `useToast` for notifications.
 - Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` is a lazy route; recommendation rows use `ProductRail`. `PhotoSearch` (AI photo search) is mounted once in `StoreLayout` and opened with `openPhotoSearch()` (search bar camera, chat chip); `AiMatches` shows meaning-search results on the shop page. Compare only accepts products of the same kind (`sameKind` in `useCompare`).
 - Every data screen handles loading (`Skeleton*`), error (`ErrorState`) and empty (`EmptyState`) states.

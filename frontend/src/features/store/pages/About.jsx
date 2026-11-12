@@ -9,6 +9,7 @@ import { useI18n } from "../../../lib/i18n";
 import Button from "../../../components/ui/Button";
 import { Doodle, Reveal } from "../../../components/ui/Doodles";
 import { Container, SectionHeading } from "../components/Primitives";
+import { img } from "../../../lib/img";
 
 const VALUES = [
   { icon: Leaf, title: "Sourced responsibly", body: "We buy from producers we know and say where every product comes from." },
@@ -102,7 +103,7 @@ const About = () => {
                 className="absolute w-[44%] overflow-hidden rounded-2xl border-4 border-surface bg-surface shadow-xl"
                 style={{ left: ["4%", "50%", "14%", "54%"][index], top: ["10%", "4%", "50%", "46%"][index] }}
               >
-                <img src={product.image} alt="" className="aspect-square w-full object-cover" />
+                <img src={img(product.image, 320)} alt="" className="aspect-square w-full object-cover" />
               </motion.div>
             ))}
           </div>

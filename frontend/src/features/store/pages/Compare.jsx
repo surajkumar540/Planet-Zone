@@ -16,6 +16,7 @@ import { Skeleton } from "../../../components/ui/Skeleton";
 import { Container, SectionHeading } from "../components/Primitives";
 import { formatCurrency, formatNumber } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import { img } from "../../../lib/img";
 
 /**
  * Side-by-side comparison of up to three products.
@@ -131,7 +132,7 @@ const AddProduct = ({ onAdd, existing }) => {
                 }}
                 className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-surface-hover"
               >
-                <img src={product.image} alt="" className="h-9 w-9 rounded-md bg-white object-cover" />
+                <img src={img(product.image, 480)} alt="" className="h-9 w-9 rounded-md bg-white object-cover" />
                 <span className="min-w-0 flex-1 truncate text-[0.875rem] text-content">{product.name}</span>
                 <Plus size={15} className="text-accent-text" />
               </button>
@@ -289,7 +290,7 @@ const Compare = () => {
                 {suggested.map((product) => (
                   <div key={product._id} className="flex flex-col overflow-hidden rounded-xl border border-line-subtle bg-surface">
                     <Link to={`/product/${product._id}`} className="block bg-white">
-                      <img src={product.image} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+                      <img src={img(product.image, 480)} alt="" loading="lazy" className="aspect-square w-full object-cover" />
                     </Link>
                     <div className="flex flex-1 flex-col p-2.5">
                       <p className="line-clamp-2 text-[0.75rem] font-semibold leading-snug text-content">{product.name}</p>
@@ -396,7 +397,7 @@ const Compare = () => {
                     <X size={15} />
                   </button>
                   <Link to={`/product/${product._id}`} className="block overflow-hidden rounded-xl bg-white">
-                    <img src={product.image} alt="" className="aspect-square w-full object-cover" />
+                    <img src={img(product.image, 480)} alt="" className="aspect-square w-full object-cover" />
                   </Link>
                   <p className="mt-3 type-caption uppercase tracking-wide">{product.brand}</p>
                   <Link to={`/product/${product._id}`} className="line-clamp-2 font-semibold text-content hover:text-accent-text">

@@ -21,6 +21,9 @@ npm run data:import        # DESTRUCTIVE: empties every table, then seeds users 
 npm run data:destroy       # DESTRUCTIVE: empties every table
 npm run data:sample        # adds ~100 sample products with photos
 npm run ai:download        # downloads the free AI models and indexes the catalogue
+npm run data:natural       # imports data/natural-products.json (real products from Open Food/Beauty Facts)
+npm run data:natural:fetch # rebuilds that file (slow: rate-limited public APIs)
+npm run images:warm        # pre-shrinks every product photo (API must be running)
 ```
 
 There are no backend tests or lint config. To check a change, run the server and call the endpoint. `GET /health` reports database connectivity (it sits outside `/api`).
@@ -125,6 +128,10 @@ Change stock only through `inventory.service.js`. `reserve` and `release` do not
 **Smart features.** `modules/smart` (public, read-only, no external AI): `/smart/assistant` parses a question with rules (category synonyms, brands, budgets such as "under 2k", sort words) and searches the catalogue, or answers delivery/payment/order questions from live settings and shipping rules. FAQ answers must describe what checkout really does, since several Settings switches are not enforced. Recommendations: `/smart/similar/:id`, `/smart/alternatives/:id`, `/smart/bought-together/:id` (co-purchases in non-cancelled orders), `/smart/for-you` (wishlist, purchases and the browser-sent `seen` ids, which are never stored), `/smart/products?ids=`.
 
 **Local AI.** `services/ai` runs free open-source models with Transformers.js (no API keys): `all-MiniLM-L6-v2` for search by meaning and `CLIP ViT-B/32` for search by photo. Models (~175 MB) download once into `backend/.cache/models` (`npm run ai:download` fetches them ahead of time); `productIndex.js` keeps text and photo vectors for every active product in memory and in `.cache/ai-index.json`, re-embedding only changed products (checked at most once a minute). `server.js` warms it up in the background; until it is ready, callers fall back to keyword search. `AI_FEATURES=off` disables it on small servers. Endpoints: `/smart/semantic`, `POST /smart/photo-search` (photo analysed in memory, never stored), `/smart/ai-status`; the assistant uses meaning search when no category or brand is recognised, and similar products blend in text and photo similarity. nodemon ignores `.cache`.
+
+**Images.** `GET /api/img?src=&w=` (`services/imageOptimizer.js`, mounted before the API rate limiter) resizes product photos to a fixed set of widths, converts to WebP with sharp, caches in `backend/.cache/images` and sends a one-year cache header. It only fetches https URLs from hosts that product images already use (read from the database), with a size limit and timeout; on failure it redirects to the original.
+
+**Google sign-in.** `POST /auth/google` takes a Google Identity Services ID token, verifies it with `google-auth-library` against `GOOGLE_CLIENT_ID`, and returns the same shape as `/login`. Existing verified accounts sign in; an unverified pending signup for that email is verified and its password replaced; otherwise a verified customer is created. `GET /auth/google/config` exposes the client id (empty hides the button).
 
 **Payment.** `/paymentInit` creates the Razorpay order and a `Payment` row. `/paymentSuccess` verifies the HMAC signature. `/createOrder` then checks that the verified payment matches the computed total. See the first known issue below.
 

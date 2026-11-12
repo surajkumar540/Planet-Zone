@@ -10,6 +10,7 @@ import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
 import { useToast } from "../../../components/ui/Toast";
 import { useI18n } from "../../../lib/i18n";
+import { img } from "../../../lib/img";
 
 /** Time left until local midnight, as zero-padded [hours, minutes, seconds]. */
 const untilMidnight = () => {
@@ -77,7 +78,7 @@ const DealOfTheDay = ({ product }) => {
       >
         <img
           ref={imageRef}
-          src={product.image}
+          src={img(product.image, 640)}
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />

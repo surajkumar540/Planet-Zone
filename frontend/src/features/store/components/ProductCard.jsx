@@ -10,6 +10,7 @@ import { useCartFeedback } from "../hooks/useCartFeedback";
 import { useCompare } from "../hooks/useCompare";
 import { useToast } from "../../../components/ui/Toast";
 import { useI18n } from "../../../lib/i18n";
+import { img } from "../../../lib/img";
 
 /**
  * The catalogue tile.
@@ -80,7 +81,7 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
       >
         <img
           ref={imageRef}
-          src={product.image}
+          src={img(product.image, 480)}
           alt={product.name}
           loading="lazy"
           className={cn(
@@ -90,7 +91,7 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
         />
         {hoverImage && (
           <img
-            src={hoverImage}
+            src={img(hoverImage, 480)}
             alt=""
             loading="lazy"
             className="absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100"

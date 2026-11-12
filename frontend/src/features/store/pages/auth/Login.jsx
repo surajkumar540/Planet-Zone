@@ -12,6 +12,7 @@ import { Checkbox, Input, PasswordInput } from "../../../../components/ui/Field"
 import { setAdminLogged, setProfile, setUserLogged } from "../../../../redux/reducers/userSlice";
 import { setSession } from "../../../../utils/functions";
 import AuthShell, { AuthError, AuthLink } from "./AuthShell";
+import GoogleSignIn from "./GoogleSignIn";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -104,6 +105,7 @@ const Login = () => {
           Sign in
         </Button>
       </form>
+      <GoogleSignIn text="continue_with" />
     </AuthShell>
   );
 };

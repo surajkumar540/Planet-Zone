@@ -1,3 +1,4 @@
+const { z } = require("zod");
 const express = require("express");
 const controller = require("./auth.controller");
 const schemas = require("./auth.validation");
@@ -9,6 +10,15 @@ const router = express.Router();
 
 router.post("/signup", otpLimiter, validate({ body: schemas.signupSchema }), controller.signup);
 router.post("/login", authLimiter, validate({ body: schemas.loginSchema }), controller.login);
+
+// Google sign-in: the browser sends Google's ID token; we verify it server-side.
+router.get("/auth/google/config", controller.googleConfig);
+router.post(
+  "/auth/google",
+  authLimiter,
+  validate({ body: z.object({ credential: z.string().min(20).max(4096) }) }),
+  controller.googleLogin
+);
 router.post(
   "/otpVerify",
   authLimiter,

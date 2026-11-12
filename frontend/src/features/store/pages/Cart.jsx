@@ -6,6 +6,7 @@ import { EmptyState } from "../../../components/ui/States";
 import { formatCurrency } from "../../../lib/format";
 import { Container, Price, QuantityStepper } from "../components/Primitives";
 import { useCart, useSession } from "../hooks/useStorefront";
+import { img } from "../../../lib/img";
 
 /**
  * The bag.
@@ -58,7 +59,7 @@ const Cart = () => {
                 to={`/product/${item._id}`}
                 className="h-24 w-24 shrink-0 overflow-hidden rounded-md bg-surface-sunken"
               >
-                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                <img src={img(item.image, 240)} alt={item.name} className="h-full w-full object-cover" />
               </Link>
 
               <div className="flex min-w-0 flex-1 flex-col gap-1">

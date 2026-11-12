@@ -86,6 +86,10 @@ app.get(
 
 /* ----------------------------------- API ----------------------------------- */
 
+// Optimised product photos. Mounted before the API limiter: a page shows many
+// images, and each variant is cached on disk and in the browser for a year.
+app.use("/api/img", require("./services/imageOptimizer"));
+
 app.use("/api", apiLimiter, apiRoutes);
 
 app.use(notFoundHandler);

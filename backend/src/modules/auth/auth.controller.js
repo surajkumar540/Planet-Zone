@@ -1,4 +1,5 @@
 const asyncHandler = require("../../core/asyncHandler");
+const env = require("../../config/env");
 const { ok } = require("../../core/ApiResponse");
 const authService = require("./auth.service");
 
@@ -41,6 +42,24 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
+/** Same response shape as /login, so the client handles both the same way. */
+const googleLogin = asyncHandler(async (req, res) => {
+  const { token, user, created } = await authService.googleLogin(req.body);
+  return res.status(200).json({
+    status: true,
+    message: created ? "Account created with Google" : "Signed in with Google",
+    token,
+    userId: user._id,
+    isAdmin: user.isAdmin,
+    created,
+    data: user,
+  });
+});
+
+/** Public: the client id the sign-in button needs (empty when not configured). */
+const googleConfig = (req, res) =>
+  res.status(200).json({ status: true, data: { clientId: env.GOOGLE_CLIENT_ID || "" } });
+
 const requestPasswordReset = asyncHandler(async (req, res) => {
   await authService.requestPasswordReset(req.body);
   return ok(res, {
@@ -72,6 +91,8 @@ module.exports = {
   signup,
   verifyEmail,
   login,
+  googleLogin,
+  googleConfig,
   requestPasswordReset,
   resetPassword,
   changePassword,

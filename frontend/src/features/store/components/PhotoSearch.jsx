@@ -7,6 +7,7 @@ import { searchByPhoto } from "../../../api/smartApi";
 import { getErrorMessage } from "../../../lib/apiError";
 import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import { img } from "../../../lib/img";
 
 /**
  * Search by photo, powered by a free open-source AI model (CLIP) running on
@@ -231,7 +232,7 @@ const PhotoSearch = () => {
                               className="group overflow-hidden rounded-xl border border-line-subtle bg-surface transition-all hover:-translate-y-0.5 hover:shadow-md"
                             >
                               <div className="relative bg-white">
-                                <img src={product.image} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+                                <img src={img(product.image, 320)} alt="" loading="lazy" className="aspect-square w-full object-cover" />
                                 <span
                                   className={cn(
                                     "absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[0.6875rem] font-bold text-white",

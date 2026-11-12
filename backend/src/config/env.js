@@ -34,6 +34,10 @@ const envSchema = z.object({
   // Comma separated list of allowed browser origins.
   CORS_ORIGINS: z.string().default("http://localhost:5173"),
 
+  // Google sign-in (optional): the OAuth "Web application" client id from
+  // Google Cloud Console. Leave empty to hide the Google button.
+  GOOGLE_CLIENT_ID: z.string().trim().optional().default(""),
+
   // Local AI features (search by meaning, photo search). "off" skips loading
   // the models, e.g. on a very small server.
   AI_FEATURES: z.enum(["on", "off"]).default("on"),

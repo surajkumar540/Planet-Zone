@@ -60,7 +60,7 @@ const CompareTray = () => {
             to="/compare"
             className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-accent px-4 text-[0.875rem] font-semibold text-accent-on transition-opacity hover:opacity-90"
           >
-            Compare {items.length}
+            {items.length < 2 ? "Add 1 more" : `Compare ${items.length}`}
             <ArrowRight size={15} />
           </Link>
         </motion.div>

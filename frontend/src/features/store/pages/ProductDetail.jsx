@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Heart,
   PackageCheck,
+  Plus,
   RefreshCw,
   Scale,
   ShieldCheck,
@@ -36,6 +37,60 @@ import { getAlternatives, getBoughtTogether, getSimilar } from "../../../api/sma
 import { recordView } from "../../../lib/recentlyViewed";
 import { useCompare } from "../hooks/useCompare";
 import ProductRail from "../components/ProductRail";
+/**
+ * Compare, spelled out: an "Add to compare" button before, and after adding,
+ * how many are chosen with the obvious next step (compare now, or add one
+ * more, since comparing needs at least two).
+ */
+const CompareBar = ({ product, compare }) => {
+  const added = compare.has(product._id);
+  const count = compare.items.length;
+  if (!added) {
+    return (
+      <button
+        type="button"
+        onClick={() => compare.toggle(product)}
+        className="mt-3 flex w-full items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-left transition-colors hover:border-accent"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-subtle text-accent-text">
+          <Scale size={17} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[0.875rem] font-semibold text-content">Add to compare</span>
+          <span className="block type-caption">
+            {count ? `${count} already chosen. Compare price, ratings and specs side by side.` : "Compare price, ratings and specs with up to 2 others."}
+          </span>
+        </span>
+        <Plus size={18} className="text-accent-text" />
+      </button>
+    );
+  }
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-accent bg-accent-subtle px-4 py-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-on">
+        <Check size={17} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[0.875rem] font-semibold text-accent-text">Added to compare ({count}/3)</span>
+        <span className="block type-caption text-content-secondary">
+          {count < 2 ? "Add at least one more product to compare." : "Ready to compare."}
+        </span>
+      </span>
+      <span className="flex items-center gap-2">
+        <button type="button" onClick={() => compare.toggle(product)} className="type-caption font-semibold text-content-secondary hover:text-content">
+          Remove
+        </button>
+        <Link
+          to="/compare"
+          className="inline-flex items-center gap-1 rounded-full bg-accent px-3.5 py-1.5 text-[0.8125rem] font-semibold text-accent-on"
+        >
+          {count < 2 ? "Add one more" : "Compare now"} <ChevronRight size={14} />
+        </Link>
+      </span>
+    </div>
+  );
+};
+
 /** A product's own attribute value by code (e.g. "returns"), or null. */
 const attributeValue = (product, code) =>
   (product.attributes || []).find((attribute) => attribute.code === code)?.value || null;
@@ -249,7 +304,7 @@ const ProductDetail = () => {
                 ? "Out of stock"
                 : stock <= 5
                   ? `Hurry — only ${stock} left`
-                  : "In stock, ships in 24 hours"}
+                  : "In stock"}
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -269,18 +324,6 @@ const ProductDetail = () => {
               >
                 Add to bag
               </Button>
-              {compare && (
-                <Button
-                  size="icon"
-                  variant={compare.has(product._id) ? "subtle" : "secondary"}
-                  icon={Scale}
-                  onClick={() => compare.toggle(product)}
-                  aria-label={compare.has(product._id) ? "Remove from compare" : "Add to compare"}
-                  aria-pressed={compare.has(product._id)}
-                  title="Compare"
-                  className="h-control-lg w-control-lg"
-                />
-              )}
               <Button
                 size="icon"
                 variant="secondary"
@@ -293,6 +336,8 @@ const ProductDetail = () => {
                 )}
               />
             </div>
+
+            {compare && <CompareBar product={product} compare={compare} />}
 
             {/* Only real facts: this product's own shipping, returns and warranty lines. */}
             <ul className="mt-6 space-y-2.5 rounded-lg border border-line-subtle bg-surface p-4">

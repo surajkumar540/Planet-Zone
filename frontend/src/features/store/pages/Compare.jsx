@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Award, Check, Info, Minus, Plus, Scale, Search, ShoppingBag, Star, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react";
 
-import { getProductsByIds } from "../../../api/smartApi";
+import { getProductsByIds, getSimilar } from "../../../api/smartApi";
 import { suggestProducts } from "../../../api/productApi";
 import { useApi, useDebounced } from "../../../hooks/useApi";
 import { useCart } from "../hooks/useStorefront";
@@ -156,6 +156,9 @@ const Compare = () => {
   const ids = (compare?.items || []).map((item) => item._id);
   const { data, loading, error, refetch } = useApi(getProductsByIds, { ids }, { enabled: ids.length > 0 });
   const products = useMemo(() => (ids.length ? (data || []).filter((product) => ids.includes(product._id)) : []), [data, ids]);
+  // With room left, suggest close matches to the first product.
+  const suggestions = useApi(getSimilar, { id: ids[0], limit: 6 }, { enabled: ids.length > 0 && ids.length < COMPARE_LIMIT });
+  const suggested = (suggestions.data || []).filter((product) => !ids.includes(product._id)).slice(0, ids.length === 1 ? 6 : 3);
 
   const scored = useMemo(() => {
     const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0) || 1;
@@ -254,6 +257,42 @@ const Compare = () => {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Not enough to compare yet, or room for one more: suggestions. */}
+          {suggested.length > 0 && (
+            <section className={cn("rounded-2xl border p-5", products.length < 2 ? "border-accent bg-accent-subtle" : "border-line-subtle bg-surface")}>
+              <h2 className="text-[1.0625rem] font-semibold text-content">
+                {products.length < 2 ? "Add at least one more product to compare" : "Add a third product?"}
+              </h2>
+              <p className="mt-0.5 type-caption">
+                {products.length < 2
+                  ? `Comparing needs two or three products. Here are close matches to ${products[0]?.name || "your pick"}, or search above.`
+                  : "Close matches you might want to weigh up too."}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {suggested.map((product) => (
+                  <div key={product._id} className="flex flex-col overflow-hidden rounded-xl border border-line-subtle bg-surface">
+                    <Link to={`/product/${product._id}`} className="block bg-white">
+                      <img src={product.image} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+                    </Link>
+                    <div className="flex flex-1 flex-col p-2.5">
+                      <p className="line-clamp-2 text-[0.75rem] font-semibold leading-snug text-content">{product.name}</p>
+                      <p className="mt-0.5 type-numeric text-[0.8125rem] font-bold text-content">{formatCurrency(product.totalPrice)}</p>
+                      <button
+                        type="button"
+                        onClick={() => compare.toggle(product)}
+                        className="mt-auto inline-flex items-center justify-center gap-1 rounded-full bg-accent px-2 py-1.5 text-[0.75rem] font-semibold text-accent-on hover:opacity-90"
+                        style={{ marginTop: "0.5rem" }}
+                      >
+                        <Plus size={13} /> Compare
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {products.length >= 2 && (<>
           {/* Priorities */}
           <section className="rounded-2xl border border-line-subtle bg-surface p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -321,6 +360,8 @@ const Compare = () => {
               )}
             </motion.section>
           )}
+
+          </>)}
 
           {/* Product columns: score, pros and cons, actions */}
           <div className={cn("grid gap-4", scored.length === 3 ? "md:grid-cols-3" : scored.length === 2 ? "md:grid-cols-2" : "max-w-sm")}>

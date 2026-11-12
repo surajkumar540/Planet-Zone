@@ -1,7 +1,7 @@
 const { Prisma } = require("@prisma/client");
 const prisma = require("../../db/client");
 const cache = require("../../core/cache");
-const { toProduct, num } = require("../../db/mappers");
+const { toProduct, toOrder, num } = require("../../db/mappers");
 const { WITH_VARIANTS } = require("../product/product.repository");
 const { ORDER_STATUS, CUSTOMER_CANCELLABLE } = require("../../constants/orderStatus");
 const { SETTINGS_DEFAULTS } = require("../settings/settings.defaults");
@@ -224,11 +224,162 @@ const answerFaq = async (topic) => {
   }
 };
 
+/* ------------------------------- Order help -------------------------------- */
+
+const ORDER_STEPS = [
+  { status: "confirmed", label: "Confirmed" },
+  { status: "packed", label: "Packed" },
+  { status: "shipped", label: "Shipped" },
+  { status: "out_for_delivery", label: "Out for delivery" },
+  { status: "delivered", label: "Delivered" },
+];
+const STATUS_ORDER = ["pending", "confirmed", "processing", "packed", "shipped", "out_for_delivery", "delivered"];
+const FINISHED = ["delivered", "cancelled", "refunded", "returned"];
+const STATUS_WORDS = {
+  pending: "is waiting to be confirmed",
+  confirmed: "is confirmed and will be packed soon",
+  processing: "is being packed",
+  packed: "is packed and ready to ship",
+  shipped: "has shipped",
+  out_for_delivery: "is out for delivery today",
+  delivered: "was delivered",
+  cancelled: "was cancelled",
+  refunded: "was refunded",
+  returned: "was returned",
+};
+
+/** A compact, chat-friendly view of one order, built only from its real record. */
+const orderSummary = (order) => {
+  const history = order.statusHistory || [];
+  const at = (status) => history.find((event) => event.status === status)?.changedAt || null;
+  const position = STATUS_ORDER.indexOf(order.status);
+  const steps = ORDER_STEPS.map((step) => ({
+    ...step,
+    done: position >= 0 && STATUS_ORDER.indexOf(step.status) <= position,
+    at: at(step.status),
+  }));
+  const maxDays = order.shipping?.maxDeliveryDays || 7;
+  const expectedBy = FINISHED.includes(order.status)
+    ? null
+    : new Date(new Date(order.createdAt).getTime() + maxDays * 86400000);
+  const latest = history[history.length - 1];
+  return {
+    _id: order._id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    statusText: STATUS_WORDS[order.status] || order.status,
+    paymentStatus: order.paymentStatus,
+    payment: order.onlinePayment ? "Paid online" : "Cash on delivery",
+    total: order.pricing?.grandTotal || 0,
+    createdAt: order.createdAt,
+    itemCount: (order.orderItems || []).reduce((sum, item) => sum + (item.qty || 0), 0),
+    items: (order.orderItems || []).slice(0, 3).map((item) => ({ name: item.name, image: item.image, qty: item.qty })),
+    tracking: order.shipping?.trackingNumber ? { number: order.shipping.trackingNumber, carrier: order.shipping.carrier || "" } : null,
+    expectedBy,
+    deliveredAt: at("delivered"),
+    steps,
+    lastUpdate: latest ? { status: latest.status, at: latest.changedAt, note: latest.note || "" } : null,
+    cancellable: CUSTOMER_CANCELLABLE.includes(order.status),
+    city: order.shippingAddress?.city || "",
+  };
+};
+
+const ORDER_INCLUDE = {
+  items: { orderBy: { position: "asc" } },
+  history: { orderBy: { changedAt: "asc" } },
+};
+
+const findMyOrders = async (userId, where = {}, take = 5) =>
+  (
+    await prisma.order.findMany({
+      where: { userId, ...where },
+      orderBy: { createdAt: "desc" },
+      take,
+      include: ORDER_INCLUDE,
+    })
+  ).map((row) => orderSummary(toOrder(row)));
+
+const SIGN_IN = (what) => ({
+  type: "signin",
+  answer: `Sign in and I'll ${what}. Your orders are private to your account.`,
+  link: { to: "/login", label: "Sign in" },
+});
+
+const ORDER_INTENTS = [
+  { mode: "cancel", test: /\bcancel\b.*\b(order|it|ord-)|\b(order|ord-[a-z0-9]+)\b.*\bcancel/ },
+  { mode: "track", test: /\b(track|tracking|where('?s| is) my|order status|delivery status|status of my|when will (it|my|the order)|arriv|shipped yet|out for delivery|delivered yet|my (parcel|package|delivery))\b/ },
+  { mode: "list", test: /\b(my orders?|order history|past orders?|previous orders?|recent orders?|orders i (placed|made)|what did i (buy|order))\b/ },
+  { mode: "wishlist", test: /\b(my wishlist|wish list|saved items|my favou?rites)\b/ },
+];
+
+/** Order and wishlist questions, answered from the signed-in shopper's own data. */
+const accountAnswer = async (q, userId) => {
+  const number = q.match(/\bord-[a-z0-9]{4,}\b/i)?.[0];
+  const intent = ORDER_INTENTS.find((rule) => rule.test.test(q)) || (number ? { mode: "track" } : null);
+  if (!intent) return null;
+
+  if (intent.mode === "wishlist") {
+    if (!userId) return SIGN_IN("show your wishlist");
+    const saved = await prisma.wishlistItem.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 6, select: { productId: true } });
+    const products = await getProductsByIds(saved.map((row) => row.productId));
+    return {
+      type: "products",
+      products,
+      answer: products.length ? `Here's what's on your wishlist (${products.length}).` : "Your wishlist is empty. Tap the heart on any product to save it.",
+      link: { to: "/wishlist", label: "Open wishlist" },
+    };
+  }
+
+  if (!userId) return SIGN_IN(intent.mode === "cancel" ? "help you cancel an order" : "show your orders and where they are");
+
+  if (number) {
+    const orders = await findMyOrders(userId, { orderNumber: number.toUpperCase() }, 1);
+    if (!orders.length) {
+      return { type: "text", answer: `I couldn't find order ${number.toUpperCase()} on your account. Check the number, or see all your orders.`, link: { to: "/orders", label: "Your orders" } };
+    }
+    const [order] = orders;
+    return { type: "orders", mode: intent.mode, orders, answer: `Order ${order.orderNumber} ${order.statusText}.` };
+  }
+
+  if (intent.mode === "cancel") {
+    const open = await findMyOrders(userId, { status: { in: [...CUSTOMER_CANCELLABLE] } }, 5);
+    if (!open.length) {
+      return {
+        type: "text",
+        answer: "None of your orders can be cancelled right now: orders can only be cancelled until they're packed. For one that's already on its way, please contact us.",
+        link: { to: "/contact", label: "Contact us" },
+      };
+    }
+    return { type: "orders", mode: "cancel", orders: open, answer: open.length === 1 ? "This order can still be cancelled:" : "These orders can still be cancelled. Pick one:" };
+  }
+
+  if (intent.mode === "track") {
+    const active = await findMyOrders(userId, { status: { notIn: FINISHED } }, 3);
+    if (active.length) {
+      return {
+        type: "orders",
+        mode: "track",
+        orders: active,
+        answer: active.length === 1 ? `Your order ${active[0].orderNumber} ${active[0].statusText}.` : `You have ${active.length} orders on the way:`,
+      };
+    }
+    const last = await findMyOrders(userId, {}, 1);
+    return last.length
+      ? { type: "orders", mode: "track", orders: last, answer: `Nothing is on the way right now. Your latest order ${last[0].orderNumber} ${last[0].statusText}.` }
+      : { type: "text", answer: "You haven't placed any orders yet. Want me to help you find something?", suggestions: ["Best rated products", "Deals on sale"] };
+  }
+
+  const recent = await findMyOrders(userId, {}, 5);
+  return recent.length
+    ? { type: "orders", mode: "list", orders: recent, answer: `Your ${recent.length === 1 ? "order" : `last ${recent.length} orders`}:`, link: { to: "/orders", label: "See all orders" } }
+    : { type: "text", answer: "You haven't placed any orders yet.", suggestions: ["Best rated products", "Deals on sale"] };
+};
+
 const HELP = {
   type: "help",
   answer:
-    "I can search the catalogue for you. Try \"headphones under 2000\", \"best rated laptops\", \"Apple phones between 50k and 1 lakh\" or \"cheapest dress in stock\". I can also answer questions about delivery, cash on delivery, payments, cancelling and tracking orders.",
-  suggestions: ["Watches under 5000", "Best rated laptops", "Cheapest shoes", "Is cash on delivery available?"],
+    "I can find products, track your orders and answer questions about delivery and payment. Try \"headphones under 2000\", \"best rated laptops\", \"Apple phones between 50k and 1 lakh\" or \"cheapest dress in stock\". I can also answer questions about delivery, cash on delivery, payments, cancelling and tracking orders.",
+  suggestions: ["Track my order", "Watches under 5000", "Best rated laptops", "Is cash on delivery available?"],
 };
 
 /**
@@ -236,9 +387,13 @@ const HELP = {
  * catalogue or the store's settings. Returns what it understood, so the UI can
  * show it and the shopper can see why these results came back.
  */
-const assistant = async (rawQuery) => {
+const assistant = async (rawQuery, { userId } = {}) => {
   const q = ` ${String(rawQuery || "").toLowerCase().replace(/\s+/g, " ").trim()} `;
   if (q.trim().length < 2 || /^\s*(hi|hello|hey|help|namaste|hii+)\b/.test(q)) return HELP;
+
+  // "Where is my order", "cancel ORD-…", "my wishlist": the shopper's own data.
+  const account = await accountAnswer(q, userId);
+  if (account) return account;
 
   const { categories, brands } = await vocabulary();
 

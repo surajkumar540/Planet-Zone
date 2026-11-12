@@ -27,10 +27,12 @@ const idList = (max) =>
 const productParam = z.object({ id: uuid });
 const limitQuery = z.object({ limit: z.coerce.number().int().min(1).max(12).optional() });
 
+// Signed-in shoppers can ask about their own orders; the token is optional.
 router.get(
   "/smart/assistant",
+  optionalAuthenticate,
   validate({ query: z.object({ q: z.string().trim().max(200).default("") }) }),
-  asyncHandler(async (req, res) => ok(res, { data: await service.assistant(req.query.q) }))
+  asyncHandler(async (req, res) => ok(res, { data: await service.assistant(req.query.q, { userId: req.auth?.userId }) }))
 );
 
 router.get(

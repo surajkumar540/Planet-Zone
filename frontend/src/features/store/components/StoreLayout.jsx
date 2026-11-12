@@ -5,6 +5,9 @@ import StoreHeader from "./StoreHeader";
 import StoreFooter from "./StoreFooter";
 import { WishlistProvider } from "../hooks/useWishlist";
 import { CartFeedbackProvider } from "../hooks/useCartFeedback";
+import { CompareProvider } from "../hooks/useCompare";
+import CompareTray from "./CompareTray";
+import ShoppingAssistant from "./ShoppingAssistant";
 
 /**
  * Storefront shell.
@@ -35,6 +38,7 @@ const StoreLayout = () => {
       {/* "user" turns every framer animation off for people who ask their OS for less motion. */}
       <MotionConfig reducedMotion="user">
       <CartFeedbackProvider>
+      <CompareProvider>
       <div className="flex min-h-screen flex-col bg-surface-canvas">
         <a
           href="#store-main"
@@ -60,7 +64,10 @@ const StoreLayout = () => {
         </main>
 
         <StoreFooter />
+        <CompareTray />
+        <ShoppingAssistant />
       </div>
+      </CompareProvider>
       </CartFeedbackProvider>
       </MotionConfig>
     </WishlistProvider>

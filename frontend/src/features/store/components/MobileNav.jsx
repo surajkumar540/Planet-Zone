@@ -12,6 +12,8 @@ import {
   Mail,
   Moon,
   Package,
+  Scale,
+  Shirt,
   ShoppingBag,
   Store,
   Sun,
@@ -29,6 +31,8 @@ import cn from "../../../lib/cn";
 const PRIMARY = [
   { to: "/", label: "Home", icon: Home, end: true },
   { to: "/shop", label: "Shop", icon: Store },
+  { to: "/try-on", label: "Try-On", icon: Shirt },
+  { to: "/compare", label: "Compare", icon: Scale },
   { to: "/about", label: "About", icon: Info },
   { to: "/contact", label: "Contact", icon: Mail },
 ];

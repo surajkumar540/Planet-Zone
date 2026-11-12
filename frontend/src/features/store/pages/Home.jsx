@@ -16,6 +16,7 @@ import HeroCarousel from "../components/HeroCarousel";
 import DealOfTheDay from "../components/DealOfTheDay";
 import { useWishlistToggle } from "../hooks/useWishlist";
 import { useI18n } from "../../../lib/i18n";
+import PersonalRails from "../components/PersonalRails";
 
 const PROMISES = [
   { icon: Truck, title: "Free delivery", body: "On orders above ₹499" },
@@ -270,6 +271,9 @@ const Home = () => {
           />
         </Container>
       )}
+
+      {/* ------------------------------ For you ------------------------------ */}
+      <PersonalRails />
 
       {/* --------------------------------- Closing -------------------------------- */}
       <Container className="pb-section">

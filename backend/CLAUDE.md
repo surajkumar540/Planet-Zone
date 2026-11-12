@@ -121,6 +121,8 @@ Change stock only through `inventory.service.js`. `reserve` and `release` do not
 
 **Order emails.** `services/orderNotifications.js` sends an order confirmation after `createOrder` commits, and an update on shipped, out_for_delivery, delivered, cancelled and refunded. Both run in the background (a mail failure is logged, never fails the order) and honour Settings → notifications `orderConfirmationEmail` / `orderStatusEmail`. Links use `APP_URL`.
 
+**Smart features.** `modules/smart` (public, read-only, no external AI): `/smart/assistant` parses a question with rules (category synonyms, brands, budgets such as "under 2k", sort words) and searches the catalogue, or answers delivery/payment/order questions from live settings and shipping rules. FAQ answers must describe what checkout really does, since several Settings switches are not enforced. Recommendations: `/smart/similar/:id`, `/smart/alternatives/:id`, `/smart/bought-together/:id` (co-purchases in non-cancelled orders), `/smart/for-you` (wishlist, purchases and the browser-sent `seen` ids, which are never stored), `/smart/products?ids=`.
+
 **Payment.** `/paymentInit` creates the Razorpay order and a `Payment` row. `/paymentSuccess` verifies the HMAC signature. `/createOrder` then checks that the verified payment matches the computed total. See the first known issue below.
 
 ## Known issues

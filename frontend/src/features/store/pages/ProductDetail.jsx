@@ -7,13 +7,16 @@ import {
   Heart,
   PackageCheck,
   RefreshCw,
+  Scale,
   ShieldCheck,
+  Shirt,
   ShoppingBag,
   Star,
   Truck,
+  Wallet,
 } from "lucide-react";
 
-import { fetchSingleProductApi, getAllProducts, saveProductReview } from "../../../api/productApi";
+import { fetchSingleProductApi, saveProductReview } from "../../../api/productApi";
 import { getProductReviewSummary, getProductReviews, getReviewEligibility } from "../../../api/storeApi";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
@@ -21,16 +24,24 @@ import { Textarea } from "../../../components/ui/Field";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { EmptyState, ErrorState } from "../../../components/ui/States";
 import { useToast } from "../../../components/ui/Toast";
-import { formatDate, formatNumber } from "../../../lib/format";
+import { formatCurrency, formatDate, formatNumber } from "../../../lib/format";
 import cn from "../../../lib/cn";
-import { Container, Price, QuantityStepper, Rating, SectionHeading } from "../components/Primitives";
-import ProductCard from "../components/ProductCard";
+import { Container, Price, QuantityStepper, Rating } from "../components/Primitives";
 import ZoomImage from "../components/ZoomImage";
 import { useCart, useSession } from "../hooks/useStorefront";
 import { useWishlistToggle } from "../hooks/useWishlist";
 import { useCartFeedback } from "../hooks/useCartFeedback";
 
 import { getErrorMessage } from "../../../lib/apiError";
+import { getAlternatives, getBoughtTogether, getSimilar } from "../../../api/smartApi";
+import { recordView } from "../../../lib/recentlyViewed";
+import { useCompare } from "../hooks/useCompare";
+import ProductRail from "../components/ProductRail";
+import { WEARABLE_CATEGORIES } from "../../../lib/tryOn";
+/** A product's own attribute value by code (e.g. "returns"), or null. */
+const attributeValue = (product, code) =>
+  (product.attributes || []).find((attribute) => attribute.code === code)?.value || null;
+
 const ProductDetail = () => {
   const { pid } = useParams();
   const toast = useToast();
@@ -54,11 +65,16 @@ const ProductDetail = () => {
   );
   const { data: summary } = useApi(getProductReviewSummary, pid, { enabled: Boolean(pid) });
 
-  const related = useApi(
-    getAllProducts,
-    product ? { category: product.category, limit: 5 } : null,
-    { enabled: Boolean(product) }
-  );
+  // Recommendations, all computed by our API from the catalogue and real orders.
+  const similar = useApi(getSimilar, { id: pid, limit: 4 }, { enabled: Boolean(pid) });
+  const together = useApi(getBoughtTogether, { id: pid, limit: 4 }, { enabled: Boolean(pid) });
+  const cheaper = useApi(getAlternatives, { id: pid, limit: 4 }, { enabled: Boolean(pid) });
+  const compare = useCompare();
+
+  // Remember this view on this device only (see lib/recentlyViewed).
+  useEffect(() => {
+    if (product?._id) recordView(product._id);
+  }, [product?._id]);
 
   /** The variant the customer has selected, or null when the product has none. */
   const variant = useMemo(() => {
@@ -255,6 +271,18 @@ const ProductDetail = () => {
               >
                 Add to bag
               </Button>
+              {compare && (
+                <Button
+                  size="icon"
+                  variant={compare.has(product._id) ? "subtle" : "secondary"}
+                  icon={Scale}
+                  onClick={() => compare.toggle(product)}
+                  aria-label={compare.has(product._id) ? "Remove from compare" : "Add to compare"}
+                  aria-pressed={compare.has(product._id)}
+                  title="Compare"
+                  className="h-control-lg w-control-lg"
+                />
+              )}
               <Button
                 size="icon"
                 variant="secondary"
@@ -268,12 +296,27 @@ const ProductDetail = () => {
               />
             </div>
 
+            {WEARABLE_CATEGORIES.includes(product.category) && (
+              <Link
+                to={`/try-on?product=${product._id}`}
+                className="mt-3 flex items-center gap-3 rounded-xl border border-dashed border-accent bg-accent-subtle px-4 py-3 text-accent-text transition-colors hover:bg-[color-mix(in_srgb,var(--accent-subtle)_70%,var(--accent-solid))] hover:text-accent-on"
+              >
+                <Shirt size={18} />
+                <span className="flex-1 text-[0.875rem] font-semibold">See it on you with Try-On</span>
+                <ChevronRight size={16} />
+              </Link>
+            )}
+
+            {/* Only real facts: this product's own shipping, returns and warranty lines. */}
             <ul className="mt-6 space-y-2.5 rounded-lg border border-line-subtle bg-surface p-4">
               {[
-                { icon: Truck, text: "Free delivery on orders above ₹499" },
-                { icon: RefreshCw, text: "7-day easy returns" },
-                { icon: ShieldCheck, text: "Secure payment via Razorpay" },
-              ].map((item) => (
+                { icon: Truck, text: attributeValue(product, "shipping") },
+                { icon: RefreshCw, text: attributeValue(product, "returns") },
+                { icon: ShieldCheck, text: attributeValue(product, "warranty") },
+                { icon: Wallet, text: "Cash on delivery available" },
+              ]
+                .filter((item) => item.text)
+                .map((item) => (
                 <li key={item.text} className="flex items-center gap-2.5 type-body text-content-secondary">
                   <item.icon size={15} className="text-content-muted" />
                   {item.text}
@@ -323,25 +366,33 @@ const ProductDetail = () => {
         />
       </Container>
 
-      {/* -------------------------------- Related -------------------------------- */}
-      {related.data?.length > 1 && (
-        <Container className="pb-section">
-          <SectionHeading title="You may also like" eyebrow={product.category} />
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {related.data
-              .filter((item) => item._id !== product._id)
-              .slice(0, 4)
-              .map((item) => (
-                <ProductCard
-                  key={item._id}
-                  product={item}
-                  onToggleWishlist={toggle}
-                  isWishlisted={isWishlisted(item._id)}
-                />
-              ))}
-          </div>
-        </Container>
-      )}
+      {/* ---------------------------- Recommendations ---------------------------- */}
+      <Container className="space-y-section pb-section">
+        <ProductRail
+          eyebrow="Customers also bought"
+          title="Frequently bought together"
+          description="From real orders that included this product."
+          products={together.data}
+          loading={together.loading}
+          caption={(item) => `Bought together in ${item.boughtTogetherCount} order${item.boughtTogetherCount === 1 ? "" : "s"}`}
+        />
+        <ProductRail
+          eyebrow="Spend less"
+          title="Cheaper alternatives"
+          description={`Well-rated ${product.category.toLowerCase()} for less than this one.`}
+          products={cheaper.data}
+          loading={cheaper.loading}
+          caption={(item) => `Save ${formatCurrency(item.saving)}`}
+        />
+        <ProductRail
+          eyebrow={product.category}
+          title="Similar products"
+          products={similar.data}
+          loading={similar.loading}
+          error={similar.error}
+          onRetry={similar.refetch}
+        />
+      </Container>
     </>
   );
 };

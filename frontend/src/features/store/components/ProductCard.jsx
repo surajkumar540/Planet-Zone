@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Heart, ShoppingBag, SlidersHorizontal } from "lucide-react";
+import { Check, Heart, Scale, ShoppingBag, SlidersHorizontal } from "lucide-react";
 
 import cn from "../../../lib/cn";
 import { Price, Rating } from "./Primitives";
 import { useCart } from "../hooks/useStorefront";
 import { useCartFeedback } from "../hooks/useCartFeedback";
+import { useCompare } from "../hooks/useCompare";
 import { useToast } from "../../../components/ui/Toast";
 import { useI18n } from "../../../lib/i18n";
 
@@ -29,6 +30,8 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
   const imageRef = useRef(null);
   const [justAdded, setJustAdded] = useState(false);
   const [heartBurst, setHeartBurst] = useState(0);
+  const compare = useCompare();
+  const comparing = compare?.has(product._id);
 
   const outOfStock = !product.hasVariants && product.countInStock <= 0;
   const lowStock = !outOfStock && product.countInStock > 0 && product.countInStock <= 5;
@@ -157,6 +160,26 @@ const ProductCard = ({ product, onToggleWishlist, isWishlisted = false }) => {
               />
             )}
           </AnimatePresence>
+        </motion.button>
+      )}
+
+      {/* -------------------------------- Compare -------------------------------- */}
+      {compare && (
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.85 }}
+          onClick={() => compare.toggle(product)}
+          className={cn(
+            "absolute right-2.5 top-[3.25rem] flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur transition-all",
+            comparing
+              ? "bg-accent text-accent-on opacity-100"
+              : "bg-[color-mix(in_srgb,var(--surface-default)_90%,transparent)] text-content-secondary opacity-100 hover:text-accent-text sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
+          )}
+          aria-label={comparing ? "Remove from compare" : "Add to compare"}
+          aria-pressed={comparing}
+          title={comparing ? "In compare" : "Compare"}
+        >
+          <Scale size={15} />
         </motion.button>
       )}
 

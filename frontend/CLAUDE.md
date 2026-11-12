@@ -59,7 +59,7 @@ src/
 - Redux holds only the session (`user`) and the cart (`cart`, persisted to `localStorage`). Everything else stays in component state.
 - In storefront code, use the `useCart()` and `useSession()` hooks from `features/store/hooks/useStorefront.js`.
 - Cart prices are display-only. The server prices the order, and `toOrderCart()` sends only identity and quantity. Show totals from `/api/orders/quote` at checkout.
-- `localStorage` keys: `token`, `userId`, `admin`, `cart`, `planet.appearance`. Whether a user is an admin comes from the API response, not the stored `admin` flag.
+- `localStorage` keys: `token`, `userId`, `admin`, `cart`, `planet.appearance`, `planet.compare` (compare list, max 3), `planet.recentlyViewed` (+ `.paused`; device-only history, see `lib/recentlyViewed.js`). The assistant keeps its conversation in `sessionStorage`. Whether a user is an admin comes from the API response, not the stored `admin` flag.
 
 **Routing**
 - `features/store/StoreRoutes.jsx` and `features/admin/AdminRoutes.jsx` own their routes. Customer-only screens go under the single `<RequireAuth />` route; don't guard screens individually.
@@ -74,6 +74,7 @@ src/
 - `--accent-*` values are written at runtime by `ThemeProvider` from the selected preset, so they have no fixed values in the CSS. Dark mode is driven by `data-theme` on `<html>`; with the `system` setting the attribute is absent and a media query applies.
 - Chart colours come from `theme/chartPalette.js` via `ChartKit`. They deliberately don't follow the accent colour, because colour identifies the series.
 - Join conditional classes with `cn` from `lib/cn.js`, format money and dates with `lib/format.js`, and use `useToast` for notifications.
+- Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` and `/try-on` are lazy routes; recommendation rows use `ProductRail`. Try-on is a local overlay (no upload); wearable categories live in `lib/tryOn.js`.
 - Every data screen handles loading (`Skeleton*`), error (`ErrorState`) and empty (`EmptyState`) states.
 - `features/admin/components/StatusBadge.jsx` only re-exports `components/ui/StatusBadge.jsx`. Edit the shared one.
 

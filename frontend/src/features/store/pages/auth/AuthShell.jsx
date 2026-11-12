@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
 import cn from "../../../../lib/cn";
-import Logo, { LogoMark } from "../../../../components/ui/Logo";
-import ShopDoodleField from "../../../../components/ui/ShopDoodleField";
+import Logo from "../../../../components/ui/Logo";
+import ProductWall from "../../../../components/ui/ProductWall";
 
 /**
  * Shared frame for the sign-in, sign-up, OTP and password screens.
@@ -35,11 +35,7 @@ const Backdrop = () => (
           "radial-gradient(52rem 26rem at 50% -8%, color-mix(in srgb, var(--brand-leaf-from) 16%, transparent), transparent 70%)",
       }}
     />
-    <LogoMark
-      size={420}
-      className="pointer-events-none absolute -bottom-24 -right-24 hidden opacity-[0.05] md:block"
-    />
-    <ShopDoodleField />
+    <ProductWall />
   </>
 );
 
@@ -53,7 +49,7 @@ const AuthShell = ({ title, description, children, footer }) => (
       animate="visible"
       className="relative z-10 w-full max-w-[23rem]"
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between rounded-full bg-[color-mix(in_srgb,var(--surface-default)_80%,transparent)] px-3 py-1.5 shadow-sm backdrop-blur-md">
         <Link to="/" aria-label="Planet Zone home" className="rounded-md">
           <Logo size="md" animated />
         </Link>
@@ -77,7 +73,7 @@ const AuthShell = ({ title, description, children, footer }) => (
       </div>
 
       {footer && (
-        <p className="mt-4 text-center type-caption text-content-secondary">{footer}</p>
+        <p className="mx-auto mt-4 w-fit rounded-full bg-[color-mix(in_srgb,var(--surface-default)_80%,transparent)] px-4 py-1.5 text-center type-caption text-content-secondary shadow-sm backdrop-blur-md">{footer}</p>
       )}
     </motion.div>
   </div>

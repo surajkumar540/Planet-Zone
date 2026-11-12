@@ -171,7 +171,17 @@ html[data-feed-more] [data-store-footer] {
   animation: route-march 18s linear infinite;
 }
 
+/* Product wall behind the auth screens: each row slides by one copy of itself. */
+@keyframes wall-slide {
+  to { transform: translateX(-50%); }
+}
+.wall-row {
+  animation: wall-slide 80s linear infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .wall-row,
   .route-march,
   .leaf-sway,
   .search-glow,

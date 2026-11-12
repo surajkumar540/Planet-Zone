@@ -1,0 +1,42 @@
+# Render Blueprint for the Planet Zone API (free plan).
+# Render → New → Blueprint → pick this repo. Values marked `sync: false` are
+# asked for once in the dashboard and never stored in git.
+services:
+  - type: web
+    name: planet-zone-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    # postinstall runs `prisma generate`; migrations apply before each start of a deploy.
+    buildCommand: npm ci && npx prisma migrate deploy
+    startCommand: node src/server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # The free plan has 512 MB of memory; the local AI models need ~1 GB.
+      # Normal search keeps working. Set to "on" after moving to a bigger plan.
+      - key: AI_FEATURES
+        value: "off"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        sync: false
+      # Your Vercel address, e.g. https://planet-zone.vercel.app (comma-separate several).
+      - key: CORS_ORIGINS
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_SECRET
+        sync: false

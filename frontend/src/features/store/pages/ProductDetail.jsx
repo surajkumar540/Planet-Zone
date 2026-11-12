@@ -38,6 +38,7 @@ import { recordView } from "../../../lib/recentlyViewed";
 import { sameKind, useCompare } from "../hooks/useCompare";
 import ProductRail from "../components/ProductRail";
 import { img } from "../../../lib/img";
+import { useAiEnabled } from "../../../lib/aiStatus";
 /**
  * Compare, spelled out: an "Add to compare" button before, and after adding,
  * how many are chosen with the obvious next step (compare now, or add one
@@ -118,6 +119,7 @@ const attributeValue = (product, code) =>
   (product.attributes || []).find((attribute) => attribute.code === code)?.value || null;
 
 const ProductDetail = () => {
+  const aiEnabled = useAiEnabled();
   const { pid } = useParams();
   const toast = useToast();
   const { add } = useCart();
@@ -441,7 +443,7 @@ const ProductDetail = () => {
         <ProductRail
           eyebrow={product.category}
           title="Similar products"
-          description="Matched by AI on how they look and how they're described."
+          description={aiEnabled ? "Matched by AI on how they look and how they're described." : "Close matches from the same shelf."}
           products={similar.data}
           loading={similar.loading}
           error={similar.error}

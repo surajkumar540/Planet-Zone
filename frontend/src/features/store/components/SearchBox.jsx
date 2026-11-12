@@ -11,6 +11,7 @@ import cn from "../../../lib/cn";
 import { useI18n } from "../../../lib/i18n";
 import { openPhotoSearch } from "./PhotoSearch";
 import { img } from "../../../lib/img";
+import { useAiEnabled } from "../../../lib/aiStatus";
 
 /**
  * Search with live suggestions, used in the header and on the shop page.
@@ -71,6 +72,7 @@ const Highlight = ({ text, query }) => {
 };
 
 const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialValue = "" }) => {
+  const aiEnabled = useAiEnabled();
   const navigate = useNavigate();
   const { t } = useI18n();
   const listId = useId();
@@ -304,6 +306,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
           </span>
         )}
         <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+          {aiEnabled && (
           <button
             type="button"
             onClick={openPhotoSearch}
@@ -313,6 +316,7 @@ const SearchBox = ({ placeholder, className, size = "md", onNavigate, initialVal
           >
             <Camera size={16} />
           </button>
+          )}
           {loading ? (
             <Loader2 size={15} className="animate-spin text-content-muted" />
           ) : value ? (

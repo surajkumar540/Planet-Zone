@@ -54,5 +54,8 @@
       ".cache/**",
       "node_modules/*"
     ]
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

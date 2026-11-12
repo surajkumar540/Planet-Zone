@@ -34,6 +34,7 @@ import { getErrorMessage } from "../../../lib/apiError";
 import { formatCurrency } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { img } from "../../../lib/img";
+import { useAiEnabled } from "../../../lib/aiStatus";
 
 /**
  * Floating shopping assistant: the store's help chat.
@@ -300,6 +301,7 @@ const TypingDots = () => (
 /* ------------------------------- The assistant ------------------------------- */
 
 const ShoppingAssistant = () => {
+  const aiEnabled = useAiEnabled();
   const { user, isLoggedIn } = useSession();
   const owner = isLoggedIn ? user?._id || "user" : "guest";
   const { pathname } = useLocation();
@@ -604,7 +606,7 @@ const ShoppingAssistant = () => {
 
             {/* Quick actions */}
             <div className="flex gap-1.5 overflow-x-auto border-t border-line-subtle bg-surface px-2.5 pt-2.5 [scrollbar-width:none]">
-              {QUICK.map((action) => (
+              {QUICK.filter((action) => aiEnabled || action.action !== "photo").map((action) => (
                 <button
                   key={action.label}
                   type="button"

@@ -42,6 +42,10 @@ const Modal = ({
     closeIcon={<X size={17} />}
     centered
     destroyOnHidden
+    styles={{
+      body: { maxHeight: "calc(100vh - 13rem)", overflowY: "auto", overscrollBehavior: "contain", paddingRight: 4 },
+      wrapper: { padding: "1.5rem 0" },
+    }}
     title={
       (title || description) && (
         <div className="pr-6">

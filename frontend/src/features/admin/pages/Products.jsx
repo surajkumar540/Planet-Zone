@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Check, Eye, Image as ImageIcon, Package, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Check, ExternalLink, Eye, Image as ImageIcon, Package, Pencil, Plus, Search, Star, Trash2, X } from "lucide-react";
 import {
   createProduct,
   deleteProduct,
@@ -21,6 +21,7 @@ import { Input, Select, Switch, Textarea } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatCurrency, formatNumber } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import ListToolbar, { QuickTabs, useTabCounts } from "../../../components/ui/ListToolbar";
 
 import { getErrorMessage } from "../../../lib/apiError";
 const EMPTY_PRODUCT = {
@@ -411,11 +412,31 @@ const ProductForm = ({ open, onClose, product, onSaved }) => {
   );
 };
 
+/** Quick slices of the catalogue; every tab includes hidden products except "Live". */
+const PRODUCT_TABS = [
+  { value: "all", label: "All", params: { includeInactive: "true" } },
+  { value: "live", label: "Live", params: {} },
+  { value: "hidden", label: "Hidden", params: { includeInactive: "true", onlyInactive: "true" } },
+  { value: "low", label: "Low stock", params: { includeInactive: "true", lowStock: "true" }, alert: true },
+  { value: "out", label: "Out of stock", params: { includeInactive: "true", inStock: "false" }, alert: true },
+];
+
 const Products = () => {
   const toast = useToast();
-  const list = useListParams({ limit: 20, sort: "createdAt:desc", includeInactive: "true" });
+  const list = useListParams({ limit: 20, sort: "createdAt:desc" });
+  const [tab, setTab] = useState("all");
+  const params = useMemo(
+    () => ({ ...list.params, ...(PRODUCT_TABS.find((item) => item.value === tab)?.params || {}) }),
+    [list.params, tab]
+  );
+  const [countVersion, setCountVersion] = useState(0);
 
-  const { data, meta, loading, error, refetch, reload } = useApi(getProducts, list.params);
+  const { data, meta, loading, error, refetch, reload: reloadList } = useApi(getProducts, params);
+  const counts = useTabCounts(getProducts, list.filters.category ? { category: list.filters.category } : {}, PRODUCT_TABS, countVersion);
+  const reload = () => {
+    reloadList();
+    setCountVersion((version) => version + 1);
+  };
   const { data: filters } = useApi(getProductFilters, null, { cacheTime: 5 * 60 * 1000 });
   const { mutate: removeProduct, loading: deleting } = useMutation(deleteProduct);
 
@@ -460,24 +481,43 @@ const Products = () => {
       header: "Product",
       sortKey: "name",
       render: (product) => (
-        <span className="flex items-center gap-3 min-w-0">
-          <img
-            src={product.image}
-            alt=""
-            loading="lazy"
-            className="w-9 h-9 rounded-md object-cover bg-surface-sunken shrink-0"
-            onError={(event) => {
-              event.currentTarget.style.visibility = "hidden";
-            }}
-          />
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="relative shrink-0">
+            <img
+              src={product.image}
+              alt=""
+              loading="lazy"
+              className={cn("h-12 w-12 rounded-xl border border-line-subtle bg-surface-sunken object-cover", product.isActive === false && "opacity-50 grayscale")}
+              onError={(event) => {
+                event.currentTarget.style.visibility = "hidden";
+              }}
+            />
+            {product.isFeatured && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-status-warning text-white shadow" title="Featured">
+                <Star size={11} fill="currentColor" />
+              </span>
+            )}
+          </span>
           <span className="min-w-0">
-            <span className="type-body-strong text-content block truncate">{product.name}</span>
-            <span className="type-caption block truncate">{product.brand}</span>
+            <span className="block max-w-[18rem] truncate type-body-strong text-content">{product.name}</span>
+            <span className="block truncate type-caption">
+              {product.brand}
+              {product.sku ? ` · ${product.sku}` : ""}
+            </span>
           </span>
         </span>
       ),
     },
-    { key: "category", header: "Category", hideBelow: "md" },
+    {
+      key: "category",
+      header: "Category",
+      hideBelow: "md",
+      render: (product) => (
+        <span className="inline-flex rounded-full bg-surface-sunken px-2.5 py-1 text-[0.75rem] font-medium text-content-secondary">
+          {product.category || "—"}
+        </span>
+      ),
+    },
     {
       key: "price",
       header: "Price",
@@ -485,12 +525,14 @@ const Products = () => {
       numeric: true,
       sortKey: "totalPrice",
       render: (product) => (
-        <span>
-          <span className="type-body-strong text-content block">
-            {formatCurrency(product.totalPrice)}
-          </span>
+        <span className="block">
+          <span className="block type-body-strong text-content">{formatCurrency(product.totalPrice)}</span>
           {product.discount > 0 && (
-            <span className="type-caption block">{product.discount}% off</span>
+            <span className="flex items-center justify-end gap-1.5 type-caption">
+              {/* Before discount, tax included, so it compares like for like with the price above. */}
+              <span className="line-through">{formatCurrency(product.price * (1 + (product.gst || 0) / 100))}</span>
+              <span className="font-semibold text-status-good">−{Math.round(product.discount)}%</span>
+            </span>
           )}
         </span>
       ),
@@ -498,16 +540,31 @@ const Products = () => {
     {
       key: "stock",
       header: "Stock",
-      align: "right",
-      numeric: true,
       sortKey: "countInStock",
       render: (product) => {
-        const isOut = product.countInStock === 0;
-        const isLow = !isOut && product.countInStock <= (product.lowStockThreshold ?? 5);
+        const stock = product.countInStock ?? 0;
+        const threshold = product.lowStockThreshold ?? 5;
+        const isOut = stock === 0;
+        const isLow = !isOut && stock <= threshold;
+        // Full bar at four times the reorder point: enough to read "plenty" vs "nearly gone".
+        const fill = Math.min(100, (stock / Math.max(1, threshold * 4)) * 100);
         return (
-          <Badge tone={isOut ? "critical" : isLow ? "warning" : "neutral"}>
-            {isOut ? "Out of stock" : formatNumber(product.countInStock)}
-          </Badge>
+          <span className="block w-28">
+            <span className="flex items-baseline justify-between">
+              <span className={cn("type-numeric type-body-strong", isOut ? "text-status-critical" : isLow ? "text-status-warning" : "text-content")}>
+                {formatNumber(stock)}
+              </span>
+              <span className={cn("type-caption", isOut ? "text-status-critical" : isLow ? "text-status-warning" : "")}>
+                {isOut ? "Out" : isLow ? "Low" : "In stock"}
+              </span>
+            </span>
+            <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-surface-sunken">
+              <span
+                className={cn("block h-full rounded-full", isOut ? "bg-status-critical" : isLow ? "bg-status-warning" : "bg-status-good")}
+                style={{ width: `${isOut ? 100 : Math.max(6, fill)}%` }}
+              />
+            </span>
+          </span>
         );
       },
     },
@@ -526,23 +583,24 @@ const Products = () => {
       header: "",
       align: "right",
       render: (product) => (
-        <span
-          className="inline-flex items-center gap-1"
-          // The row is not clickable here, but stop propagation defensively.
-          onClick={(event) => event.stopPropagation()}
-        >
+        <span className="inline-flex items-center gap-0.5" onClick={(event) => event.stopPropagation()}>
           <Button
+            as={Link}
+            to={`/product/${product._id}`}
+            target="_blank"
             variant="ghost"
             size="icon-sm"
-            icon={Pencil}
-            aria-label={`Edit ${product.name}`}
-            onClick={() => openEdit(product)}
+            icon={ExternalLink}
+            aria-label={`View ${product.name} in the store`}
+            title="View in store"
           />
+          <Button variant="ghost" size="icon-sm" icon={Pencil} aria-label={`Edit ${product.name}`} title="Edit" onClick={() => openEdit(product)} />
           <Button
             variant="ghost"
             size="icon-sm"
             icon={Trash2}
             aria-label={`Delete ${product.name}`}
+            title="Delete"
             onClick={() => setPendingDelete(product)}
             className="text-status-critical hover:bg-status-critical-bg"
           />
@@ -560,7 +618,7 @@ const Products = () => {
     <div className="space-y-section">
       <PageHeader
         title="Products"
-        description="Manage your catalogue, pricing and stock."
+        description="Your catalogue at a glance. Click a row to edit it."
         actions={
           <Button variant="primary" icon={Plus} onClick={openCreate}>
             Add product
@@ -568,39 +626,43 @@ const Products = () => {
         }
       />
 
-      <Card>
-        <div className="flex flex-col sm:flex-row gap-3 p-4 border-b border-line-subtle">
-          <Input
-            icon={Search}
-            placeholder="Search products"
-            value={list.search}
-            onChange={(event) => list.setSearch(event.target.value)}
-            aria-label="Search products"
-            className="sm:max-w-xs"
-          />
-          <Select
-            aria-label="Filter by category"
-            value={list.filters.category || ""}
-            onChange={(event) => list.setFilter("category", event.target.value)}
-            options={categoryOptions}
-            className="sm:w-52"
-          />
-          <Select
-            aria-label="Filter by stock"
-            value={list.filters.lowStock ? "low" : list.filters.inStock === "false" ? "out" : ""}
-            onChange={(event) => {
-              const { value } = event.target;
-              list.setFilter("lowStock", value === "low" ? "true" : "");
-              list.setFilter("inStock", value === "out" ? "false" : "");
-            }}
-            options={[
-              { value: "", label: "All stock levels" },
-              { value: "low", label: "Low stock" },
-              { value: "out", label: "Out of stock" },
-            ]}
-            className="sm:w-44"
-          />
-        </div>
+      <Card className="overflow-hidden">
+        <ListToolbar
+          tabs={
+            <QuickTabs
+              id="products"
+              tabs={PRODUCT_TABS}
+              value={tab}
+              counts={counts}
+              onChange={(value) => {
+                setTab(value);
+                list.setPage(1);
+              }}
+            />
+          }
+          search={
+            <Input
+              icon={Search}
+              placeholder="Name, brand, SKU or category"
+              value={list.search}
+              onChange={(event) => list.setSearch(event.target.value)}
+              aria-label="Search products"
+              clearable
+              onClear={() => list.setSearch("")}
+            />
+          }
+          filters={
+            <Select
+              aria-label="Filter by category"
+              value={list.filters.category || ""}
+              onChange={(event) => list.setFilter("category", event.target.value)}
+              options={categoryOptions}
+              className="w-52"
+            />
+          }
+          total={meta?.total}
+          noun={meta?.total === 1 ? "product" : "products"}
+        />
 
         <DataTable
           columns={columns}
@@ -610,15 +672,19 @@ const Products = () => {
           onRetry={refetch}
           sort={list.sort}
           onSortChange={list.setSort}
+          onRowClick={openEdit}
           meta={meta}
           onPageChange={list.setPage}
-          filtered={list.hasFilters}
-          onClearFilters={list.clearFilters}
+          filtered={list.hasFilters || tab !== "all"}
+          onClearFilters={() => {
+            list.clearFilters();
+            setTab("all");
+          }}
           emptyState={
             <EmptyState
               icon={Package}
-              title="No products yet"
-              description="Add your first product to start selling."
+              title={list.hasFilters || tab !== "all" ? "No products match" : "No products yet"}
+              description={list.hasFilters || tab !== "all" ? "Try another tab or search." : "Add your first product to start selling."}
               action={
                 <Button variant="primary" icon={Plus} onClick={openCreate}>
                   Add product

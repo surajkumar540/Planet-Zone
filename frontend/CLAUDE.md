@@ -16,7 +16,6 @@ npm run lint
 npm run preview
 ```
 
-- **`axios` isn't in this `package.json`.** It resolves from the repo root's `node_modules`, so run `npm install` at the root as well, or the build fails.
 - There is no test framework. Verify with `npm run build` and by exercising the screen in a browser.
 - `npm run lint` currently fails with 424 problems: 413 `react/prop-types` errors (the codebase doesn't use PropTypes), 10 `react-refresh` warnings and 1 `exhaustive-deps` warning. Check that a change adds no new kinds of problem rather than expecting a clean run.
 

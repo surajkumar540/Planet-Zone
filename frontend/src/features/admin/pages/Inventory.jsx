@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Boxes, PackagePlus, Search } from "lucide-react";
+import { Boxes, PackagePlus, Search, Warehouse } from "lucide-react";
 import { adjustStock, getInventory } from "../../../api/adminApi";
 import { useApi, useListParams, useMutation } from "../../../hooks/useApi";
 import { useToast } from "../../../components/ui/Toast";
 import PageHeader from "../../../components/ui/PageHeader";
 import { Card } from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
-import Badge from "../../../components/ui/Badge";
 import DataTable from "../../../components/ui/DataTable";
 import Modal from "../../../components/ui/Modal";
 import { Input, Select, Textarea } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatNumber } from "../../../lib/format";
+import cn from "../../../lib/cn";
+import ListToolbar, { QuickTabs, useTabCounts } from "../../../components/ui/ListToolbar";
 
 import { getErrorMessage } from "../../../lib/apiError";
 const REASONS = [
@@ -108,16 +109,24 @@ const AdjustModal = ({ record, onClose, onSaved }) => {
   );
 };
 
+const STOCK_TABS = [
+  { value: "all", label: "All stock", params: {} },
+  { value: "low", label: "Needs reorder", params: { lowStock: "true" }, alert: true },
+  { value: "out", label: "Out of stock", params: { outOfStock: "true" }, alert: true },
+];
+
 const Inventory = () => {
   const [searchParams] = useSearchParams();
+  const list = useListParams({ limit: 20, sort: "available:asc" });
   // Deep links from the dashboard open straight onto the low-stock view.
-  const list = useListParams({
-    limit: 20,
-    sort: "available:asc",
-    ...(searchParams.get("lowStock") === "true" ? { lowStock: "true" } : {}),
-  });
-
-  const { data, meta, loading, error, refetch } = useApi(getInventory, list.params);
+  const [tab, setTab] = useState(searchParams.get("lowStock") === "true" ? "low" : "all");
+  const params = useMemo(
+    () => ({ ...list.params, ...(STOCK_TABS.find((item) => item.value === tab)?.params || {}) }),
+    [list.params, tab]
+  );
+  const [countVersion, setCountVersion] = useState(0);
+  const { data, meta, loading, error, refetch, reload } = useApi(getInventory, params);
+  const counts = useTabCounts(getInventory, {}, STOCK_TABS, countVersion);
   const [adjusting, setAdjusting] = useState(null);
 
   const columns = [
@@ -125,64 +134,85 @@ const Inventory = () => {
       key: "name",
       header: "Product",
       render: (row) => (
-        <span className="flex items-center gap-3 min-w-0">
+        <span className="flex min-w-0 items-center gap-3">
           <img
             src={row.image}
             alt=""
             loading="lazy"
-            className="w-9 h-9 rounded-md object-cover bg-surface-sunken shrink-0"
+            className="h-11 w-11 shrink-0 rounded-xl border border-line-subtle bg-surface-sunken object-cover"
             onError={(event) => {
               event.currentTarget.style.visibility = "hidden";
             }}
           />
           <span className="min-w-0">
-            <span className="type-body-strong text-content block truncate">{row.name}</span>
-            <span className="type-caption block truncate">
-              {row.variantSku || row.category}
-            </span>
+            <span className="block max-w-[18rem] truncate type-body-strong text-content">{row.name}</span>
+            <span className="block truncate type-caption">{row.variantSku || row.category}</span>
           </span>
         </span>
       ),
     },
-    { key: "warehouseName", header: "Location", hideBelow: "lg" },
+    {
+      key: "warehouseName",
+      header: "Location",
+      hideBelow: "lg",
+      render: (row) => (
+        <span className="flex items-center gap-1.5 type-body text-content-secondary">
+          <Warehouse size={14} className="text-content-muted" /> {row.warehouseName}
+        </span>
+      ),
+    },
+    {
+      key: "available",
+      header: "Available to sell",
+      sortKey: "available",
+      render: (row) => {
+        const reorder = row.reorderPoint ?? 5;
+        const isOut = row.available <= 0;
+        const isLow = !isOut && row.available <= reorder;
+        const fill = Math.min(100, (row.available / Math.max(1, reorder * 4)) * 100);
+        return (
+          <span className="block w-40">
+            <span className="flex items-baseline justify-between gap-2">
+              <span className={cn("type-numeric text-[1rem] font-semibold", isOut ? "text-status-critical" : isLow ? "text-status-warning" : "text-content")}>
+                {formatNumber(Math.max(0, row.available))}
+              </span>
+              <span className={cn("type-caption", isOut ? "text-status-critical" : isLow ? "text-status-warning" : "")}>
+                {isOut ? "Out of stock" : isLow ? `Reorder (≤ ${reorder})` : "Healthy"}
+              </span>
+            </span>
+            <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-surface-sunken">
+              <span
+                className={cn("block h-full rounded-full", isOut ? "bg-status-critical" : isLow ? "bg-status-warning" : "bg-status-good")}
+                style={{ width: `${isOut ? 100 : Math.max(6, fill)}%` }}
+              />
+            </span>
+          </span>
+        );
+      },
+    },
     {
       key: "onHand",
-      header: "On hand",
+      header: "On shelf",
       align: "right",
       numeric: true,
+      hideBelow: "md",
       render: (row) => formatNumber(row.onHand),
     },
     {
       key: "reserved",
-      header: "Reserved",
+      header: "In open orders",
       align: "right",
       numeric: true,
       hideBelow: "md",
-      render: (row) => formatNumber(row.reserved),
-    },
-    {
-      key: "available",
-      header: "Available",
-      align: "right",
-      numeric: true,
-      sortKey: "available",
-      render: (row) => {
-        const isOut = row.available <= 0;
-        const isLow = !isOut && row.available <= (row.reorderPoint ?? 5);
-        return (
-          <Badge tone={isOut ? "critical" : isLow ? "warning" : "good"}>
-            {isOut ? "Out of stock" : formatNumber(row.available)}
-          </Badge>
-        );
-      },
+      render: (row) => (row.reserved ? <span className="text-status-info">{formatNumber(row.reserved)}</span> : <span className="type-caption">0</span>),
     },
     {
       key: "actions",
       header: "",
       align: "right",
       render: (row) => (
-        <Button variant="secondary" size="sm" icon={PackagePlus} onClick={() => setAdjusting(row)}>
-          Adjust
+        <Button variant={row.available <= (row.reorderPoint ?? 5) ? "primary" : "secondary"} size="sm" icon={PackagePlus} onClick={() => setAdjusting(row)}>
+          {row.available <= (row.reorderPoint ?? 5) ? "Restock" : "Adjust"}
         </Button>
       ),
     },
@@ -190,29 +220,36 @@ const Inventory = () => {
 
   return (
     <div className="space-y-section">
-      <PageHeader title="Inventory" description="Stock levels across your locations." />
+      <PageHeader title="Inventory" description="What you can sell right now, and what needs restocking first." />
 
-      <Card>
-        <div className="flex flex-col sm:flex-row gap-3 p-4 border-b border-line-subtle">
-          <Input
-            icon={Search}
-            placeholder="Search inventory"
-            value={list.search}
-            onChange={(event) => list.setSearch(event.target.value)}
-            aria-label="Search inventory"
-            className="sm:max-w-xs"
-          />
-          <Select
-            aria-label="Filter by stock level"
-            value={list.filters.lowStock || ""}
-            onChange={(event) => list.setFilter("lowStock", event.target.value)}
-            options={[
-              { value: "", label: "All stock levels" },
-              { value: "true", label: "Needs reorder" },
-            ]}
-            className="sm:w-48"
-          />
-        </div>
+      <Card className="overflow-hidden">
+        <ListToolbar
+          tabs={
+            <QuickTabs
+              id="stock"
+              tabs={STOCK_TABS}
+              value={tab}
+              counts={counts}
+              onChange={(value) => {
+                setTab(value);
+                list.setPage(1);
+              }}
+            />
+          }
+          search={
+            <Input
+              icon={Search}
+              placeholder="Product name or SKU"
+              value={list.search}
+              onChange={(event) => list.setSearch(event.target.value)}
+              aria-label="Search inventory"
+              clearable
+              onClear={() => list.setSearch("")}
+            />
+          }
+          total={meta?.total}
+          noun={meta?.total === 1 ? "item" : "items"}
+        />
 
         <DataTable
           columns={columns}
@@ -225,20 +262,30 @@ const Inventory = () => {
           onSortChange={list.setSort}
           meta={meta}
           onPageChange={list.setPage}
-          filtered={list.hasFilters}
-          onClearFilters={list.clearFilters}
+          filtered={list.hasFilters || tab !== "all"}
+          onClearFilters={() => {
+            list.clearFilters();
+            setTab("all");
+          }}
           emptyState={
             <EmptyState
               icon={Boxes}
-              title="No inventory records"
-              description="Records are created automatically as products are added."
+              title={tab === "all" ? "No inventory records" : "Nothing needs restocking"}
+              description={tab === "all" ? "Records are created automatically as products are added." : "Every item is above its reorder point."}
             />
           }
         />
       </Card>
 
       {adjusting && (
-        <AdjustModal record={adjusting} onClose={() => setAdjusting(null)} onSaved={refetch} />
+        <AdjustModal
+          record={adjusting}
+          onClose={() => setAdjusting(null)}
+          onSaved={() => {
+            reload();
+            setCountVersion((version) => version + 1);
+          }}
+        />
       )}
     </div>
   );

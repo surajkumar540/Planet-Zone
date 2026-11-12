@@ -2,6 +2,9 @@ const path = require("path");
 const dotenv = require("dotenv");
 const { z } = require("zod");
 
+// backend/.env is the home for settings; a .env at the repo root (the old
+// location) still works as a fallback. Neither overrides real env vars.
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 /**

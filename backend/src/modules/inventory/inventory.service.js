@@ -302,7 +302,7 @@ const INVENTORY_SORT = {
  * Raw SQL because search, the low-stock filter and the default sort all work on
  * joined or computed columns that the query builder cannot order by.
  */
-const list = async ({ page, limit, sort, search, warehouse, lowStock }) => {
+const list = async ({ page, limit, sort, search, warehouse, lowStock, outOfStock }) => {
   const conditions = [];
 
   if (warehouse) conditions.push(Prisma.sql`i."warehouseId" = ${warehouse}::uuid`);
@@ -313,6 +313,7 @@ const list = async ({ page, limit, sort, search, warehouse, lowStock }) => {
     );
   }
   if (lowStock) conditions.push(Prisma.sql`i."onHand" - i.reserved <= i."reorderPoint"`);
+  if (outOfStock) conditions.push(Prisma.sql`i."onHand" - i.reserved <= 0`);
 
   const where = conditions.length
     ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`

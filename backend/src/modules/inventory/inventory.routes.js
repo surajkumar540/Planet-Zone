@@ -21,6 +21,10 @@ const listInventoryQuery = listQuery.extend({
     .enum(["true", "false"])
     .transform((value) => value === "true")
     .optional(),
+  outOfStock: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
 });
 
 const movementsQuery = listQuery.extend({

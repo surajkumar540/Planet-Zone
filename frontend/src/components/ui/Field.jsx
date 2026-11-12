@@ -303,7 +303,11 @@ export const Select = ({
       <div className="relative">
         <AntdSelect
           id={inputId}
-          value={value === "" || value === undefined ? undefined : value}
+          value={
+            value === undefined || (value === "" && !options.some((option) => option.value === ""))
+              ? undefined
+              : value
+          }
           onChange={(next) =>
             onChange?.({
               target: { value: next, name },

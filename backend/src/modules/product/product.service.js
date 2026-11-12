@@ -79,11 +79,15 @@ const buildFilter = ({
   isFeatured,
   hasVariants,
   includeInactive,
+  onlyInactive,
+  hasReviews,
 }) => {
   const where = {};
 
   // Inactive products are hidden from the storefront; the dashboard opts in.
   if (!includeInactive) where.isActive = true;
+  if (onlyInactive) where.isActive = false;
+  if (hasReviews !== undefined) where.numReviews = hasReviews ? { gt: 0 } : 0;
 
   if (search) {
     const text = searchFilter(search, ["name", "brand", "category", "sku", "shortDescription"]);

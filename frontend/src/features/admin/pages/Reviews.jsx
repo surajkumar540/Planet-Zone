@@ -1,47 +1,59 @@
-import { Search, Star } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ExternalLink, MessageSquareText, Search, Star } from "lucide-react";
+
 import { getProducts } from "../../../api/adminApi";
 import { useApi, useListParams } from "../../../hooks/useApi";
 import PageHeader from "../../../components/ui/PageHeader";
 import { Card } from "../../../components/ui/Card";
 import Badge from "../../../components/ui/Badge";
+import Button from "../../../components/ui/Button";
 import DataTable from "../../../components/ui/DataTable";
-import { Input, Select } from "../../../components/ui/Field";
+import { Input } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
+import ListToolbar, { QuickTabs, useTabCounts } from "../../../components/ui/ListToolbar";
 import { formatNumber } from "../../../lib/format";
 import cn from "../../../lib/cn";
 
 /** Star rating, with the numeric value alongside so it is not shape-only. */
-const RatingStars = ({ value = 0, count }) => (
-  <span className="flex items-center gap-1.5">
+const RatingStars = ({ value = 0 }) => (
+  <span className="flex items-center gap-2">
     <span className="flex items-center gap-0.5" aria-hidden="true">
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
-          size={13}
-          className={cn(
-            star <= Math.round(value)
-              ? "fill-[var(--status-warning)] text-[var(--status-warning)]"
-              : "text-line-strong"
-          )}
+          size={15}
+          className={cn(star <= Math.round(value) ? "fill-[var(--status-warning)] text-[var(--status-warning)]" : "text-line-strong")}
         />
       ))}
     </span>
-    <span className="type-caption type-numeric">
-      {value ? value.toFixed(1) : "—"}
-      {count !== undefined && ` (${formatNumber(count)})`}
-    </span>
+    <span className={cn("type-numeric type-body-strong", value ? "text-content" : "text-content-muted")}>{value ? value.toFixed(1) : "—"}</span>
   </span>
 );
+
+const TABS = [
+  { value: "all", label: "All products", params: {} },
+  { value: "reviewed", label: "Reviewed", params: { hasReviews: "true" } },
+  { value: "top", label: "4★ and up", params: { minRating: "4" } },
+  { value: "waiting", label: "No reviews yet", params: { hasReviews: "false" } },
+];
 
 /**
  * Review overview.
  *
- * Reviews are embedded in products, so this lists products by their rating
- * rather than inventing a separate collection the API does not expose.
+ * Reviews belong to products (only verified buyers can leave one), so this
+ * lists products by rating, linking to each product page where the reviews
+ * themselves are shown.
  */
 const Reviews = () => {
-  const list = useListParams({ limit: 20, sort: "rating:desc", includeInactive: "true" });
-  const { data, meta, loading, error, refetch } = useApi(getProducts, list.params);
+  const list = useListParams({ limit: 20, sort: "numReviews:desc" });
+  const [tab, setTab] = useState("all");
+  const params = useMemo(
+    () => ({ ...list.params, includeInactive: "true", ...(TABS.find((item) => item.value === tab)?.params || {}) }),
+    [list.params, tab]
+  );
+  const { data, meta, loading, error, refetch } = useApi(getProducts, params);
+  const counts = useTabCounts(getProducts, { includeInactive: "true" }, TABS);
 
   const columns = [
     {
@@ -49,19 +61,19 @@ const Reviews = () => {
       header: "Product",
       sortKey: "name",
       render: (product) => (
-        <span className="flex items-center gap-3 min-w-0">
+        <span className="flex min-w-0 items-center gap-3">
           <img
             src={product.image}
             alt=""
             loading="lazy"
-            className="w-9 h-9 rounded-md object-cover bg-surface-sunken shrink-0"
+            className="h-11 w-11 shrink-0 rounded-xl border border-line-subtle bg-surface-sunken object-cover"
             onError={(event) => {
               event.currentTarget.style.visibility = "hidden";
             }}
           />
           <span className="min-w-0">
-            <span className="type-body-strong text-content block truncate">{product.name}</span>
-            <span className="type-caption block truncate">{product.category}</span>
+            <span className="block max-w-[20rem] truncate type-body-strong text-content">{product.name}</span>
+            <span className="block truncate type-caption">{product.category}</span>
           </span>
         </span>
       ),
@@ -70,7 +82,7 @@ const Reviews = () => {
       key: "rating",
       header: "Rating",
       sortKey: "rating",
-      render: (product) => <RatingStars value={product.rating} count={product.numReviews} />,
+      render: (product) => <RatingStars value={product.numReviews ? product.rating : 0} />,
     },
     {
       key: "numReviews",
@@ -79,53 +91,72 @@ const Reviews = () => {
       numeric: true,
       sortKey: "numReviews",
       hideBelow: "md",
-      render: (product) => formatNumber(product.numReviews || 0),
+      render: (product) => (
+        <span className="inline-flex items-center gap-1.5 type-body-strong text-content">
+          <MessageSquareText size={14} className="text-content-muted" />
+          {formatNumber(product.numReviews || 0)}
+        </span>
+      ),
     },
     {
       key: "status",
-      header: "",
-      align: "right",
+      header: "Verdict",
       hideBelow: "lg",
       render: (product) =>
         !product.numReviews ? (
-          <Badge tone="neutral">Awaiting reviews</Badge>
+          <Badge tone="neutral">No reviews yet</Badge>
         ) : product.rating >= 4 ? (
-          <Badge tone="good">Well rated</Badge>
+          <Badge tone="good" dot>Customers love it</Badge>
         ) : product.rating < 3 ? (
-          <Badge tone="critical">Needs attention</Badge>
+          <Badge tone="critical" dot>Needs attention</Badge>
         ) : (
-          <Badge tone="warning">Mixed</Badge>
+          <Badge tone="warning" dot>Mixed</Badge>
         ),
+    },
+    {
+      key: "open",
+      header: "",
+      align: "right",
+      render: (product) => (
+        <Button as={Link} to={`/product/${product._id}#reviews`} target="_blank" variant="ghost" size="sm" iconRight={ExternalLink}>
+          Read
+        </Button>
+      ),
     },
   ];
 
   return (
     <div className="space-y-section">
-      <PageHeader title="Reviews" description="How customers rate your products." />
+      <PageHeader title="Reviews" description="What verified buyers think of each product." />
 
-      <Card>
-        <div className="flex flex-col sm:flex-row gap-3 p-4 border-b border-line-subtle">
-          <Input
-            icon={Search}
-            placeholder="Search products"
-            value={list.search}
-            onChange={(event) => list.setSearch(event.target.value)}
-            aria-label="Search reviewed products"
-            className="sm:max-w-xs"
-          />
-          <Select
-            aria-label="Filter by rating"
-            value={list.filters.minRating || ""}
-            onChange={(event) => list.setFilter("minRating", event.target.value)}
-            options={[
-              { value: "", label: "All ratings" },
-              { value: "4", label: "4 stars and up" },
-              { value: "3", label: "3 stars and up" },
-              { value: "1", label: "Rated products only" },
-            ]}
-            className="sm:w-48"
-          />
-        </div>
+      <Card className="overflow-hidden">
+        <ListToolbar
+          tabs={
+            <QuickTabs
+              id="reviews"
+              tabs={TABS}
+              value={tab}
+              counts={counts}
+              onChange={(value) => {
+                setTab(value);
+                list.setPage(1);
+              }}
+            />
+          }
+          search={
+            <Input
+              icon={Search}
+              placeholder="Search products"
+              value={list.search}
+              onChange={(event) => list.setSearch(event.target.value)}
+              aria-label="Search reviewed products"
+              clearable
+              onClear={() => list.setSearch("")}
+            />
+          }
+          total={meta?.total}
+          noun={meta?.total === 1 ? "product" : "products"}
+        />
 
         <DataTable
           columns={columns}
@@ -137,14 +168,13 @@ const Reviews = () => {
           onSortChange={list.setSort}
           meta={meta}
           onPageChange={list.setPage}
-          filtered={list.hasFilters}
-          onClearFilters={list.clearFilters}
+          filtered={list.hasFilters || tab !== "all"}
+          onClearFilters={() => {
+            list.clearFilters();
+            setTab("all");
+          }}
           emptyState={
-            <EmptyState
-              icon={Star}
-              title="No reviews yet"
-              description="Customer ratings will appear here once they start reviewing."
-            />
+            <EmptyState icon={Star} title="Nothing here yet" description="Ratings appear once verified buyers start reviewing." />
           }
         />
       </Card>

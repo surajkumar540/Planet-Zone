@@ -170,7 +170,13 @@ export const buildAntdTheme = ({ mode, accent }) => {
         headerSplitColor: "transparent",
         borderColor: palette.borderSubtle,
         rowHoverBg: palette.hover,
-        cellPaddingBlock: 12,
+        cellPaddingBlock: 13,
+        cellPaddingInline: 18,
+        // No grey band down the sorted column.
+        bodySortBg: "transparent",
+        headerSortActiveBg: palette.sunken,
+        headerSortHoverBg: palette.sunken,
+        headerBorderRadius: 0,
       },
       Modal: {
         contentBg: palette.elevated,

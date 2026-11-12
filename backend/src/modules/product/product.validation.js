@@ -112,6 +112,9 @@ const listProductsQuery = listQuery.extend({
   isFeatured: booleanFlag,
   hasVariants: booleanFlag,
   includeInactive: booleanFlag,
+  // Dashboard tabs: only hidden products, and with / without reviews.
+  onlyInactive: booleanFlag,
+  hasReviews: booleanFlag,
   onSale: booleanFlag,
 });
 

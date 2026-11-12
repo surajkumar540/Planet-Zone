@@ -6,12 +6,12 @@ Stack: Node, Express 4, PostgreSQL via Prisma 6, Zod 4, JWT, Razorpay, Nodemaile
 
 ## Commands
 
-`backend/` has no `package.json`. The manifest, `node_modules` and `.env` all live at the **repo root**, so run these from there:
+Run these from `backend/`, which has its own `package.json`, `node_modules` and `.env`. (From the repo root, `npm run dev` starts backend and frontend together.)
 
 ```bash
-npm install                # also runs prisma generate, and provides axios to the frontend
-npm run dev                # nodemon backend/src/server.js
-npm start                  # node backend/src/server.js
+npm install                # also runs prisma generate
+npm run dev                # nodemon src/server.js
+npm start                  # node src/server.js
 
 npm run db:migrate         # apply pending migrations (prisma migrate deploy)
 npm run db:migrate:dev     # after editing schema.prisma: create and apply a migration
@@ -19,6 +19,7 @@ npm run db:studio          # browse the data in Prisma Studio
 
 npm run data:import        # DESTRUCTIVE: empties every table, then seeds users and products
 npm run data:destroy       # DESTRUCTIVE: empties every table
+npm run data:sample        # adds ~100 sample products with photos
 ```
 
 There are no backend tests or lint config. To check a change, run the server and call the endpoint. `GET /health` reports database connectivity (it sits outside `/api`).
@@ -27,7 +28,7 @@ The seeder refuses to run only when `NODE_ENV=production`. It does not look at `
 
 ## Configuration
 
-Every env var must be declared in the Zod schema in `src/config/env.js`, and the process exits at boot if validation fails. Read config through that module, not `process.env`. Template: `../.env.example`.
+Every env var must be declared in the Zod schema in `src/config/env.js`, and the process exits at boot if validation fails. Read config through that module, not `process.env`. Settings live in `backend/.env` (template: `.env.example`); a `.env` at the repo root is still read as a fallback.
 
 - `DATABASE_URL` is required. On Neon, use the direct URL (host without `-pooler`), because migrations can't run through the pooler.
 - `PORT` defaults to 4000 in code, but the frontend proxy defaults to 8000. `.env.example` sets 8000, so keep it set.

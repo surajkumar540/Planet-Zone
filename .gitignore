@@ -26,3 +26,6 @@ dist-ssr
 env
 
 /node_modules
+# Local tool settings and crash dumps
+.claude/settings.local.json
+*.stackdump

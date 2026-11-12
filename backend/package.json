@@ -1,0 +1,45 @@
+{
+  "name": "planet-zone-backend",
+  "version": "1.0.0",
+  "description": "Planet Zone API: Express + Prisma (Postgres)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "data:import": "node src/seeder.js",
+    "data:destroy": "node src/seeder.js -d",
+    "db:migrate": "prisma migrate deploy",
+    "postinstall": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "data:sample": "node src/scripts/importSampleProducts.js"
+  },
+  "author": "jai",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.11.0",
+    "nodemailer": "^6.9.3",
+    "razorpay": "^2.9.0",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "prisma": "6.19.3"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
+  "private": true
+}

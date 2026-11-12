@@ -36,6 +36,44 @@ input::-ms-clear {
   }
 }
 
+/* Two-thumb price slider (PriceRange.jsx): the track is drawn separately,
+   so the inputs only contribute their thumbs. */
+.price-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.price-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--surface-default);
+  border: 3px solid var(--accent-solid);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+.price-thumb::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+.price-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--surface-default);
+  border: 3px solid var(--accent-solid);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+}
+.price-thumb:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px var(--accent-ring);
+}
+
 body {
   background: var(--surface-canvas);
   color: var(--text-primary);

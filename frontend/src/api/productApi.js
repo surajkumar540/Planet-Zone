@@ -10,6 +10,18 @@ export const getAllProducts = async (params = {}) => {
   return response.data;
 };
 
+/** Live option counts for the shop filters, given the current filters. */
+export const getProductFacets = async (params = {}) => {
+  const response = await axios.get("/api/products/facets", { params });
+  return response.data;
+};
+
+/** Search-as-you-type: products, categories and brands matching `q`. */
+export const suggestProducts = async (q) => {
+  const response = await axios.get("/api/products/suggest", { params: { q } });
+  return response.data;
+};
+
 export const getProductFilters = async () => {
   const response = await axios.get("/api/products/filters");
   return response.data;

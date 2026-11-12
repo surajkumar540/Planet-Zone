@@ -9,13 +9,13 @@ import {
   Menu,
   Moon,
   Package,
-  Search,
   ShoppingBag,
   Sun,
   User,
   X,
 } from "lucide-react";
 import Logo from "../../../components/ui/Logo";
+import SearchBox from "./SearchBox";
 
 import cn from "../../../lib/cn";
 import Button from "../../../components/ui/Button";
@@ -42,6 +42,8 @@ const StoreHeader = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { pathname, search } = useLocation();
+  // Keeps the box showing the active query when the shop is opened from a search.
+  const currentSearch = pathname === "/shop" ? new URLSearchParams(search).get("search") || "" : "";
   const { count } = useCart();
   const { isLoggedIn, isAdmin, user } = useSession();
   const { isDark, setThemeMode } = useTheme();
@@ -62,7 +64,6 @@ const StoreHeader = () => {
 
   }, []);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [term, setTerm] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const accountRef = useRef(null);
 
@@ -95,11 +96,6 @@ const StoreHeader = () => {
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [accountOpen]);
 
-  const submitSearch = (event) => {
-    event.preventDefault();
-    const query = term.trim();
-    navigate(query ? `/shop?search=${encodeURIComponent(query)}` : "/shop");
-  };
 
   const signOut = () => {
     dispatch(setLoggedOut());
@@ -140,22 +136,9 @@ const StoreHeader = () => {
           ))}
         </nav>
 
-        <form onSubmit={submitSearch} className="ml-auto hidden max-w-sm flex-1 md:block">
-          <div className="relative">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-content-muted"
-            />
-            <input
-              type="search"
-              value={term}
-              onChange={(event) => setTerm(event.target.value)}
-              placeholder="Search products"
-              aria-label="Search products"
-              className="h-control w-full rounded-md border-[1.5px] border-line-strong bg-surface-sunken pl-9 pr-3 text-body text-content outline-none transition-colors placeholder:text-content-muted hover:border-content-muted focus:border-accent focus:bg-surface"
-            />
-          </div>
-        </form>
+        <div className="ml-auto hidden max-w-md flex-1 md:block">
+          <SearchBox initialValue={currentSearch} />
+        </div>
 
         <div className="ml-auto flex items-center gap-1 md:ml-2">
           <Button
@@ -251,26 +234,15 @@ const StoreHeader = () => {
           )}
         </div>
       </Container>
+      {pathname !== "/shop" && (
+        <Container className="pb-2.5 md:hidden">
+          <SearchBox size="sm" />
+        </Container>
+      )}
 
       {menuOpen && (
         <div className="border-t border-line-subtle bg-surface lg:hidden">
           <Container className="flex flex-col gap-1 py-3">
-            <form onSubmit={submitSearch} className="mb-2 md:hidden">
-              <div className="relative">
-                <Search
-                  size={16}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-content-muted"
-                />
-                <input
-                  type="search"
-                  value={term}
-                  onChange={(event) => setTerm(event.target.value)}
-                  placeholder="Search products"
-                  aria-label="Search products"
-                  className="h-control w-full rounded-md border-[1.5px] border-line-strong bg-surface-sunken pl-9 pr-3 text-body text-content outline-none focus:border-accent focus:bg-surface"
-                />
-              </div>
-            </form>
             {NAV_LINKS.map((link) => (
               <NavLink key={link.to} to={link.to} end={link.end} className={navClass}>
                 {link.label}

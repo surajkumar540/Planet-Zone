@@ -11,6 +11,8 @@ const router = express.Router();
 
 router.get("/products", validate({ query: schemas.listProductsQuery }), controller.listProducts);
 router.get("/products/filters", controller.getFilterOptions);
+router.get("/products/facets", validate({ query: schemas.listProductsQuery }), controller.getFacets);
+router.get("/products/suggest", validate({ query: schemas.suggestQuery }), controller.suggest);
 router.get("/product/:id", validate({ params: schemas.productIdParam }), controller.getProduct);
 
 /* --------------------------------- Reviews --------------------------------- */

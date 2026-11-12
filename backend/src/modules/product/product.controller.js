@@ -14,6 +14,16 @@ const getFilterOptions = asyncHandler(async (req, res) => {
   return ok(res, { data });
 });
 
+const getFacets = asyncHandler(async (req, res) => {
+  const data = await productService.getFacets(req.query);
+  return ok(res, { data });
+});
+
+const suggest = asyncHandler(async (req, res) => {
+  const data = await productService.suggest(req.query);
+  return ok(res, { data });
+});
+
 const getProduct = asyncHandler(async (req, res) => {
   const data = await productService.getProductById(req.params.id);
   return ok(res, { data });
@@ -82,6 +92,8 @@ const deleteOwnReview = asyncHandler(async (req, res) => {
 module.exports = {
   listProducts,
   getFilterOptions,
+  getFacets,
+  suggest,
   getProduct,
   createProduct,
   updateProduct,

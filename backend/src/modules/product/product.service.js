@@ -4,7 +4,7 @@ const logger = require("../../core/logger");
 const { withTransaction } = require("../../core/transaction");
 const productRepository = require("./product.repository");
 const inventoryService = require("../inventory/inventory.service");
-const { parseSort, searchFilter, sortable } = require("../../utils/schemas");
+const { parseSort, searchFilter, sortable, escapeLike } = require("../../utils/schemas");
 const { slugify } = require("../../utils/slug");
 const { deriveTotalPrice } = require("../../utils/money");
 
@@ -23,11 +23,32 @@ const SORTABLE = sortable(
   "category"
 );
 
+/** "A,B" -> ["A","B"]; a single value stays a one-item list. */
+const splitList = (value) =>
+  String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+/** Equality for one value, IN for several. */
+const oneOrMany = (values) => (values.length === 1 ? values[0] : { in: values });
+
+/** A department id plus every category beneath it. */
+const departmentIds = async (dept) => {
+  const descendants = await prisma.category.findMany({
+    where: { ancestors: { has: dept } },
+    select: { id: true },
+  });
+  return [dept, ...descendants.map((category) => category.id)];
+};
+
 /** Translates the validated list query into a Prisma filter. */
 const buildFilter = ({
   search,
   category,
   categoryRef,
+  deptIds,
+  onSale,
   brand,
   minPrice,
   maxPrice,
@@ -44,9 +65,11 @@ const buildFilter = ({
   if (!includeInactive) where.isActive = true;
 
   if (search) Object.assign(where, searchFilter(search, ["name", "brand", "category", "sku"]));
-  if (category) where.category = category;
+  if (splitList(category).length) where.category = oneOrMany(splitList(category));
   if (categoryRef) where.categoryRefId = categoryRef;
-  if (brand) where.brand = brand;
+  if (deptIds?.length) where.categoryRefId = { in: deptIds };
+  if (splitList(brand).length) where.brand = oneOrMany(splitList(brand));
+  if (onSale) where.discount = { gt: 0 };
   if (isFeatured !== undefined) where.isFeatured = isFeatured;
   if (hasVariants !== undefined) where.hasVariants = hasVariants;
   if (minRating !== undefined) where.rating = { gte: minRating };
@@ -67,7 +90,14 @@ const buildFilter = ({
   return where;
 };
 
-const listProducts = async (query) => {
+/** Resolves the async parts of a list query (department subtree) before filtering. */
+const resolveQuery = async (query) => ({
+  ...query,
+  deptIds: query.dept ? await departmentIds(query.dept) : undefined,
+});
+
+const listProducts = async (rawQuery) => {
+  const query = await resolveQuery(rawQuery);
   const where = buildFilter(query);
   return productRepository.paginate(where, {
     page: query.page,
@@ -293,6 +323,158 @@ const deleteReview = async ({ productId, reviewUserId }) => {
   });
 };
 
+const PRICE_BUCKETS = 18;
+
+/**
+ * Live counts for every filter option.
+ *
+ * Each dimension is counted with every *other* filter applied but not its
+ * own, which is how faceted search works on large shops: ticking one brand
+ * still shows how many products the other brands would add, and an option
+ * that would leave nothing can be shown as such.
+ */
+const getFacets = async (rawQuery) => {
+  const query = await resolveQuery(rawQuery);
+  const without = (...keys) => {
+    const copy = { ...query };
+    for (const key of keys) delete copy[key];
+    return buildFilter(copy);
+  };
+
+  const [categories, brands, prices, ratings, onSale, inStock, departments] = await Promise.all([
+    prisma.product.groupBy({ by: ["category"], where: without("category"), _count: { _all: true } }),
+    prisma.product.groupBy({ by: ["brand"], where: without("brand"), _count: { _all: true } }),
+    prisma.product.findMany({ where: without("minPrice", "maxPrice"), select: { totalPrice: true } }),
+    Promise.all(
+      [4, 3, 2].map((stars) =>
+        prisma.product.count({ where: { ...without("minRating"), rating: { gte: stars } } })
+      )
+    ),
+    prisma.product.count({ where: { ...without("onSale"), discount: { gt: 0 } } }),
+    prisma.product.count({ where: { ...without("inStock"), countInStock: { gt: 0 } } }),
+    prisma.product.groupBy({ by: ["categoryRefId"], where: without("dept", "deptIds", "category"), _count: { _all: true } }),
+  ]);
+
+  // Price histogram over the matching products.
+  const values = prices.map((row) => Number(row.totalPrice));
+  const min = values.length ? Math.floor(Math.min(...values)) : 0;
+  const max = values.length ? Math.ceil(Math.max(...values)) : 0;
+  // Shop prices span orders of magnitude (₹50 spices to ₹10 lakh watches). On a
+  // linear axis nearly every product lands in the first bar, so a wide spread
+  // switches to a logarithmic axis, where each bar covers the same ratio.
+  const scale = min > 0 && max / min >= 20 ? "log" : "linear";
+  const edgeAt = (step) =>
+    scale === "log"
+      ? min * (max / min) ** (step / PRICE_BUCKETS)
+      : min + ((max - min) * step) / PRICE_BUCKETS;
+  const histogram = Array.from({ length: PRICE_BUCKETS }, (_, index) => ({
+    from: Math.round(edgeAt(index)),
+    to: Math.round(edgeAt(index + 1)),
+    count: 0,
+  }));
+  for (const value of values) {
+    const position =
+      scale === "log" ? Math.log(value / min) / Math.log(max / min) : (value - min) / Math.max(1, max - min);
+    const index = Math.min(PRICE_BUCKETS - 1, Math.max(0, Math.floor(position * PRICE_BUCKETS)));
+    histogram[index].count += 1;
+  }
+
+  // Department counts roll leaf categories up to their top-level ancestor.
+  const tree = await prisma.category.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, parentId: true, ancestors: true, position: true },
+  });
+  const rootOf = new Map(tree.map((node) => [node.id, node.ancestors[0] || node.id]));
+  const deptCounts = new Map();
+  for (const row of departments) {
+    const root = row.categoryRefId && rootOf.get(row.categoryRefId);
+    if (root) deptCounts.set(root, (deptCounts.get(root) || 0) + row._count._all);
+  }
+
+  const byCount = (a, b) => b.count - a.count || a.name.localeCompare(b.name);
+
+  return {
+    departments: tree
+      .filter((node) => !node.parentId)
+      .sort((a, b) => a.position - b.position)
+      .map((node) => ({ _id: node.id, name: node.name, count: deptCounts.get(node.id) || 0 })),
+    categories: categories
+      .map((row) => ({ name: row.category, count: row._count._all }))
+      .filter((row) => row.name)
+      .sort(byCount),
+    brands: brands
+      .map((row) => ({ name: row.brand, count: row._count._all }))
+      .filter((row) => row.name)
+      .sort(byCount),
+    price: { min, max, scale, histogram },
+    ratings: [4, 3, 2].map((stars, index) => ({ stars, count: ratings[index] })),
+    onSale,
+    inStock,
+  };
+};
+
+/** How well a name matches the typed text: starts with > word starts with > contains. */
+const matchRank = (name, q) => {
+  const text = name.toLowerCase();
+  const term = q.toLowerCase();
+  if (text.startsWith(term)) return 0;
+  if (text.split(/[\s-]+/).some((word) => word.startsWith(term))) return 1;
+  return 2;
+};
+
+/**
+ * Search-as-you-type: a few products plus matching categories and brands.
+ * Kept to three small indexed queries so it can run on every keystroke pause.
+ */
+const suggest = async ({ q, limit }) => {
+  const contains = { contains: escapeLike(q), mode: "insensitive" };
+  const [products, categories, brands] = await Promise.all([
+    prisma.product.findMany({
+      where: { isActive: true, OR: [{ name: contains }, { brand: contains }, { category: contains }] },
+      select: { id: true, name: true, image: true, totalPrice: true, price: true, discount: true, brand: true, category: true },
+      take: 40,
+    }),
+    prisma.category.findMany({
+      where: { isActive: true, name: contains },
+      select: { id: true, name: true, parentId: true },
+      take: 8,
+    }),
+    prisma.product.findMany({
+      where: { isActive: true, brand: contains },
+      distinct: ["brand"],
+      select: { brand: true },
+      take: 8,
+    }),
+  ]);
+
+  const ranked = products
+    .map((product) => ({ product, rank: Math.min(matchRank(product.name, q), matchRank(product.brand, q) + 1) }))
+    .sort((a, b) => a.rank - b.rank || a.product.name.localeCompare(b.product.name))
+    .slice(0, limit)
+    .map(({ product }) => ({
+      _id: product.id,
+      name: product.name,
+      image: product.image,
+      brand: product.brand,
+      category: product.category,
+      totalPrice: Number(product.totalPrice),
+      price: Number(product.price),
+      discount: Number(product.discount),
+    }));
+
+  return {
+    products: ranked,
+    categories: categories
+      .sort((a, b) => matchRank(a.name, q) - matchRank(b.name, q))
+      .slice(0, 4)
+      .map((category) => ({ _id: category.id, name: category.name, isDepartment: !category.parentId })),
+    brands: brands
+      .map((row) => row.brand)
+      .sort((a, b) => matchRank(a, q) - matchRank(b, q))
+      .slice(0, 4),
+  };
+};
+
 const getFilterOptions = async () => {
   const [categories, brands] = await Promise.all([
     productRepository.listCategories(),
@@ -311,4 +493,6 @@ module.exports = {
   deleteReview,
   getReviewEligibility,
   getFilterOptions,
+  getFacets,
+  suggest,
 };

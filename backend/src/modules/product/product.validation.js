@@ -98,9 +98,12 @@ const booleanFlag = z
   .optional();
 
 const listProductsQuery = listQuery.extend({
-  category: z.string().trim().optional(),
+  // Comma-separated for multi-select, e.g. "Mens Shoes,Mens Watches".
+  category: z.string().trim().max(500).optional(),
   categoryRef: uuid.optional(),
-  brand: z.string().trim().optional(),
+  /** A top-level category: matches it and everything below it. */
+  dept: uuid.optional(),
+  brand: z.string().trim().max(500).optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   minRating: z.coerce.number().min(0).max(5).optional(),
@@ -109,6 +112,13 @@ const listProductsQuery = listQuery.extend({
   isFeatured: booleanFlag,
   hasVariants: booleanFlag,
   includeInactive: booleanFlag,
+  onSale: booleanFlag,
+});
+
+/** Search-as-you-type. */
+const suggestQuery = z.object({
+  q: z.string().trim().min(1).max(80),
+  limit: z.coerce.number().int().min(1).max(10).default(6),
 });
 
 const reviewSchema = z.object({
@@ -122,6 +132,7 @@ module.exports = {
   updateProductSchema,
   legacyUpdateProductSchema,
   listProductsQuery,
+  suggestQuery,
   reviewSchema,
   variantSchema,
   productIdParam: idParam("id"),

@@ -74,7 +74,7 @@ src/
 - `--accent-*` values are written at runtime by `ThemeProvider` from the selected preset, so they have no fixed values in the CSS. Dark mode is driven by `data-theme` on `<html>`; with the `system` setting the attribute is absent and a media query applies.
 - Chart colours come from `theme/chartPalette.js` via `ChartKit`. They deliberately don't follow the accent colour, because colour identifies the series.
 - Join conditional classes with `cn` from `lib/cn.js`, format money and dates with `lib/format.js`, and use `useToast` for notifications.
-- Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` and `/try-on` are lazy routes; recommendation rows use `ProductRail`. Try-on is a local overlay (no upload); wearable categories live in `lib/tryOn.js`.
+- Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` is a lazy route; recommendation rows use `ProductRail`.
 - Every data screen handles loading (`Skeleton*`), error (`ErrorState`) and empty (`EmptyState`) states.
 - `features/admin/components/StatusBadge.jsx` only re-exports `components/ui/StatusBadge.jsx`. Edit the shared one.
 

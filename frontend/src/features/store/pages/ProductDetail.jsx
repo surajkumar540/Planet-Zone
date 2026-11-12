@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Scale,
   ShieldCheck,
-  Shirt,
   ShoppingBag,
   Star,
   Truck,
@@ -37,7 +36,6 @@ import { getAlternatives, getBoughtTogether, getSimilar } from "../../../api/sma
 import { recordView } from "../../../lib/recentlyViewed";
 import { useCompare } from "../hooks/useCompare";
 import ProductRail from "../components/ProductRail";
-import { WEARABLE_CATEGORIES } from "../../../lib/tryOn";
 /** A product's own attribute value by code (e.g. "returns"), or null. */
 const attributeValue = (product, code) =>
   (product.attributes || []).find((attribute) => attribute.code === code)?.value || null;
@@ -295,17 +293,6 @@ const ProductDetail = () => {
                 )}
               />
             </div>
-
-            {WEARABLE_CATEGORIES.includes(product.category) && (
-              <Link
-                to={`/try-on?product=${product._id}`}
-                className="mt-3 flex items-center gap-3 rounded-xl border border-dashed border-accent bg-accent-subtle px-4 py-3 text-accent-text transition-colors hover:bg-[color-mix(in_srgb,var(--accent-subtle)_70%,var(--accent-solid))] hover:text-accent-on"
-              >
-                <Shirt size={18} />
-                <span className="flex-1 text-[0.875rem] font-semibold">See it on you with Try-On</span>
-                <ChevronRight size={16} />
-              </Link>
-            )}
 
             {/* Only real facts: this product's own shipping, returns and warranty lines. */}
             <ul className="mt-6 space-y-2.5 rounded-lg border border-line-subtle bg-surface p-4">

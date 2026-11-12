@@ -30,7 +30,6 @@ import { useTheme } from "../../../theme/ThemeProvider";
 const NAV_LINKS = [
   { to: "/", label: "Home", end: true },
   { to: "/shop", label: "Shop" },
-  { to: "/try-on", label: "Try-On" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ];

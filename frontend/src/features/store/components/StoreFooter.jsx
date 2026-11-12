@@ -12,7 +12,6 @@ const COLUMNS = [
       { to: "/shop", label: "All products" },
       { to: "/shop?sort=createdAt:desc", label: "New arrivals" },
       { to: "/shop?minRating=4", label: "Top rated" },
-      { to: "/try-on", label: "Virtual try-on" },
       { to: "/compare", label: "Compare products" },
       { to: "/wishlist", label: "Wishlist" },
     ],

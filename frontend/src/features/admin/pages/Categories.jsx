@@ -13,6 +13,7 @@ import { EmptyState, ErrorState } from "../../../components/ui/States";
 import { SkeletonText } from "../../../components/ui/Skeleton";
 import cn from "../../../lib/cn";
 
+import { getErrorMessage } from "../../../lib/apiError";
 /**
  * One node of the category tree.
  *
@@ -108,7 +109,7 @@ const CategoryForm = ({ parent, onClose, onSaved }) => {
       onSaved();
       onClose();
     } catch (caught) {
-      toast.error("Could not create category", caught?.response?.data?.message);
+      toast.error("Could not create category", getErrorMessage(caught));
     }
   };
 
@@ -169,7 +170,7 @@ const Categories = () => {
       refetch();
     } catch (caught) {
       // The API refuses while subcategories or products still reference it.
-      toast.error("Could not delete category", caught?.response?.data?.message);
+      toast.error("Could not delete category", getErrorMessage(caught));
       setPendingDelete(null);
     }
   };

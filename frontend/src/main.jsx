@@ -8,7 +8,10 @@ import store from "./redux/store/store.js";
 import AppThemeProvider from "./theme/AppThemeProvider.jsx";
 import { ToastProvider } from "./components/ui/Toast.jsx";
 import ErrorBoundary from "./components/ui/ErrorBoundary.jsx";
+import { installImageFallback } from "./lib/imageFallback.js";
 import "./index.css";
+
+installImageFallback();
 
 /*
  * Provider order matters: the theme must wrap everything that renders, and the

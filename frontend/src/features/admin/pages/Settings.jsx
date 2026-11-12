@@ -15,6 +15,7 @@ import { Input, Switch } from "../../../components/ui/Field";
 import { SkeletonText } from "../../../components/ui/Skeleton";
 import cn from "../../../lib/cn";
 
+import { getErrorMessage } from "../../../lib/apiError";
 /* ------------------------------- Appearance -------------------------------- */
 
 const MODE_CARDS = [
@@ -233,7 +234,7 @@ const StoreSettings = () => {
       toast.success("Settings saved");
       refetch();
     } catch (caught) {
-      toast.error("Could not save settings", caught?.response?.data?.message);
+      toast.error("Could not save settings", getErrorMessage(caught));
     }
   };
 
@@ -376,7 +377,7 @@ const ProfileSettings = () => {
       toast.success("Profile updated");
       refetch();
     } catch (caught) {
-      toast.error("Could not update profile", caught?.response?.data?.message);
+      toast.error("Could not update profile", getErrorMessage(caught));
     }
   };
 

@@ -13,6 +13,7 @@ import { setSession } from "../../../../utils/functions";
 import AuthShell, { AuthLink } from "./AuthShell";
 import OtpInput from "./OtpInput";
 
+import { getErrorMessage } from "../../../../lib/apiError";
 const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 
@@ -68,7 +69,7 @@ const OtpVerify = () => {
       toast.success("Email verified", "Your account is ready.");
       navigate("/", { replace: true });
     } catch (caught) {
-      setError(caught?.response?.data?.message || "That code is not valid. Try again.");
+      setError(getErrorMessage(caught, "That code is not valid. Try again."));
     }
   };
 
@@ -85,7 +86,7 @@ const OtpVerify = () => {
       setCode("");
       toast.success("Code sent again", `Check ${email} for a new code.`);
     } catch (caught) {
-      toast.error(caught?.response?.data?.message || "Could not resend the code");
+      toast.error(getErrorMessage(caught, "Could not resend the code"));
     }
   };
 

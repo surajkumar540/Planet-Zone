@@ -12,6 +12,7 @@ import cn from "../../../../lib/cn";
 import AuthShell, { AuthLink } from "./AuthShell";
 import OtpInput from "./OtpInput";
 
+import { getErrorMessage } from "../../../../lib/apiError";
 const STEPS = [
   { id: "request", label: "Your email" },
   { id: "reset", label: "New password" },
@@ -92,7 +93,7 @@ const ForgotPassword = () => {
       toast.success("Check your inbox", "If an account exists, a reset code is on its way.");
       setStep("reset");
     } catch (caught) {
-      setError(caught?.response?.data?.message || "Could not send a reset code");
+      setError(getErrorMessage(caught, "Could not send a reset code"));
     }
   };
 
@@ -110,7 +111,7 @@ const ForgotPassword = () => {
       toast.success("Password updated", "You can sign in with your new password.");
       navigate("/login", { replace: true });
     } catch (caught) {
-      setError(caught?.response?.data?.message || "Could not reset your password");
+      setError(getErrorMessage(caught, "Could not reset your password"));
     }
   };
 

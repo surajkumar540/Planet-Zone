@@ -1,7 +1,7 @@
 const products= [
       {
         "name": "Adidas campus",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Adidas%20campus",
         "brand": "Adidas",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -12,7 +12,7 @@ const products= [
       },
       {
         "name": "iPhone 11",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=iPhone%2011",
         "brand": "Apple",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -23,7 +23,7 @@ const products= [
       },
       {
         "name": "Samsung S22 ultra",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Samsung%20S22%20ultra",
         "brand": "Samsung",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -34,7 +34,7 @@ const products= [
       },
       {
         "name": "Inter I9",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Inter%20I9",
         "brand": "Intel",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -46,7 +46,7 @@ const products= [
       ,
       {
         "name": "Sony X",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Sony%20X",
         "brand": "Sony",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -57,7 +57,7 @@ const products= [
       },
       {
         "name": "Sumsum",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Sumsum",
         "brand": "Sony",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -68,7 +68,7 @@ const products= [
       },
       {
         "name": "Haier X",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Haier%20X",
         "brand": "Sony",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",
@@ -79,7 +79,7 @@ const products= [
       },
       {
         "name": "Sony Z",
-        "image": "jalksdf",
+        "image": "https://placehold.co/600x600/png?text=Sony%20Z",
         "brand": "Sony",
         "category": "smartphones",
         "description": "An apple mobile which is nothing like apple",

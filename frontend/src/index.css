@@ -13,6 +13,13 @@
  * anchor underline, button chrome and `border-style`. Only the page-level
  * painting belongs here.
  */
+/* Applied by lib/imageFallback.js to an image that failed to load. */
+img.img-fallback {
+  object-fit: contain !important;
+  padding: 18%;
+  background: var(--surface-sunken);
+}
+
 body {
   background: var(--surface-canvas);
   color: var(--text-primary);

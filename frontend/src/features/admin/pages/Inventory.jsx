@@ -14,6 +14,7 @@ import { Input, Select, Textarea } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatNumber } from "../../../lib/format";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const REASONS = [
   { value: "purchase", label: "Stock received" },
   { value: "adjustment", label: "Manual adjustment" },
@@ -48,7 +49,7 @@ const AdjustModal = ({ record, onClose, onSaved }) => {
       onSaved();
       onClose();
     } catch (caught) {
-      toast.error("Could not adjust stock", caught?.response?.data?.message);
+      toast.error("Could not adjust stock", getErrorMessage(caught));
     }
   };
 

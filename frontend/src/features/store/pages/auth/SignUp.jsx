@@ -13,6 +13,7 @@ import { createAccount } from "../../../../redux/reducers/userSlice";
 import cn from "../../../../lib/cn";
 import AuthShell, { AuthLink } from "./AuthShell";
 
+import { getErrorMessage } from "../../../../lib/apiError";
 const EMPTY = {
   firstName: "",
   lastName: "",
@@ -138,7 +139,7 @@ const SignUp = () => {
         );
         return;
       }
-      setErrors({ form: caught?.response?.data?.message || "Could not create your account" });
+      setErrors({ form: getErrorMessage(caught, "Could not create your account") });
     }
   };
 

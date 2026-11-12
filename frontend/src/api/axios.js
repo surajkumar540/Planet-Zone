@@ -21,12 +21,36 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+/** Gateway errors that usually mean "try again", e.g. the database waking up. */
+const RETRYABLE_STATUS = [502, 503, 504];
+const RETRY_DELAY_MS = 800;
+
+/**
+ * A read that failed because the connection dropped, or the server briefly
+ * could not answer, is retried once before the screen shows an error. Writes
+ * are never retried: repeating a POST could place an order twice.
+ */
+const shouldRetry = (error) => {
+  const config = error?.config;
+  if (!config || config.__retried) return false;
+  if ((config.method || "get").toLowerCase() !== "get") return false;
+  if (error.code === "ERR_CANCELED" || error.code === "ECONNABORTED") return false;
+  return !error.response || RETRYABLE_STATUS.includes(error.response.status);
+};
+
 /** Paths where a 401 is an expected outcome rather than an expired session. */
 const AUTH_PATHS = ["/api/login", "/api/signup", "/api/otpVerify", "/api/tokenVerification"];
 
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (shouldRetry(error)) {
+      error.config.__retried = true;
+      return new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS)).then(() =>
+        instance(error.config)
+      );
+    }
+
     const status = error?.response?.status;
     const url = error?.config?.url || "";
 

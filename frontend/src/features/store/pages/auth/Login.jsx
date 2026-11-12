@@ -12,6 +12,7 @@ import { setAdminLogged, setProfile, setUserLogged } from "../../../../redux/red
 import { setSession } from "../../../../utils/functions";
 import AuthShell, { AuthLink } from "./AuthShell";
 
+import { getErrorMessage } from "../../../../lib/apiError";
 /** Shakes the form once when the credentials come back rejected. */
 const shake = {
   hidden: { opacity: 0, height: 0 },
@@ -58,7 +59,7 @@ const Login = () => {
     } catch (caught) {
       // The API answers unknown email and wrong password identically, so the
       // message can be shown as-is without leaking which one it was.
-      setError(caught?.response?.data?.message || "Those details did not match an account.");
+      setError(getErrorMessage(caught, "Those details did not match an account."));
     }
   };
 

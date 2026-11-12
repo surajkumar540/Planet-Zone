@@ -17,6 +17,7 @@ const remove = (url, params) => axios.delete(url, { params }).then((response) =>
 /* -------------------------------- Analytics -------------------------------- */
 
 export const getDashboard = (params) => get("/api/analytics/dashboard", params);
+export const getAnalyticsSummary = (params) => get("/api/analytics/summary", params);
 export const getSalesTrend = (params) => get("/api/analytics/sales-trend", params);
 export const getTopProducts = (params) => get("/api/analytics/top-products", params);
 export const getRevenueByCategory = (params) => get("/api/analytics/revenue-by-category", params);

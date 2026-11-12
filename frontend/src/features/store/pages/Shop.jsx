@@ -80,7 +80,7 @@ const Shop = () => {
   );
 
   const { data: products, meta, loading, error, refetch } = useApi(getAllProducts, query);
-  const { data: options } = useApi(getProductFilters, null);
+  const { data: options } = useApi(getProductFilters, null, { cacheTime: 5 * 60 * 1000 });
 
   const activeFilters = useMemo(
     () =>

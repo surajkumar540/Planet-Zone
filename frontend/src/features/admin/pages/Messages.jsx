@@ -13,6 +13,7 @@ import { Input, Select } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatDateTime } from "../../../lib/format";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const Messages = () => {
   const toast = useToast();
   const list = useListParams({ limit: 20, sort: "createdAt:desc" });
@@ -44,7 +45,7 @@ const Messages = () => {
       setPendingDelete(null);
       refetch();
     } catch (caught) {
-      toast.error("Could not delete message", caught?.response?.data?.message);
+      toast.error("Could not delete message", getErrorMessage(caught));
     }
   };
 

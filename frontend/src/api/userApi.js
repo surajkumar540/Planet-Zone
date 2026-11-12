@@ -1,77 +1,31 @@
-import axios from "./axios"
+import axios from "./axios";
 
-export const signup = async (data) => {
-    const response = await axios.post(`/api/signup`, data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
+/**
+ * Account and profile endpoints. Failures reject with the axios error, which
+ * screens turn into a message with `getErrorMessage`.
+ */
 
-export const login = async (data) => {
-    const response = await axios.post(`/api/login`, data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
+const get = (url) => axios.get(url).then((response) => response.data);
+const post = (url, body) => axios.post(url, body).then((response) => response.data);
 
-export const otpVerify = async (data) => {
-    const response = await axios.post(`/api/otpVerify`, data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
+/* ---------------------------------- Auth ----------------------------------- */
 
-
-export const forgetOtp = async (data) => {
-    const response = await axios.post(`/api/forgetOtp`, data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
-
-export const changePassword = async (data) => {
-    const response = await axios.post(`/api/changePassword`, data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
-
+export const signup = (data) => post("/api/signup", data);
+export const login = (data) => post("/api/login", data);
+export const otpVerify = (data) => post("/api/otpVerify", data);
+export const forgetOtp = (data) => post("/api/forgetOtp", data);
+export const changePassword = (data) => post("/api/changePassword", data);
 
 /**
  * Confirms the stored token is still valid. The caller's role comes back in
  * the response; nothing about identity is sent from the client.
  */
-export const tokenVerify = async () => {
-    const response = await axios.post(`/api/tokenVerification`);
-    return response.data
-}
+export const tokenVerify = () => post("/api/tokenVerification");
 
+/* --------------------------------- Profile --------------------------------- */
 
+export const getProfile = () => get("/api/profile");
+export const setProfile = (data) => post("/api/profile", data);
 
-
-//////-------------------------------///////////
-/////============User Profile ==========////
-//////-------------------------------///////////
-
-
-export const getProfile = async () => {
-    const response = await axios.get(`/api/profile`);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
-
-
-export const setProfile = async (data) => {
-    const response = await axios.post(`/api/profile`, data);
-    if (!response.statusText === "OK") {
-        throw new Error("Something is wrong.");
-    }
-    return response.data
-}
+/** Changes the signed-in user's password; needs the current one. */
+export const changeAccountPassword = (data) => post("/api/account/password", data);

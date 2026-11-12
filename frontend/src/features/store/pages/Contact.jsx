@@ -9,6 +9,7 @@ import { useToast } from "../../../components/ui/Toast";
 import { useSession } from "../hooks/useStorefront";
 import { Container } from "../components/Primitives";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const CHANNELS = [
   { icon: Mail, label: "Email", value: "support@planet.store", href: "mailto:support@planet.store" },
   { icon: Phone, label: "Phone", value: "1800 000 000", href: "tel:+911800000000" },
@@ -41,7 +42,7 @@ const Contact = () => {
       toast.success("Message sent", "We usually reply within one working day.");
       setForm({ name: "", email: "", city: "", message: "" });
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not send your message");
+      toast.error(getErrorMessage(error, "Could not send your message"));
     }
   };
 

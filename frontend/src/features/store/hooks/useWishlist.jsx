@@ -5,6 +5,7 @@ import { addToWishlist, getWishlist, removeFromWishlist } from "../../../api/sto
 import { useToast } from "../../../components/ui/Toast";
 import { useSession } from "./useStorefront";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const WishlistContext = createContext(null);
 
 /**
@@ -72,7 +73,7 @@ export const WishlistProvider = ({ children }) => {
           saved ? [...current, product] : current.filter((item) => String(item._id) !== id)
         );
         toast.error(
-          error?.response?.data?.message || "Could not update your wishlist. Try again."
+          getErrorMessage(error, "Could not update your wishlist. Try again.")
         );
       }
     },

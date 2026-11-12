@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getDashboard } from "../../api/adminApi";
+import { getAnalyticsSummary } from "../../api/adminApi";
 import { useApi } from "../../hooks/useApi";
 import AdminLayout from "./components/AdminLayout";
 import { SkeletonStat } from "../../components/ui/Skeleton";
@@ -50,7 +50,11 @@ const AdminRoutes = () => {
   const { isAdminLogged, status } = useSelector((state) => state.user);
 
   // The low-stock count feeds the header badge across every dashboard screen.
-  const { data: dashboard } = useApi(getDashboard, null, { enabled: isAdminLogged });
+  // The light summary endpoint is enough; the overview page loads the full dashboard itself.
+  const { data: summary } = useApi(getAnalyticsSummary, null, {
+    enabled: isAdminLogged,
+    cacheTime: 60 * 1000,
+  });
 
   if (status === "idle" || status === "loading") return <RouteFallback />;
   if (!isAdminLogged) return <Navigate to="/login" replace />;
@@ -58,7 +62,7 @@ const AdminRoutes = () => {
   return (
     <Routes>
       <Route
-        element={<AdminLayout lowStockCount={dashboard?.summary?.lowStock?.value || 0} />}
+        element={<AdminLayout lowStockCount={summary?.lowStock?.value || 0} />}
       >
         <Route
           index

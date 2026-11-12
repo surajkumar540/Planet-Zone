@@ -13,6 +13,7 @@ import { Input, Select, Switch } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatCurrency, formatDate, formatNumber } from "../../../lib/format";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const TYPE_OPTIONS = [
   { value: "percentage", label: "Percentage off" },
   { value: "fixed", label: "Fixed amount off" },
@@ -55,7 +56,7 @@ const CouponForm = ({ onClose, onSaved }) => {
       onSaved();
       onClose();
     } catch (caught) {
-      toast.error("Could not create coupon", caught?.response?.data?.message);
+      toast.error("Could not create coupon", getErrorMessage(caught));
     }
   };
 
@@ -181,7 +182,7 @@ const Coupons = () => {
       setPendingDelete(null);
       refetch();
     } catch (caught) {
-      toast.error("Could not delete coupon", caught?.response?.data?.message);
+      toast.error("Could not delete coupon", getErrorMessage(caught));
     }
   };
 

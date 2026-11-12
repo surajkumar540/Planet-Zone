@@ -14,6 +14,7 @@ import { formatCurrency, formatDateTime, humanise } from "../../../lib/format";
 import cn from "../../../lib/cn";
 import { Container } from "../components/Primitives";
 
+import { getErrorMessage } from "../../../lib/apiError";
 /** Statuses at which a customer can still call the order off themselves. */
 const CANCELLABLE = ["pending", "confirmed", "processing", "packed"];
 
@@ -59,7 +60,7 @@ const OrderDetail = () => {
       setConfirmOpen(false);
       refetch();
     } catch (caught) {
-      toast.error(caught?.response?.data?.message || "Could not cancel this order");
+      toast.error(getErrorMessage(caught, "Could not cancel this order"));
     }
   };
 

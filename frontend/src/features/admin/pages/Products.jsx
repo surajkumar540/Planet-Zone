@@ -19,6 +19,7 @@ import { Input, Select, Switch, Textarea } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatCurrency, formatNumber } from "../../../lib/format";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const EMPTY_PRODUCT = {
   name: "",
   brand: "",
@@ -97,7 +98,7 @@ const ProductForm = ({ open, onClose, product, onSaved, categories }) => {
           )
         );
       }
-      toast.error("Could not save product", caught?.response?.data?.message);
+      toast.error("Could not save product", getErrorMessage(caught));
     }
   };
 
@@ -237,7 +238,7 @@ const Products = () => {
   const list = useListParams({ limit: 20, sort: "createdAt:desc", includeInactive: "true" });
 
   const { data, meta, loading, error, refetch } = useApi(getProducts, list.params);
-  const { data: filters } = useApi(getProductFilters, null);
+  const { data: filters } = useApi(getProductFilters, null, { cacheTime: 5 * 60 * 1000 });
   const { mutate: removeProduct, loading: deleting } = useMutation(deleteProduct);
 
   const [editing, setEditing] = useState(null);
@@ -261,7 +262,7 @@ const Products = () => {
       setPendingDelete(null);
       refetch();
     } catch (caught) {
-      toast.error("Could not delete product", caught?.response?.data?.message);
+      toast.error("Could not delete product", getErrorMessage(caught));
     }
   };
 

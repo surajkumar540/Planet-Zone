@@ -26,6 +26,7 @@ import ProductCard from "../components/ProductCard";
 import { useCart, useSession } from "../hooks/useStorefront";
 import { useWishlistToggle } from "../hooks/useWishlist";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const ProductDetail = () => {
   const { pid } = useParams();
   const toast = useToast();
@@ -354,7 +355,7 @@ const ReviewSection = ({ productId, product, summary, reviews, isLoggedIn, onSav
       setComment("");
       onSaved();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not save your review");
+      toast.error(getErrorMessage(error, "Could not save your review"));
     }
   };
 

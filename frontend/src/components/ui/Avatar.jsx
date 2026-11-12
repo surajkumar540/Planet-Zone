@@ -33,6 +33,7 @@ const Avatar = ({ src, firstName, lastName, name, size = "md", className }) => {
           alt=""
           loading="lazy"
           onError={() => setFailed(true)}
+          data-fallback="off"
           className="w-full h-full object-cover"
         />
       ) : (

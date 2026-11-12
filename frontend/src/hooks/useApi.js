@@ -1,4 +1,63 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getErrorMessage } from "../lib/apiError";
+
+/* ------------------------------ Request sharing ----------------------------- */
+
+/**
+ * In-memory record of reads, keyed by fetcher function and then by params.
+ *
+ * Two components asking for the same thing at the same time share one
+ * request, and a caller that opts into `cacheTime` reuses a recent result
+ * instead of another round trip. The database is far from the users, so each
+ * avoided request is a visible saving.
+ */
+const requests = new WeakMap();
+
+const sharedRead = (fetcher, params, { cacheTime, force }) => {
+  let byParams = requests.get(fetcher);
+  if (!byParams) {
+    byParams = new Map();
+    requests.set(fetcher, byParams);
+  }
+
+  const key = JSON.stringify(params ?? null);
+  const existing = byParams.get(key);
+  if (!force && existing && (existing.pending || existing.expiresAt > Date.now())) {
+    return existing.promise;
+  }
+
+  const entry = { pending: true, expiresAt: 0 };
+  entry.promise = Promise.resolve()
+    .then(() => fetcher(params))
+    .then(
+      (value) => {
+        entry.pending = false;
+        entry.expiresAt = Date.now() + cacheTime;
+        if (!cacheTime && byParams.get(key) === entry) byParams.delete(key);
+        return value;
+      },
+      (error) => {
+        // Failures are never cached; the next caller tries again.
+        if (byParams.get(key) === entry) byParams.delete(key);
+        throw error;
+      }
+    );
+  byParams.set(key, entry);
+  return entry.promise;
+};
+
+/**
+ * Forgets every cached read. Any successful write calls this, because a write
+ * can change data that a cached list or filter depends on.
+ */
+export const clearApiCache = () => {
+  // A WeakMap cannot be iterated, so cached entries are not deleted; bumping
+  // the generation makes every hook bypass them on its next read instead.
+  requestsGeneration.current += 1;
+};
+const requestsGeneration = { current: 0 };
+
+/* ---------------------------------- Reads ----------------------------------- */
 
 /**
  * Reads data from an API function, exposing the loading, error and empty
@@ -10,9 +69,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
  *
  * @param {Function} fetcher called with `params`; must return a promise
  * @param {any} params serialised to decide when to refetch
- * @param {{ enabled?: boolean, initialData?: any }} options
+ * @param {{ enabled?: boolean, initialData?: any, cacheTime?: number }} options
+ *   `cacheTime` (ms) lets rarely-changing data, such as filter options, be
+ *   reused across screens instead of refetched on every visit.
  */
-export const useApi = (fetcher, params, { enabled = true, initialData = null } = {}) => {
+export const useApi = (
+  fetcher,
+  params,
+  { enabled = true, initialData = null, cacheTime = 0 } = {}
+) => {
   const [data, setData] = useState(initialData);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(enabled);
@@ -27,6 +92,8 @@ export const useApi = (fetcher, params, { enabled = true, initialData = null } =
   fetcherRef.current = fetcher;
 
   const requestId = useRef(0);
+  const forceNext = useRef(false);
+  const seenGeneration = useRef(requestsGeneration.current);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -38,10 +105,15 @@ export const useApi = (fetcher, params, { enabled = true, initialData = null } =
     const currentRequest = ++requestId.current;
     let active = true;
 
+    // An explicit refetch, or a write since the last read, must skip the cache.
+    const force = forceNext.current || seenGeneration.current !== requestsGeneration.current;
+    forceNext.current = false;
+    seenGeneration.current = requestsGeneration.current;
+
     setLoading(true);
     setError(null);
 
-    Promise.resolve(fetcherRef.current(params))
+    sharedRead(fetcherRef.current, params, { cacheTime, force })
       .then((response) => {
         // Discard responses from superseded requests so a slow earlier call
         // cannot overwrite a newer result.
@@ -51,9 +123,7 @@ export const useApi = (fetcher, params, { enabled = true, initialData = null } =
       })
       .catch((caught) => {
         if (!active || currentRequest !== requestId.current) return;
-        setError(
-          caught?.response?.data?.message || caught?.message || "Something went wrong."
-        );
+        setError(getErrorMessage(caught));
       })
       .finally(() => {
         if (active && currentRequest === requestId.current) setLoading(false);
@@ -65,16 +135,22 @@ export const useApi = (fetcher, params, { enabled = true, initialData = null } =
     // eslint-disable-next-line react-hooks/exhaustive-deps -- params compared by value.
   }, [serialisedParams, enabled, reloadToken]);
 
-  const refetch = useCallback(() => setReloadToken((token) => token + 1), []);
+  const refetch = useCallback(() => {
+    forceNext.current = true;
+    setReloadToken((token) => token + 1);
+  }, []);
 
   return { data, meta, loading, error, refetch, setData };
 };
+
+/* ---------------------------------- Writes ---------------------------------- */
 
 /**
  * Runs a write operation, tracking its in-flight and error state.
  *
  * Returns the resolved value so callers can act on the result, and rethrows
- * so a caller can still branch on failure.
+ * so a caller can still branch on failure. A successful write invalidates
+ * cached reads.
  */
 export const useMutation = (mutator) => {
   const [loading, setLoading] = useState(false);
@@ -85,11 +161,11 @@ export const useMutation = (mutator) => {
       setLoading(true);
       setError(null);
       try {
-        return await mutator(...args);
+        const result = await mutator(...args);
+        clearApiCache();
+        return result;
       } catch (caught) {
-        const message =
-          caught?.response?.data?.message || caught?.message || "Something went wrong.";
-        setError(message);
+        setError(getErrorMessage(caught));
         throw caught;
       } finally {
         setLoading(false);
@@ -129,10 +205,11 @@ export const useListParams = ({ limit = 20, sort = "createdAt:desc", ...initialF
   const [filters, setFilters] = useState(initialFilters);
 
   const debouncedSearch = useDebounced(search);
+  const filtersKey = JSON.stringify(filters);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, sortValue, JSON.stringify(filters)]);
+  }, [debouncedSearch, sortValue, filtersKey]);
 
   const setFilter = useCallback((key, value) => {
     setFilters((current) => {

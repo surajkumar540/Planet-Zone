@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Lock, MapPin, Plus, Trash2, User } from "lucide-react";
 
-import { getProfile, setProfile } from "../../../api/userApi";
+import { changeAccountPassword, getProfile, setProfile } from "../../../api/userApi";
 import { createAddress, deleteAddress, getAddresses } from "../../../api/storeApi";
-import axios from "../../../api/axios";
 import { useApi, useMutation } from "../../../hooks/useApi";
 import Button from "../../../components/ui/Button";
 import { Input, Select } from "../../../components/ui/Field";
@@ -14,6 +13,7 @@ import { useToast } from "../../../components/ui/Toast";
 import { setProfile as setProfileAction } from "../../../redux/reducers/userSlice";
 import { Container } from "../components/Primitives";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const TABS = [
   { value: "details", label: "Your details", icon: User },
   { value: "addresses", label: "Addresses", icon: MapPin },
@@ -73,7 +73,7 @@ const DetailsTab = () => {
       toast.success("Profile updated");
       refetch();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not save your details");
+      toast.error(getErrorMessage(error, "Could not save your details"));
     }
   };
 
@@ -140,7 +140,7 @@ const AddressesTab = () => {
       setOpen(false);
       refetch();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not save that address");
+      toast.error(getErrorMessage(error, "Could not save that address"));
     }
   };
 
@@ -150,7 +150,7 @@ const AddressesTab = () => {
       toast.success("Address removed");
       refetch();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not remove that address");
+      toast.error(getErrorMessage(error, "Could not remove that address"));
     }
   };
 
@@ -266,7 +266,7 @@ const SecurityTab = () => {
   const toast = useToast();
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirm: "" });
 
-  const change = useMutation((body) => axios.post("/api/account/password", body));
+  const change = useMutation(changeAccountPassword);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -284,7 +284,7 @@ const SecurityTab = () => {
       toast.success("Password updated");
       setForm({ currentPassword: "", newPassword: "", confirm: "" });
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not update your password");
+      toast.error(getErrorMessage(error, "Could not update your password"));
     }
   };
 

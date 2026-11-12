@@ -14,6 +14,7 @@ import { SkeletonText } from "../../../components/ui/Skeleton";
 import { OrderStatusBadge, PaymentStatusBadge } from "../components/StatusBadge";
 import { formatCurrency, formatDateTime, humanise } from "../../../lib/format";
 
+import { getErrorMessage } from "../../../lib/apiError";
 /**
  * Transitions the API accepts from each status.
  *
@@ -81,7 +82,7 @@ const OrderDetail = () => {
       setStatusModalOpen(false);
       refetch();
     } catch (caught) {
-      toast.error("Could not update order", caught?.response?.data?.message);
+      toast.error("Could not update order", getErrorMessage(caught));
     }
   };
 

@@ -17,6 +17,7 @@ import cn from "../../../lib/cn";
 import { Container } from "../components/Primitives";
 import { toOrderCart, useCart, useSession } from "../hooks/useStorefront";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const STATES = [
   "Andhra Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa", "Gujarat", "Haryana",
   "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra",
@@ -117,7 +118,7 @@ const Checkout = () => {
       await refetchAddresses();
       setSelectedAddressId(response?.data?._id || null);
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Could not save that address");
+      toast.error(getErrorMessage(error, "Could not save that address"));
     }
   };
 
@@ -202,7 +203,7 @@ const Checkout = () => {
         razorpay.open();
       });
     } catch (error) {
-      toast.error(error?.response?.data?.message || error.message || "Could not place the order");
+      toast.error(getErrorMessage(error, "Could not place the order"));
     } finally {
       setPlacing(false);
     }

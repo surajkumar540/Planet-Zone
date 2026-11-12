@@ -59,7 +59,7 @@ const Home = () => {
   const featured = useApi(getAllProducts, { isFeatured: true, limit: 4 });
   const newest = useApi(getAllProducts, { sort: "createdAt:desc", limit: 8 });
   const topRated = useApi(getAllProducts, { minRating: 4, sort: "rating:desc", limit: 4 });
-  const { data: categories } = useApi(getCategoryTree, null);
+  const { data: categories } = useApi(getCategoryTree, null, { cacheTime: 5 * 60 * 1000 });
 
   // Featured is curated and can legitimately be empty; fall back to the newest
   // products so the first band on the page is never blank.

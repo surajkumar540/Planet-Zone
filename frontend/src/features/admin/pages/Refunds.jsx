@@ -12,6 +12,7 @@ import { Input, Select } from "../../../components/ui/Field";
 import { EmptyState } from "../../../components/ui/States";
 import { formatCurrency, formatDate, humanise } from "../../../lib/format";
 
+import { getErrorMessage } from "../../../lib/apiError";
 const STATUS_TONE = {
   requested: "warning",
   approved: "info",
@@ -48,7 +49,7 @@ const Refunds = () => {
       }
       refetch();
     } catch (caught) {
-      toast.error("Could not update refund", caught?.response?.data?.message);
+      toast.error("Could not update refund", getErrorMessage(caught));
     } finally {
       setBusyId(null);
     }

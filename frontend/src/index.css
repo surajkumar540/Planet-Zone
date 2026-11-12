@@ -163,7 +163,16 @@ html[data-feed-more] [data-store-footer] {
   display: none;
 }
 
+/* Dashed delivery routes behind the auth screens: the dashes travel along. */
+@keyframes route-march {
+  to { stroke-dashoffset: -300; }
+}
+.route-march {
+  animation: route-march 18s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .route-march,
   .leaf-sway,
   .search-glow,
   .bag-nudge,

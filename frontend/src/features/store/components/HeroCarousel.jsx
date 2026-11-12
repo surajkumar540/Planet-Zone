@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -15,10 +15,11 @@ import cn from "../../../lib/cn";
  * - each slide's palette comes from --promo-* tokens, which have separate,
  *   deeper steps for the dark theme so the banners never glare at night.
  *
- * A slide is `{ id, palette: "leaf"|"sun"|"dusk", eyebrow, title, body, cta: { label, to }, images: [] }`.
+ * A slide is `{ id, palette: "leaf"|"sun"|"dusk", eyebrow, title, body, cta: { label, to }, images: [{ src, id, name }] }`.
+ * Each product photo links to that product's page.
  */
 
-const SLIDE_MS = 6000;
+const SLIDE_MS = 2000;
 
 const slideVariants = {
   enter: (direction) => ({ x: direction >= 0 ? "100%" : "-100%", opacity: 0.6 }),
@@ -45,7 +46,14 @@ const DOODLES = {
   ],
 };
 
-const Slide = ({ slide }) => (
+/** Three tints per slide, all from its palette, light enough to keep products clear. */
+const CARD_TINTS = [
+  (palette) => `linear-gradient(145deg, color-mix(in srgb, var(--promo-${palette}-from) 22%, white), color-mix(in srgb, var(--promo-${palette}-to) 34%, white))`,
+  (palette) => `linear-gradient(160deg, color-mix(in srgb, var(--promo-${palette}-to) 18%, white), color-mix(in srgb, var(--promo-${palette}-from) 12%, white))`,
+  (palette) => `linear-gradient(130deg, color-mix(in srgb, var(--promo-${palette}-from) 38%, white), color-mix(in srgb, var(--promo-${palette}-to) 20%, white))`,
+];
+
+const Slide = ({ slide, dragged }) => (
   <div className="relative grid h-full items-center gap-6 px-6 py-10 sm:px-12 lg:grid-cols-[1.1fr_1fr]">
     {(DOODLES[slide.palette] || []).map((doodle) => (
       <Doodle
@@ -101,7 +109,7 @@ const Slide = ({ slide }) => (
     </div>
 
     {/* A fanned stack of real products, so the banner shows things you can buy. */}
-    <div className="relative hidden h-full min-h-[18rem] lg:block" aria-hidden="true">
+    <div className="relative hidden h-full min-h-[18rem] lg:block">
       {slide.images.slice(0, 3).map((image, index) => {
         const placement = [
           "left-[8%] top-[16%] w-[44%] -rotate-[8deg]",
@@ -110,7 +118,7 @@ const Slide = ({ slide }) => (
         ][index];
         return (
           <motion.div
-            key={`${slide.id}-${image}-${index}`}
+            key={`${slide.id}-${image.id}-${index}`}
             initial={{ opacity: 0, y: 40, scale: 0.9 }}
             animate={{ opacity: 1, y: [0, -8, 0], scale: 1 }}
             transition={{
@@ -118,12 +126,25 @@ const Slide = ({ slide }) => (
               scale: { delay: 0.3 + index * 0.12, duration: 0.5 },
               y: { delay: 0.8 + index * 0.4, duration: 5 + index, repeat: Infinity, ease: "easeInOut" },
             }}
-            className={cn(
-              "absolute aspect-square overflow-hidden rounded-2xl border-4 border-white/90 bg-white shadow-2xl",
-              placement
-            )}
+            className={cn("absolute aspect-square", placement)}
           >
-            <img src={image} alt="" className="h-full w-full object-cover" />
+            <Link
+              to={`/product/${image.id}`}
+              draggable={false}
+              onClick={(event) => {
+                // A swipe that ends on a photo should not open it.
+                if (dragged.current) event.preventDefault();
+              }}
+              aria-label={`View ${image.name}`}
+              className="block h-full w-full overflow-hidden rounded-2xl p-1.5 shadow-2xl ring-1 ring-white/40 backdrop-blur transition-transform duration-300 hover:z-20 hover:-translate-y-1 hover:scale-105"
+              style={{ background: "rgba(255,255,255,0.18)" }}
+            >
+              {/* Tinted in the slide's colours; multiply turns the photo's white
+                  background into that tint, so each card has its own colour. */}
+              <span className="block h-full w-full overflow-hidden rounded-xl" style={{ background: CARD_TINTS[index](slide.palette) }}>
+                <img src={image.src} alt="" draggable={false} className="h-full w-full object-cover mix-blend-multiply" />
+              </span>
+            </Link>
           </motion.div>
         );
       })}
@@ -134,6 +155,7 @@ const Slide = ({ slide }) => (
 const HeroCarousel = ({ slides }) => {
   const [[index, direction], setPosition] = useState([0, 0]);
   const [paused, setPaused] = useState(false);
+  const dragged = useRef(false);
   const count = slides.length;
 
   const go = useCallback(
@@ -177,7 +199,14 @@ const HeroCarousel = ({ slides }) => {
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.18}
+          onDragStart={() => {
+            dragged.current = true;
+          }}
           onDragEnd={(_, { offset, velocity }) => {
+            // Cleared after the click that ends the drag has been ignored.
+            setTimeout(() => {
+              dragged.current = false;
+            }, 0);
             if (offset.x < -70 || velocity.x < -500) go(1);
             else if (offset.x > 70 || velocity.x > 500) go(-1);
           }}
@@ -189,7 +218,7 @@ const HeroCarousel = ({ slides }) => {
           aria-roledescription="slide"
           aria-label={`${index + 1} of ${count}: ${slide.title}`}
         >
-          <Slide slide={slide} />
+          <Slide slide={slide} dragged={dragged} />
         </motion.div>
       </AnimatePresence>
 

@@ -91,7 +91,9 @@ const Home = () => {
     [everything]
   );
   const maxDiscount = Math.round(byDiscount[0]?.discount || 0);
-  const imagesOf = (list) => list.map((product) => product.image).filter(Boolean);
+  // Each banner photo links to its product, so the banner carries the id and name too.
+  const imagesOf = (list) =>
+    list.filter((product) => product.image).map((product) => ({ src: product.image, id: product._id, name: product.name }));
 
   // Banner copy is derived from the catalogue: a discount is only promised
   // when a product actually has one.

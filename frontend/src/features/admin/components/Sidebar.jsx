@@ -3,7 +3,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
   Boxes,
-  ChevronLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
   FolderTree,
   LayoutDashboard,
   Mail,
@@ -154,21 +155,21 @@ const Sidebar = ({ mobileOpen, onCloseMobile }) => {
         {content(collapsed)}
 
         <div className="p-2.5 border-t border-line-subtle shrink-0">
-          <Button
-            variant="ghost"
-            size={collapsed ? "icon-sm" : "sm"}
+          {/* A plain button: the shared Button hides its children in icon-only
+              mode, which is what made the expand arrow disappear. */}
+          <button
+            type="button"
             onClick={toggleSidebar}
-            fullWidth={!collapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className={cn(!collapsed && "justify-start")}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={cn(
+              "flex h-9 w-full items-center gap-2 rounded-lg type-button text-content-secondary transition-colors hover:bg-surface-hover hover:text-content",
+              collapsed ? "justify-center" : "justify-start px-3"
+            )}
           >
-            <ChevronLeft
-              size={16}
-              className={cn("transition-transform shrink-0", collapsed && "rotate-180")}
-              aria-hidden="true"
-            />
+            {collapsed ? <PanelLeftOpen size={18} aria-hidden="true" /> : <PanelLeftClose size={17} aria-hidden="true" />}
             {!collapsed && "Collapse"}
-          </Button>
+          </button>
         </div>
       </aside>
 

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import cn from "../../../../lib/cn";
 import Logo, { LogoMark } from "../../../../components/ui/Logo";
+import ShopDoodleField from "../../../../components/ui/ShopDoodleField";
 
 /**
  * Shared frame for the sign-in, sign-up, OTP and password screens.
@@ -38,6 +39,7 @@ const Backdrop = () => (
       size={420}
       className="pointer-events-none absolute -bottom-24 -right-24 hidden opacity-[0.05] md:block"
     />
+    <ShopDoodleField />
   </>
 );
 
@@ -64,7 +66,7 @@ const AuthShell = ({ title, description, children, footer }) => (
         </Link>
       </div>
 
-      <div className="rounded-xl border border-line bg-surface p-5 shadow-md sm:p-6">
+      <div className="rounded-xl border border-line bg-[color-mix(in_srgb,var(--surface-default)_88%,transparent)] p-5 shadow-xl backdrop-blur-md sm:p-6">
         <h1 className="text-[1.25rem] font-semibold leading-tight tracking-tight text-content">
           {title}
         </h1>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -69,7 +70,10 @@ const MobileNav = ({ open, onClose, user, isLoggedIn, isAdmin, onSignOut, isDark
 
   const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "U";
 
-  return (
+  // Rendered into <body>: once the page scrolls the header gets a backdrop
+  // blur, and a blurred ancestor traps position:fixed children inside its own
+  // box, which squashed this drawer to the header's height.
+  return createPortal(
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
@@ -269,7 +273,8 @@ const MobileNav = ({ open, onClose, user, isLoggedIn, isAdmin, onSignOut, isDark
           </motion.aside>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

@@ -42,6 +42,11 @@ const envSchema = z.object({
   // the models, e.g. on a very small server.
   AI_FEATURES: z.enum(["on", "off"]).default("on"),
 
+  // Public address of this API, for links to T-shirt design previews. Render
+  // sets RENDER_EXTERNAL_URL itself; otherwise http://localhost:PORT is used.
+  PUBLIC_API_URL: z.string().url().optional(),
+  RENDER_EXTERNAL_URL: z.string().url().optional(),
+
   // Public address of the storefront, used for links in emails.
   APP_URL: z.string().url().default("http://localhost:5173"),
 

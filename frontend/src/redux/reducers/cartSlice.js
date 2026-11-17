@@ -19,9 +19,10 @@ const persist = (items) => localStorage.setItem(CART_KEY, JSON.stringify(items))
 
 /**
  * A line is one sellable unit: the product, plus the variant when there is
- * one. Two sizes of the same shirt are two lines, not one overwriting the other.
+ * one. Two sizes of the same shirt are two lines, not one overwriting the other,
+ * and two custom T-shirt designs are two lines even in the same size.
  */
-export const lineKey = (item) => `${item._id}::${item.variantSku || ""}`;
+export const lineKey = (item) => `${item._id}::${item.variantSku || ""}${item.designId ? `::${item.designId}` : ""}`;
 
 /** Most a line may hold: the stock it was added with, when that is known. */
 const stockCap = (line) =>

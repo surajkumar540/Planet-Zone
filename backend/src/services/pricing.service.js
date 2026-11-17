@@ -2,7 +2,10 @@ const AppError = require("../core/AppError");
 const productRepository = require("../modules/product/product.repository");
 const couponService = require("../modules/coupon/coupon.service");
 const shippingService = require("./shipping.service");
-const { round } = require("../utils/money");
+const { round, deriveTotalPrice } = require("../utils/money");
+const { CUSTOM_TEE_SKU } = require("../constants/customTee");
+// Required lazily: the design service needs env and the database client.
+const designs = () => require("../modules/design/design.service");
 
 /**
  * Collapses the client's cart into `{ productId|variant → qty }`.
@@ -23,12 +26,14 @@ const normaliseCart = (cart) => {
 
     // A variant selection is part of the line's identity.
     const variantKey = String(line.variantSku || line.variantId || "");
-    const key = `${productId}::${variantKey}`;
+    // Two shirts with different designs are different lines.
+    const designId = line.designId ? String(line.designId) : "";
+    const key = `${productId}::${variantKey}::${designId}`;
 
     const existing = lines.get(key);
     const qty = Number(line.qty || 0);
     if (existing) existing.qty += qty;
-    else lines.set(key, { productId, variantKey, qty });
+    else lines.set(key, { productId, variantKey, designId, qty });
   }
   return [...lines.values()];
 };
@@ -78,8 +83,10 @@ const resolveSellableUnit = (product, variantKey) => {
  * tax figure is read from the database, so a tampered payload cannot change
  * what the customer is charged.
  */
-const priceCart = async (cart) => {
+const priceCart = async (cart, { userId } = {}) => {
   const lines = normaliseCart(cart);
+  const designIds = [...new Set(lines.map((line) => line.designId).filter(Boolean))];
+  const designById = await designs().designsForCart(designIds, userId);
   const productIds = [...new Set(lines.map((line) => line.productId))];
 
   const products = await productRepository.find({ id: { in: productIds } });
@@ -104,7 +111,33 @@ const priceCart = async (cart) => {
       throw AppError.conflict(`${product.name} is no longer available`);
     }
 
-    const unit = resolveSellableUnit(product, line.variantKey);
+    let unit = resolveSellableUnit(product, line.variantKey);
+    const design = line.designId ? designById.get(line.designId) : null;
+    let customization = null;
+
+    // Custom T-shirts: the shirt is priced from its variant, plus the print
+    // charge stored with the design (computed by the server when it was saved).
+    if (product.sku === CUSTOM_TEE_SKU && !design) {
+      throw AppError.badRequest("Design your T-shirt in the studio before adding it to the bag");
+    }
+    if (design) {
+      if (String(design.productId) !== String(product._id)) {
+        throw AppError.badRequest("That design is for a different product");
+      }
+      if (!unit.variantSku.startsWith(`TEE-${design.color.toUpperCase()}-`)) {
+        throw AppError.badRequest("The shirt colour doesn't match the design");
+      }
+      const price = round(Number(unit.price) + design.printFee);
+      const sides = design.sides.map((side) => side[0].toUpperCase() + side.slice(1)).join(" + ");
+      unit = {
+        ...unit,
+        price,
+        totalPrice: deriveTotalPrice(price, unit.discount, unit.gst),
+        image: designs().previewUrl(design.id, "front"),
+        label: `${unit.label} · ${sides} print`,
+      };
+      customization = { name: design.name, color: design.color, sides: design.sides, printFee: design.printFee };
+    }
 
     if (unit.countInStock < line.qty) {
       throw AppError.conflict(
@@ -127,7 +160,7 @@ const priceCart = async (cart) => {
       product: product._id,
       variantSku: unit.variantSku,
       variantLabel: unit.label,
-      name: product.name,
+      name: design ? `Custom T-shirt: ${design.name}` : product.name,
       qty: line.qty,
       image: unit.image,
       price: unit.price,
@@ -138,6 +171,7 @@ const priceCart = async (cart) => {
       brand: product.brand,
       category: product.category,
       categoryRef: product.categoryRef,
+      ...(design ? { design: design.id, customization } : {}),
     });
   }
 
@@ -159,7 +193,7 @@ const priceCart = async (cart) => {
  * is computed by exactly the same code that charges them.
  */
 const quoteOrder = async ({ cart, userId, couponCode, shippingAddress, shippingRateId }) => {
-  const priced = await priceCart(cart);
+  const priced = await priceCart(cart, { userId });
 
   let couponDiscount = 0;
   let appliedCoupon = null;

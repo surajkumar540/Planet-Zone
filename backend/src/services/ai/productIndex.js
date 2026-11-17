@@ -1,4 +1,5 @@
 const fs = require("fs");
+const env = require("../../config/env");
 const path = require("path");
 const crypto = require("crypto");
 
@@ -100,7 +101,8 @@ const doRefresh = async () => {
     let done = 0;
     for (const product of needImage) {
       try {
-        const vector = await models.embedImage(product.image);
+        // Site-relative photos (e.g. "/tee-studio.jpg") are served by the storefront.
+        const vector = await models.embedImage(product.image.startsWith("/") ? `${env.APP_URL.replace(/\/$/, "")}${product.image}` : product.image);
         entries.set(product.id, { ...entries.get(product.id), imageUrl: product.image, image: vector });
       } catch (error) {
         logger.warn(`AI: couldn't read the photo of "${product.name}": ${error.message}`);

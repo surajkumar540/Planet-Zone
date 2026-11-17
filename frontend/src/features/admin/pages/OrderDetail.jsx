@@ -14,6 +14,7 @@ import { SkeletonText } from "../../../components/ui/Skeleton";
 import { OrderStatusBadge, PaymentStatusBadge } from "../components/StatusBadge";
 import { formatCurrency, formatDateTime, humanise } from "../../../lib/format";
 import OrderTracker from "../../store/components/OrderTracker";
+import DesignPrintFiles from "../components/DesignPrintFiles";
 
 import { getErrorMessage } from "../../../lib/apiError";
 /**
@@ -191,7 +192,7 @@ const OrderDetail = () => {
             <CardHeader title="Items" description={`${order.orderItems?.length || 0} line items`} />
             <ul className="divide-y divide-line-subtle">
               {order.orderItems?.map((item, index) => (
-                <li key={`${item.product}-${index}`} className="flex items-center gap-3 px-5 py-3">
+                <li key={`${item.product}-${index}`} className={`flex gap-3 px-5 py-3 ${item.design ? "items-start" : "items-center"}`}>
                   <img
                     src={item.image}
                     alt=""
@@ -207,6 +208,7 @@ const OrderDetail = () => {
                       {item.variantLabel && `${item.variantLabel} · `}
                       {formatCurrency(item.totalPrice, { precise: true })} × {item.qty}
                     </p>
+                    {item.design && <DesignPrintFiles item={item} orderNumber={order.orderNumber} />}
                   </div>
                   <p className="type-body-strong type-numeric text-content shrink-0">
                     {formatCurrency(item.lineTotal ?? item.totalPrice * item.qty, { precise: true })}

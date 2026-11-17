@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -161,6 +161,8 @@ const ProductDetail = () => {
   }, [product, variantSku]);
 
   if (loading) return <ProductSkeleton />;
+  // The custom T-shirt is bought through the design studio.
+  if (product?.sku === "PZ-CUSTOM-TEE") return <Navigate to="/customize" replace />;
   if (error) {
     return (
       <Container className="py-16">

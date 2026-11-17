@@ -48,6 +48,10 @@ app.use(
 
 /* --------------------------------- Parsing --------------------------------- */
 
+// A saved T-shirt design carries its uploaded photos and mockups (resized in
+// the browser), so that one route accepts a larger body. Parsed bodies are
+// skipped by the general parser below.
+app.post("/api/designs", express.json({ limit: "8mb" }));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());

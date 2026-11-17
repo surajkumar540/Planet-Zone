@@ -24,6 +24,7 @@ npm run ai:download        # downloads the free AI models and indexes the catalo
 npm run data:natural       # imports data/natural-products.json (real products from Open Food/Beauty Facts)
 npm run data:natural:fetch # rebuilds that file (slow: rate-limited public APIs)
 npm run images:warm        # pre-shrinks every product photo (API must be running)
+npm run data:custom-tee    # sets up the custom T-shirt product (safe to re-run)
 ```
 
 There are no backend tests or lint config. To check a change, run the server and call the endpoint. `GET /health` reports database connectivity (it sits outside `/api`).
@@ -132,6 +133,8 @@ Change stock only through `inventory.service.js`. `reserve` and `release` do not
 **Images.** `GET /api/img?src=&w=` (`services/imageOptimizer.js`, mounted before the API rate limiter) resizes product photos to a fixed set of widths, converts to WebP with sharp, caches in `backend/.cache/images` and sends a one-year cache header. It only fetches https URLs from hosts that product images already use (read from the database), with a size limit and timeout; on failure it redirects to the original.
 
 **Google sign-in.** `POST /auth/google` takes a Google Identity Services ID token, verifies it with `google-auth-library` against `GOOGLE_CLIENT_ID`, and returns the same shape as `/login`. Existing verified accounts sign in; an unverified pending signup for that email is verified and its password replaced; otherwise a verified customer is created. `GET /auth/google/config` exposes the client id (empty hides the button).
+
+**Custom T-shirts.** `modules/design` backs the storefront studio. The product is one catalogue item (SKU `PZ-CUSTOM-TEE`, constants in `constants/customTee.js`) with a variant per colour and size (`TEE-<COLOR>-<SIZE>`), so stock works as usual. `POST /designs` saves a design (layers per side, JPEG mockups as data URLs; that route alone accepts 8 MB bodies, see `app.js`); designs are immutable, so an order always prints what was bought. A cart line carries `designId`: `pricing.service.js` checks the design belongs to the shopper and matches the variant colour, adds the stored print fee (₹140 + GST per printed side) and sets the line image to `GET /designs/:id/preview/front`. A custom-tee line without a design is rejected. Order items keep `designId` and a `customization` snapshot. Preview URLs use `PUBLIC_API_URL`, else Render's `RENDER_EXTERNAL_URL`, else localhost.
 
 **Payment.** `/paymentInit` creates the Razorpay order and a `Payment` row. `/paymentSuccess` verifies the HMAC signature. `/createOrder` then checks that the verified payment matches the computed total. See the first known issue below.
 

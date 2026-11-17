@@ -219,7 +219,7 @@ const OrderDetail = () => {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="type-body-strong text-content">
-                      {item.product ? (
+                      {item.product && !item.design ? (
                         <Link to={`/product/${item.product}`} className="hover:text-accent-text">
                           {item.name}
                         </Link>
@@ -229,8 +229,13 @@ const OrderDetail = () => {
                     </p>
                     <p className="type-caption type-numeric text-content-muted">
                       Qty {item.qty}
-                      {item.variantSku && ` · ${item.variantSku}`}
+                      {(item.variantLabel || item.variantSku) && ` · ${item.variantLabel || item.variantSku}`}
                     </p>
+                    {item.design && (
+                      <Link to={`/customize?design=${item.design}`} className="type-caption text-accent-text hover:underline">
+                        Design again
+                      </Link>
+                    )}
                   </div>
                   <span className="type-numeric type-body text-content">
                     {formatCurrency((item.totalPrice ?? item.price) * item.qty)}

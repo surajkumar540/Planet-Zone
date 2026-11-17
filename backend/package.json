@@ -16,7 +16,8 @@
     "ai:download": "node src/scripts/downloadAiModels.js",
     "data:natural:fetch": "node src/scripts/fetchNaturalProducts.js",
     "data:natural": "node src/scripts/importNaturalProducts.js",
-    "images:warm": "node src/scripts/warmImages.js"
+    "images:warm": "node src/scripts/warmImages.js",
+    "data:custom-tee": "node src/scripts/setupCustomTee.js"
   },
   "author": "jai",
   "license": "ISC",

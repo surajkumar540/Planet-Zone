@@ -23,6 +23,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Compare = lazy(() => import("./pages/Compare"));
+const Customize = lazy(() => import("./pages/Customize"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const OtpVerify = lazy(() => import("./pages/auth/OtpVerify"));
@@ -68,6 +69,7 @@ const StoreRoutes = () => (
       <Route path="about" element={load(About)} />
       <Route path="contact" element={load(Contact)} />
       <Route path="compare" element={load(Compare)} />
+      <Route path="customize" element={load(Customize)} />
 
       <Route element={<RequireAuth />}>
         <Route path="checkout" element={load(Checkout)} />

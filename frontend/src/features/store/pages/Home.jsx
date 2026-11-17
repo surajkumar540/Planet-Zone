@@ -18,6 +18,7 @@ import { useWishlistToggle } from "../hooks/useWishlist";
 import { useI18n } from "../../../lib/i18n";
 import PersonalRails from "../components/PersonalRails";
 import DepartmentShowcase from "../components/DepartmentShowcase";
+import StudioPromo from "../components/StudioPromo";
 
 const PROMISES = [
   { icon: Truck, title: "Free delivery", body: "On orders above ₹499" },
@@ -208,6 +209,11 @@ const Home = () => {
           <DepartmentShowcase departments={categories} />
         </Container>
       )}
+
+      {/* ------------------------------ T-shirt studio ---------------------------- */}
+      <Container className="pt-section">
+        <StudioPromo />
+      </Container>
 
       {/* --------------------------------- Bands --------------------------------- */}
       <Container className="py-section">

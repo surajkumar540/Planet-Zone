@@ -11,8 +11,11 @@
  */
 const API_BASE = import.meta.env.VITE_PUBLIC_URL || "";
 
-/** Already an optimiser address? Then it is used as it is (never wrapped twice). */
-const isOptimised = (src) => src.includes("/api/img?");
+/**
+ * Already an optimiser address, or a T-shirt design mockup (served by our API
+ * at its final size)? Then it is used as it is.
+ */
+const isOptimised = (src) => src.includes("/api/img?") || src.includes("/api/designs/");
 
 export const img = (src, width = 480) =>
   typeof src === "string" && src.startsWith("https://") && !isOptimised(src)

@@ -20,6 +20,7 @@ import { img } from "../../../lib/img";
 const NAV_LINKS = [
   { to: "/", label: "Home", end: true },
   { to: "/shop", label: "Shop" },
+  { to: "/customize", label: "Design a tee" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ];

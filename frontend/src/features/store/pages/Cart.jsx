@@ -56,7 +56,7 @@ const Cart = () => {
           {items.map((item) => (
             <li key={lineKey(item)} className="flex gap-4 p-4">
               <Link
-                to={`/product/${item._id}`}
+                to={item.designId ? `/customize?design=${item.designId}` : `/product/${item._id}`}
                 className="h-24 w-24 shrink-0 overflow-hidden rounded-md bg-surface-sunken"
               >
                 <img src={img(item.image, 240)} alt={item.name} className="h-full w-full object-cover" />
@@ -67,13 +67,13 @@ const Cart = () => {
                   {item.brand}
                 </p>
                 <h2 className="type-card-title truncate text-content">
-                  <Link to={`/product/${item._id}`} className="hover:text-accent-text">
+                  <Link to={item.designId ? `/customize?design=${item.designId}` : `/product/${item._id}`} className="hover:text-accent-text">
                     {item.name}
                   </Link>
                 </h2>
-                {item.variantSku && (
+                {(item.variantLabel || item.variantSku) && (
                   <p className="type-caption type-numeric text-content-muted">
-                    Option {item.variantSku}
+                    {item.variantLabel || `Option ${item.variantSku}`}
                   </p>
                 )}
 

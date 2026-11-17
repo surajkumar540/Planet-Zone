@@ -92,6 +92,8 @@ const toItemRow = (item, position) => ({
   brand: item.brand || "",
   category: item.category || "",
   categoryRefId: item.categoryRef || null,
+  designId: item.design || null,
+  customization: item.customization || undefined,
 });
 
 /**

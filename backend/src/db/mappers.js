@@ -155,6 +155,8 @@ const toOrderItem = (row) => ({
   brand: row.brand,
   category: row.category,
   categoryRef: row.categoryRefId,
+  design: row.designId || null,
+  customization: row.customization || null,
 });
 
 const EMPTY_COUPON = { coupon: null, code: "", type: "", discountAmount: 0 };

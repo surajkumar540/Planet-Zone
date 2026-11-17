@@ -103,4 +103,5 @@ export const toOrderCart = (items) =>
     qty: item.qty,
     ...(item.variantSku ? { variantSku: item.variantSku } : {}),
     ...(item.variantId ? { variantId: item.variantId } : {}),
+    ...(item.designId ? { designId: item.designId } : {}),
   }));

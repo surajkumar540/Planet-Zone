@@ -77,6 +77,7 @@ src/
 - Join conditional classes with `cn` from `lib/cn.js`, format money and dates with `lib/format.js`, and use `useToast` for notifications.
 - Smart features: `ShoppingAssistant` and `CompareTray` mount in `StoreLayout`; `/compare` is a lazy route; recommendation rows use `ProductRail`. `PhotoSearch` (AI photo search) is mounted once in `StoreLayout` and opened with `openPhotoSearch()` (search bar camera, chat chip); `AiMatches` shows meaning-search results on the shop page. Compare only accepts products of the same kind (`sameKind` in `useCompare`).
 - Every data screen handles loading (`Skeleton*`), error (`ErrorState`) and empty (`EmptyState`) states.
+- T-shirt studio: `/customize` (`pages/Customize.jsx`, `studio/useDesigner.js`, `DesignStage.jsx`, `ToolPanel.jsx`). The shared engine is `lib/tee/` (shirt SVG, fonts, art, templates, uploads, `render.js`); the same renderer draws the editor canvas, the saved mockups and the print PNG staff download on the admin order page (`DesignPrintFiles`). Cart lines with a `designId` are separate lines (`lineKey`) and send it in `toOrderCart`. The draft is kept in `localStorage` key `planet.studio.draft`.
 - `features/admin/components/StatusBadge.jsx` only re-exports `components/ui/StatusBadge.jsx`. Edit the shared one.
 
 ## Known issues

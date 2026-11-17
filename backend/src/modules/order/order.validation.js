@@ -12,6 +12,8 @@ const cartLineSchema = z.object({
   /** Selects a variant when the product has them. */
   variantSku: z.string().trim().max(60).optional(),
   variantId: uuid.optional(),
+  /** A saved T-shirt design (custom T-shirt lines only). */
+  designId: uuid.optional(),
   qty: z.coerce.number().int().min(1).max(100),
 });
 

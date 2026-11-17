@@ -31,6 +31,12 @@
 - **Sign in / sign up**: email + 6-digit OTP verification, forgot password, **Continue with Google**, all on a moving 3D wall of the shop's own products.
 - **8 languages** (English, हिन्दी, தமிழ், తెలుగు, ಕನ್ನಡ, മലയാളം, বাংলা, मराठी), **light/dark mode**, slide-in mobile menu, friendly 404 and no-access pages, animated toasts and add-to-bag effects.
 
+### 👕 Design your own T-shirt
+- **Studio** at `/customize`: 8 shirt colours, sizes S–3XL, front and back, with a live shirt preview.
+- **Text** in 12 fonts with colour, outline, shadow, letter spacing and **curved text**; **artwork** and emoji stickers; **your photos and logos** with a print-quality check and one-click plain-background removal.
+- Drag, resize, rotate with centre snapping, layers, lock, mirror, **undo/redo** and keyboard shortcuts; ready-made ideas to start from; the draft survives a refresh.
+- Clear pricing (₹399 shirt + ₹147 per printed side, GST included), checked again by the server; saved designs to reopen; staff download **print-ready PNGs** (2400 × 3200) from the order page.
+
 ### 🤖 Smart shopping and free AI
 All of it runs on our own server or in the browser: **no paid AI API and no API keys**.
 - **"Ask me" shopping assistant** (floating chat):

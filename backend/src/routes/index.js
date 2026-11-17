@@ -16,6 +16,7 @@ const contactRoutes = require("../modules/contact/contact.module");
 const settingsRoutes = require("../modules/settings/settings.routes");
 const analyticsRoutes = require("../modules/analytics/analytics.routes");
 const smartRoutes = require("../modules/smart/smart.routes");
+const designRoutes = require("../modules/design/design.routes");
 
 const router = express.Router();
 
@@ -40,6 +41,7 @@ router.use(refundRoutes);
 router.use(addressRoutes);
 router.use(contactRoutes);
 router.use(smartRoutes);
+router.use(designRoutes);
 router.use(settingsRoutes);
 router.use(analyticsRoutes);
 

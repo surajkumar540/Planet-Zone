@@ -24,6 +24,7 @@ import { ErrorState } from "../../../components/ui/States";
 import { Doodle } from "../../../components/ui/Doodles";
 import { formatCurrency, formatNumber } from "../../../lib/format";
 import cn from "../../../lib/cn";
+import ScrollRail from "../../../components/ui/ScrollRail";
 import { Container } from "../components/Primitives";
 import ProductCard from "../components/ProductCard";
 import PriceRange from "../components/PriceRange";
@@ -300,13 +301,20 @@ const Shop = () => {
           {/* Department rail: one tap to switch the whole shelf. */}
           {facets?.departments?.length > 0 && (
             <LayoutGroup id="dept-rail">
-              <div className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
+              <ScrollRail
+                activeKey={params.get("dept") || ""}
+                label="Departments"
+                className="-mx-4 mt-5 sm:mx-0"
+                innerClassName="px-4 py-1 sm:px-0"
+              >
                 {[{ _id: "", name: t("All"), count: undefined }, ...facets.departments].map((dept) => {
                   const selected = (params.get("dept") || "") === dept._id;
                   return (
                     <button
                       key={dept._id || "all"}
                       type="button"
+                      data-active={selected}
+                      aria-pressed={selected}
                       onClick={() => setParam({ dept: dept._id, category: "" })}
                       className={cn(
                         "relative shrink-0 rounded-full px-4 py-2 text-[0.8125rem] font-semibold transition-colors",
@@ -331,7 +339,7 @@ const Shop = () => {
                     </button>
                   );
                 })}
-              </div>
+              </ScrollRail>
             </LayoutGroup>
           )}
         </Container>
